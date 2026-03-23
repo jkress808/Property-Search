@@ -597,17 +597,38 @@ async function fetchAllRoads(geometry) {
   return roads;
 }
 
+// Returns [minDist, midX, midY] — closest approach between two road segments and where it is.
+// Used to find where two streets cross (or nearly cross) near a parcel.
+function segSegClosest(sa, sb) {
+  const dax = sa.x2 - sa.x1, day = sa.y2 - sa.y1;
+  const dbx = sb.x2 - sb.x1, dby = sb.y2 - sb.y1;
+  const denom = dax * dby - day * dbx;
+  let px, py, qx, qy;
+  if (Math.abs(denom) > 1e-10) {
+    const t = Math.max(0, Math.min(1, ((sb.x1 - sa.x1) * dby - (sb.y1 - sa.y1) * dbx) / denom));
+    const s = Math.max(0, Math.min(1, ((sb.x1 - sa.x1) * day - (sb.y1 - sa.y1) * dax) / denom));
+    px = sa.x1 + t * dax; py = sa.y1 + t * day;
+    qx = sb.x1 + s * dbx; qy = sb.y1 + s * dby;
+  } else {
+    px = (sa.x1 + sa.x2) / 2; py = (sa.y1 + sa.y2) / 2;
+    qx = (sb.x1 + sb.x2) / 2; qy = (sb.y1 + sb.y2) / 2;
+  }
+  return [Math.hypot(px - qx, py - qy), (px + qx) / 2, (py + qy) / 2];
+}
+
 function computeCornerLots(properties, roads) {
   // At lat ~47.7°: 1 deg lat ≈ 111,139 m, 1 deg lon ≈ 74,900 m.
   const LON_M = 74900, LAT_M = 111139;
-  const THRESHOLD_M = 25;   // max distance (m) from edge midpoint to road centerline
-  const MIN_EDGE_M = 6;     // ignore parcel edges shorter than this (meters)
-  const MIN_FRONTAGE_M = 10; // min total length of parcel edges that must face a street
-  const DIR_ALIGN = 0.5;    // min |cos θ| between edge direction and road direction
-                             // (~60° tolerance) — filters out T-intersection false positives
-                             // where a perpendicular dead-end road is near an edge
-  const DIR_PARALLEL = 0.9; // max |cos θ| between two street directions for them to be
-                             // "different enough" to form a real corner (~26° min turn)
+
+  // --- Tightened thresholds ---
+  const THRESHOLD_M    = 12;  // max distance (m) from edge midpoint to road centerline
+                               // (residential streets ~9m wide → centerline ~5–8m from parcel edge)
+  const MIN_EDGE_M     = 10;  // ignore parcel edges shorter than 10 m (~33 ft)
+  const MIN_FRONTAGE_M = 22;  // each street needs ≥22 m (~72 ft) of facing parcel edge
+  const DIR_ALIGN      = 0.82; // min |cos θ| edge-to-road direction (within ~35°)
+  const DIR_PARALLEL   = 0.85; // max |cos θ| between two street dirs — need >32° turn
+  const CROSS_DIST     = 10;  // the two streets' road segments must come within 10 m of each other
+  const VERTEX_DIST    = 16;  // a parcel VERTEX must be within 16 m of that crossing point
 
   // Build road segments with pre-normalised direction vectors
   const segs = [];
@@ -628,9 +649,9 @@ function computeCornerLots(properties, roads) {
   for (const p of properties) {
     if (!p._rings) continue;
 
-    // For each parcel edge, accumulate total frontage length and weighted direction
-    // per street — but only when the edge actually runs PARALLEL to the road.
-    // streetData: name → { totalLen, sumDx, sumDy }
+    // For each parcel edge, find roads it faces (direction-aligned and close).
+    // Track: total facing length, weighted average direction, and which road segments matched.
+    // streetData: name → { totalLen, sumDx, sumDy, segSet }
     const streetData = new Map();
 
     for (const ring of p._rings) {
@@ -646,37 +667,63 @@ function computeCornerLots(properties, roads) {
         const my  = (ey1 + ey2) / 2;
 
         for (const s of segs) {
-          // Reject if the edge runs perpendicular to the road — this is the key fix:
-          // a parcel edge close to a T-stub's endpoint won't match because the edge
-          // runs along the main road while the stub runs the other way.
+          // Edge must run roughly parallel to the road (filters T-stub false positives)
           if (Math.abs(edx * s.dx + edy * s.dy) < DIR_ALIGN) continue;
           if (pointSegDist(mx, my, s.x1, s.y1, s.x2, s.y2) >= THRESHOLD_M) continue;
 
-          const d = streetData.get(s.name) || { totalLen: 0, sumDx: 0, sumDy: 0 };
+          if (!streetData.has(s.name)) {
+            streetData.set(s.name, { totalLen: 0, sumDx: 0, sumDy: 0, segSet: new Set() });
+          }
+          const d = streetData.get(s.name);
           d.totalLen += eLen;
-          d.sumDx    += edx * eLen; // length-weighted direction accumulator
+          d.sumDx    += edx * eLen;
           d.sumDy    += edy * eLen;
-          streetData.set(s.name, d);
+          d.segSet.add(s);
         }
       }
     }
 
-    // Only streets where the parcel has at least MIN_FRONTAGE_M of facing edge
+    // Streets with sufficient frontage
     const qualifying = [...streetData.entries()]
       .filter(([, d]) => d.totalLen >= MIN_FRONTAGE_M);
 
-    // Corner lot: two qualifying streets whose average edge directions differ enough
-    // to form a real turn (not two parallel roads on opposite sides of the parcel).
+    // Collect parcel vertices for the crossing-point proximity check
+    const vertices = [];
+    for (const ring of p._rings) {
+      for (const [lon, lat] of ring) vertices.push([lon * LON_M, lat * LAT_M]);
+    }
+
+    // A true corner lot requires ALL THREE conditions for some pair of streets:
+    //  1. Streets face different directions (angle check)
+    //  2. Their road segments actually cross or come very close to each other (crossing check)
+    //  3. A parcel vertex sits at/near that crossing point (vertex check)
     let isCorner = false;
     outer: for (let a = 0; a < qualifying.length; a++) {
-      const da = qualifying[a][1];
+      const [, da] = qualifying[a];
       const la = Math.hypot(da.sumDx, da.sumDy);
       for (let b = a + 1; b < qualifying.length; b++) {
-        const db = qualifying[b][1];
+        const [, db] = qualifying[b];
         const lb = Math.hypot(db.sumDx, db.sumDy);
         if (la === 0 || lb === 0) continue;
+
+        // 1. Angle check
         const dot = Math.abs((da.sumDx * db.sumDx + da.sumDy * db.sumDy) / (la * lb));
-        if (dot < DIR_PARALLEL) { isCorner = true; break outer; }
+        if (dot >= DIR_PARALLEL) continue;
+
+        // 2 & 3. For each pair of road segments from the two streets, find their
+        //        closest approach; if it's tight enough AND a parcel vertex is nearby → corner.
+        for (const sa of da.segSet) {
+          for (const sb of db.segSet) {
+            const [dist, cx, cy] = segSegClosest(sa, sb);
+            if (dist > CROSS_DIST) continue;
+            for (const [vx, vy] of vertices) {
+              if (Math.hypot(vx - cx, vy - cy) < VERTEX_DIST) {
+                isCorner = true;
+                break outer;
+              }
+            }
+          }
+        }
       }
     }
 
