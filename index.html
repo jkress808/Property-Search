@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seattle/Shoreline Property Tax Analyzer</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #222; }
+  header { background: #1a3a5c; color: white; padding: 18px 24px; }
+  header h1 { font-size: 1.3rem; font-weight: 600; }
+  header p { font-size: 0.85rem; opacity: 0.75; margin-top: 4px; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+  .card h2 { font-size: 1rem; font-weight: 600; margin-bottom: 14px; color: #1a3a5c; border-bottom: 2px solid #e8edf2; padding-bottom: 8px; }
+  .bounds-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field-group { display: flex; flex-direction: column; gap: 4px; }
+  label { font-size: 0.78rem; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.03em; }
+  input[type=number], input[type=range] { width: 100%; padding: 7px 10px; border: 1px solid #cdd4db; border-radius: 5px; font-size: 0.9rem; }
+  input[type=number]:focus { outline: none; border-color: #1a3a5c; }
+  .threshold-row { display: flex; align-items: center; gap: 14px; margin-top: 8px; }
+  .threshold-row input[type=range] { flex: 1; }
+  .threshold-val { font-weight: 700; color: #c0392b; font-size: 1rem; min-width: 40px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: background 0.15s; }
+  .btn-primary { background: #1a3a5c; color: white; }
+  .btn-primary:hover { background: #24527f; }
+  .btn-primary:disabled { background: #8aa0b5; cursor: not-allowed; }
+  .btn-success { background: #27ae60; color: white; }
+  .btn-success:hover { background: #219a52; }
+  .btn-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  #status { font-size: 0.88rem; color: #555; }
+  .progress-bar { height: 6px; background: #e0e6ed; border-radius: 3px; margin-top: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #1a3a5c; width: 0%; transition: width 0.3s; border-radius: 3px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
+  .stat-box { background: #f7f9fb; border-radius: 6px; padding: 14px; text-align: center; border: 1px solid #e0e6ed; }
+  .stat-box .num { font-size: 1.5rem; font-weight: 700; color: #1a3a5c; }
+  .stat-box .lbl { font-size: 0.75rem; color: #666; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .stat-box.alert .num { color: #c0392b; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+  thead th { background: #1a3a5c; color: white; padding: 9px 10px; text-align: left; font-weight: 600; position: sticky; top: 0; cursor: pointer; user-select: none; white-space: nowrap; }
+  thead th:hover { background: #24527f; }
+  thead th .sort-arrow { margin-left: 4px; opacity: 0.6; }
+  tbody tr { border-bottom: 1px solid #edf0f3; }
+  tbody tr:hover { background: #f5f8fb; }
+  tbody td { padding: 8px 10px; }
+  .flag-yes { color: #c0392b; font-weight: 700; }
+  .flag-no { color: #888; }
+  .pct-low { color: #c0392b; font-weight: 600; }
+  .pct-ok { color: #27ae60; }
+  .table-wrap { max-height: 480px; overflow-y: auto; border: 1px solid #e0e6ed; border-radius: 6px; }
+  .hidden { display: none; }
+  .error-box { background: #fdf0f0; border: 1px solid #e74c3c; color: #c0392b; padding: 12px 16px; border-radius: 6px; font-size: 0.88rem; line-height: 1.5; }
+  .note { font-size: 0.8rem; color: #666; margin-top: 8px; line-height: 1.5; }
+  .filter-row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  .filter-row input[type=text] { padding: 6px 10px; border: 1px solid #cdd4db; border-radius: 5px; font-size: 0.85rem; min-width: 220px; }
+  .filter-row input[type=text]:focus { outline: none; border-color: #1a3a5c; }
+  .badge { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 0.72rem; font-weight: 700; }
+  .badge-red { background: #fdecea; color: #c0392b; }
+  .badge-green { background: #eafaf1; color: #27ae60; }
+  .badge-purple { background: #f5eefb; color: #8e44ad; }
+  #map { height: 520px; border-radius: 6px; border: 1px solid #e0e6ed; }
+  .map-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px; font-size: 0.8rem; color: #444; }
+  .map-legend span { display: flex; align-items: center; gap: 5px; }
+  .legend-swatch { width: 14px; height: 14px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
+  .map-popup strong { font-size: 0.95rem; }
+  .map-popup table { border-collapse: collapse; margin-top: 6px; width: 100%; }
+  .map-popup td { padding: 2px 4px; font-size: 0.82rem; }
+  .map-popup td:first-child { color: #666; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Seattle / Shoreline Property Tax Analyzer</h1>
+  <p>Single-family homes with assessed values 15% or more below the area median</p>
+</header>
+
+<div class="container">
+
+  <!-- Configuration -->
+  <div class="card">
+    <h2>Search Area &amp; Settings</h2>
+    <div class="bounds-grid">
+      <div class="field-group">
+        <label>North boundary latitude (NE 145th St ≈ 47.7225)</label>
+        <input type="number" id="ymax" value="47.7225" step="0.0001">
+      </div>
+      <div class="field-group">
+        <label>South boundary latitude (NE 45th St ≈ 47.6612)</label>
+        <input type="number" id="ymin" value="47.6612" step="0.0001">
+      </div>
+      <div class="field-group">
+        <label>West boundary longitude (Roosevelt Way NE ≈ -122.3180)</label>
+        <input type="number" id="xmin" value="-122.3180" step="0.0001">
+      </div>
+      <div class="field-group">
+        <label>East boundary longitude (Lake Washington / Lake City ≈ -122.2570)</label>
+        <input type="number" id="xmax" value="-122.2570" step="0.0001">
+      </div>
+    </div>
+    <div style="margin-top:16px;">
+      <label>Below-median threshold: homes flagged if assessed value is this far below median</label>
+      <div class="threshold-row">
+        <input type="range" id="threshold" min="5" max="40" value="15" oninput="document.getElementById('thresholdVal').textContent=this.value+'%'">
+        <span class="threshold-val" id="thresholdVal">15%</span>
+      </div>
+    </div>
+    <p class="note">Data source: King County GIS — KingCo_PropertyInfo MapServer (Layer 2 — Parcels). Single-family filter: present use description contains "Single Family" excluding vacant land.</p>
+  </div>
+
+  <!-- Actions -->
+  <div class="card">
+    <div class="btn-row">
+      <button class="btn btn-primary" id="fetchBtn" onclick="run()">&#9654; Fetch &amp; Analyze</button>
+      <button class="btn btn-success hidden" id="downloadBtn" onclick="downloadCSV()">&#8659; Download CSV</button>
+      <button class="btn hidden" id="mapBtn" onclick="toggleMap()" style="background:#5d6d7e;color:white;">&#128205; Show Map</button>
+      <span id="status"></span>
+    </div>
+    <div class="progress-bar hidden" id="progressBar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div id="errorBox" class="error-box hidden"></div>
+  </div>
+
+  <!-- Summary -->
+  <div class="card hidden" id="summaryCard">
+    <h2>Summary</h2>
+    <div class="summary-grid">
+      <div class="stat-box">
+        <div class="num" id="s-total">—</div>
+        <div class="lbl">Total Homes</div>
+      </div>
+      <div class="stat-box">
+        <div class="num" id="s-median">—</div>
+        <div class="lbl">Median Assessed Value</div>
+      </div>
+      <div class="stat-box">
+        <div class="num" id="s-avg">—</div>
+        <div class="lbl">Average Assessed Value</div>
+      </div>
+      <div class="stat-box alert">
+        <div class="num" id="s-flagged">—</div>
+        <div class="lbl">Flagged (Below Threshold)</div>
+      </div>
+      <div class="stat-box">
+        <div class="num" id="s-threshold">—</div>
+        <div class="lbl">Flag Cutoff Value</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Table -->
+  <div class="card hidden" id="resultsCard">
+    <h2>Results</h2>
+    <div class="filter-row">
+      <input type="text" id="searchBox" placeholder="Filter by address or ZIP..." oninput="renderTable()">
+      <label style="font-size:0.82rem; color:#555;">
+        <input type="checkbox" id="flaggedOnly" onchange="renderTable()"> Show flagged only
+      </label>
+      <label style="font-size:0.82rem; color:#555;">
+        <input type="checkbox" id="cornerOnly" onchange="renderTable()"> Corner lots only
+      </label>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy('ADDR_FULL')">Address <span class="sort-arrow" id="sort-ADDR_FULL"></span></th>
+            <th onclick="sortBy('CTYNAME')">City <span class="sort-arrow" id="sort-CTYNAME"></span></th>
+            <th onclick="sortBy('ZIP5')">ZIP <span class="sort-arrow" id="sort-ZIP5"></span></th>
+            <th onclick="sortBy('LOTSQFT')">Lot Sq Ft <span class="sort-arrow" id="sort-LOTSQFT"></span></th>
+            <th onclick="sortBy('APPRLNDVAL')">Land Value <span class="sort-arrow" id="sort-APPRLNDVAL"></span></th>
+            <th onclick="sortBy('APPR_IMPR')">Impr Value <span class="sort-arrow" id="sort-APPR_IMPR"></span></th>
+            <th onclick="sortBy('totalAssessed')">Total Assessed <span class="sort-arrow" id="sort-totalAssessed"></span></th>
+            <th onclick="sortBy('pctOfMedian')">% of Median <span class="sort-arrow" id="sort-pctOfMedian"></span></th>
+            <th onclick="sortBy('flagged')">Flagged <span class="sort-arrow" id="sort-flagged"></span></th>
+            <th onclick="sortBy('PREUSE_DESC')">Use Type <span class="sort-arrow" id="sort-PREUSE_DESC"></span></th>
+            <th onclick="sortBy('CORNER_LOT')">Corner Lot <span class="sort-arrow" id="sort-CORNER_LOT"></span></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <p class="note" id="rowCount"></p>
+  </div>
+
+  <!-- Map -->
+  <div class="card hidden" id="mapCard">
+    <h2>Map View</h2>
+    <div id="map"></div>
+    <div class="map-legend">
+      <span><span class="legend-swatch" style="background:#c0392b;opacity:0.7;"></span> Flagged (below threshold)</span>
+      <span><span class="legend-swatch" style="background:#27ae60;opacity:0.7;"></span> OK</span>
+      <span><span class="legend-swatch" style="background:transparent;border:2.5px solid #8e44ad;"></span> Corner lot</span>
+    </div>
+    <p class="note" id="mapCount"></p>
+  </div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const SERVICE_URL = 'https://gismaps.kingcounty.gov/arcgis/rest/services/Property/KingCo_PropertyInfo/MapServer/2/query';
+const ROAD_URL    = 'https://gismaps.kingcounty.gov/arcgis/rest/services/Roads/KingCo_Roads/MapServer/6/query';
+
+let allProperties = [];
+let sortCol = 'pctOfMedian';
+let sortDir = 1; // 1=asc, -1=desc
+let medianValue = 0;
+
+function fmt$(n) {
+  if (n == null || isNaN(n)) return '—';
+  return '$' + Math.round(n).toLocaleString();
+}
+function fmtNum(n) {
+  if (n == null || isNaN(n)) return '—';
+  return Math.round(n).toLocaleString();
+}
+
+async function fetchBatch(geometry, offset, batchSize) {
+  const params = new URLSearchParams({
+    geometry: JSON.stringify(geometry),
+    geometryType: 'esriGeometryEnvelope',
+    inSR: '4326',
+    spatialRel: 'esriSpatialRelIntersects',
+    where: "PREUSE_DESC LIKE '%Single Family%' AND PREUSE_DESC NOT LIKE '%Vacant%'",
+    outFields: 'PIN,ADDR_FULL,ADDR_HN,ZIP5,CTYNAME,APPRLNDVAL,APPR_IMPR,PREUSE_CODE,PREUSE_DESC,LOTSQFT',
+    returnGeometry: 'true',
+    outSR: '4326',
+    resultOffset: String(offset),
+    resultRecordCount: String(batchSize),
+    f: 'json'
+  });
+  const resp = await fetch(`${SERVICE_URL}?${params}`);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+  return await resp.json();
+}
+
+async function run() {
+  const btn = document.getElementById('fetchBtn');
+  const status = document.getElementById('status');
+  const progressBar = document.getElementById('progressBar');
+  const progressFill = document.getElementById('progressFill');
+  const errorBox = document.getElementById('errorBox');
+  const downloadBtn = document.getElementById('downloadBtn');
+
+  // Reset
+  errorBox.classList.add('hidden');
+  document.getElementById('summaryCard').classList.add('hidden');
+  document.getElementById('resultsCard').classList.add('hidden');
+  downloadBtn.classList.add('hidden');
+  btn.disabled = true;
+  progressBar.classList.remove('hidden');
+  progressFill.style.width = '5%';
+  allProperties = [];
+
+  const geometry = {
+    xmin: parseFloat(document.getElementById('xmin').value),
+    ymin: parseFloat(document.getElementById('ymin').value),
+    xmax: parseFloat(document.getElementById('xmax').value),
+    ymax: parseFloat(document.getElementById('ymax').value)
+  };
+
+  try {
+    let offset = 0;
+    const batchSize = 1000;
+    let batch = 0;
+    let total = 0;
+
+    while (true) {
+      status.textContent = `Fetching records ${offset + 1}…`;
+      progressFill.style.width = Math.min(10 + batch * 15, 85) + '%';
+
+      const data = await fetchBatch(geometry, offset, batchSize);
+
+      if (data.error) {
+        throw new Error(`API error: ${data.error.message || JSON.stringify(data.error)}`);
+      }
+
+      if (!data.features || data.features.length === 0) break;
+
+      for (const f of data.features) {
+        const a = f.attributes;
+        const land = a.APPRLNDVAL || 0;
+        const impr = a.APPR_IMPR || 0;
+        allProperties.push({
+          PIN: a.PIN || '',
+          ADDR_FULL: a.ADDR_FULL || '',
+          CTYNAME: a.CTYNAME || '',
+          ZIP5: a.ZIP5 || '',
+          LOTSQFT: a.LOTSQFT || 0,
+          APPRLNDVAL: land,
+          APPR_IMPR: impr,
+          totalAssessed: land + impr,
+          PREUSE_CODE: a.PREUSE_CODE || '',
+          PREUSE_DESC: a.PREUSE_DESC || '',
+          CORNER_LOT: null,
+          isCorner: false,
+          _rings: f.geometry ? f.geometry.rings : null
+        });
+      }
+
+      total += data.features.length;
+      batch++;
+
+      if (!data.exceededTransferLimit) break;
+      offset += batchSize;
+    }
+
+    progressFill.style.width = '88%';
+    status.textContent = `Fetching road network for corner lot detection…`;
+
+    if (allProperties.length === 0) {
+      throw new Error('No single-family properties found in the specified area. Try adjusting the boundary coordinates.');
+    }
+
+    const roads = await fetchAllRoads(geometry);
+    status.textContent = `Detecting corner lots against ${roads.length} road features…`;
+    computeCornerLots(allProperties, roads);
+
+    progressFill.style.width = '95%';
+    status.textContent = `Processing ${total} properties…`;
+
+    analyze();
+    renderSummary();
+    renderTable();
+
+    progressFill.style.width = '100%';
+    status.textContent = `Done — ${allProperties.length} properties loaded.`;
+    document.getElementById('summaryCard').classList.remove('hidden');
+    document.getElementById('resultsCard').classList.remove('hidden');
+    downloadBtn.classList.remove('hidden');
+    document.getElementById('mapBtn').classList.remove('hidden');
+
+  } catch (err) {
+    progressBar.classList.add('hidden');
+    errorBox.classList.remove('hidden');
+    let msg = err.message || String(err);
+    if (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('cors') || msg.toLowerCase().includes('network')) {
+      msg += '<br><br><strong>Tip:</strong> This may be a network/CORS issue. Try opening this file in Chrome or Edge. If the problem persists, the King County GIS server may be temporarily unavailable.';
+    }
+    errorBox.innerHTML = '&#9888; Error: ' + msg;
+    status.textContent = '';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function analyze() {
+  const threshold = parseInt(document.getElementById('threshold').value) / 100;
+  const sorted = [...allProperties].map(p => p.totalAssessed).sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  medianValue = sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  const cutoff = medianValue * (1 - threshold);
+
+  for (const p of allProperties) {
+    p.pctOfMedian = medianValue > 0 ? (p.totalAssessed / medianValue) * 100 : 0;
+    p.flagged = p.totalAssessed < cutoff;
+  }
+}
+
+function renderSummary() {
+  const threshold = parseInt(document.getElementById('threshold').value);
+  const total = allProperties.length;
+  const avg = allProperties.reduce((s, p) => s + p.totalAssessed, 0) / total;
+  const flagged = allProperties.filter(p => p.flagged).length;
+  const cutoff = medianValue * (1 - threshold / 100);
+
+  document.getElementById('s-total').textContent = total.toLocaleString();
+  document.getElementById('s-median').textContent = fmt$(medianValue);
+  document.getElementById('s-avg').textContent = fmt$(avg);
+  document.getElementById('s-flagged').textContent = flagged.toLocaleString();
+  document.getElementById('s-threshold').textContent = fmt$(cutoff);
+}
+
+function sortBy(col) {
+  if (sortCol === col) sortDir *= -1;
+  else { sortCol = col; sortDir = 1; }
+  document.querySelectorAll('.sort-arrow').forEach(el => el.textContent = '');
+  const arrow = document.getElementById('sort-' + col);
+  if (arrow) arrow.textContent = sortDir === 1 ? ' ↑' : ' ↓';
+  renderTable();
+}
+
+function renderTable() {
+  const search = document.getElementById('searchBox').value.toLowerCase();
+  const flaggedOnly = document.getElementById('flaggedOnly').checked;
+  const cornerOnly = document.getElementById('cornerOnly').checked;
+
+  let data = allProperties.filter(p => {
+    if (flaggedOnly && !p.flagged) return false;
+    if (cornerOnly && !p.isCorner) return false;
+    if (search && !p.ADDR_FULL.toLowerCase().includes(search) && !p.ZIP5.includes(search) && !p.CTYNAME.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  data.sort((a, b) => {
+    const av = a[sortCol], bv = b[sortCol];
+    if (typeof av === 'string') return av.localeCompare(bv) * sortDir;
+    return (av - bv) * sortDir;
+  });
+
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+
+  for (const p of data) {
+    const pct = p.pctOfMedian.toFixed(1);
+    const pctClass = p.flagged ? 'pct-low' : 'pct-ok';
+    const flagBadge = p.flagged
+      ? '<span class="badge badge-red">&#9660; BELOW</span>'
+      : '<span class="badge badge-green">OK</span>';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${p.ADDR_FULL || '—'}</td>
+      <td>${p.CTYNAME || '—'}</td>
+      <td>${p.ZIP5 || '—'}</td>
+      <td>${fmtNum(p.LOTSQFT)}</td>
+      <td>${fmt$(p.APPRLNDVAL)}</td>
+      <td>${fmt$(p.APPR_IMPR)}</td>
+      <td><strong>${fmt$(p.totalAssessed)}</strong></td>
+      <td class="${pctClass}">${pct}%</td>
+      <td>${flagBadge}</td>
+      <td>${p.PREUSE_DESC || '—'}</td>
+      <td>${p.CORNER_LOT === null ? '<span style="color:#aaa">—</span>' : p.isCorner ? '<span class="badge badge-green">Yes</span>' : 'No'}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  document.getElementById('rowCount').textContent = `Showing ${data.length.toLocaleString()} of ${allProperties.length.toLocaleString()} properties`;
+
+  // Refresh map if visible
+  if (map && !document.getElementById('mapCard').classList.contains('hidden')) {
+    renderMapParcels(data);
+  }
+}
+
+// -- Map --
+
+let map = null;
+let mapParcelGroup = null;
+
+function toggleMap() {
+  const card = document.getElementById('mapCard');
+  const btn  = document.getElementById('mapBtn');
+  const visible = !card.classList.contains('hidden');
+
+  if (visible) {
+    card.classList.add('hidden');
+    btn.textContent = '\u{1F4CD} Show Map';
+  } else {
+    card.classList.remove('hidden');
+    btn.textContent = '\u{1F4CD} Hide Map';
+    initMap();
+
+    // Build filtered data same as current table view
+    const search      = document.getElementById('searchBox').value.toLowerCase();
+    const flaggedOnly = document.getElementById('flaggedOnly').checked;
+    const cornerOnly  = document.getElementById('cornerOnly').checked;
+    const filtered = allProperties.filter(p => {
+      if (flaggedOnly && !p.flagged) return false;
+      if (cornerOnly  && !p.isCorner) return false;
+      if (search && !p.ADDR_FULL.toLowerCase().includes(search) &&
+          !p.ZIP5.includes(search) && !p.CTYNAME.toLowerCase().includes(search)) return false;
+      return true;
+    });
+    renderMapParcels(filtered);
+  }
+}
+
+function initMap() {
+  if (map) return;
+  map = L.map('map');
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 20
+  }).addTo(map);
+  mapParcelGroup = L.layerGroup().addTo(map);
+}
+
+function renderMapParcels(data) {
+  mapParcelGroup.clearLayers();
+
+  const MAX = 2000;
+  const shown = data.length > MAX ? data.slice(0, MAX) : data;
+  const bounds = [];
+
+  for (const p of shown) {
+    if (!p._rings) continue;
+
+    // ArcGIS rings: [[lon, lat], ...] → Leaflet: [[lat, lon], ...]
+    const latlngs = p._rings.map(ring => ring.map(([lon, lat]) => [lat, lon]));
+
+    const fillColor   = p.flagged ? '#c0392b' : '#27ae60';
+    const borderColor = p.isCorner ? '#8e44ad' : fillColor;
+    const borderWidth = p.isCorner ? 2.5 : 1.5;
+
+    const poly = L.polygon(latlngs, {
+      color: borderColor, weight: borderWidth,
+      fillColor, fillOpacity: 0.35
+    });
+
+    const flagLine = p.flagged
+      ? `<tr><td>Status</td><td style="color:#c0392b;font-weight:700">&#9660; FLAGGED</td></tr>`
+      : `<tr><td>Status</td><td style="color:#27ae60">OK</td></tr>`;
+
+    poly.bindPopup(`
+      <div class="map-popup">
+        <strong>${p.ADDR_FULL || '—'}</strong>
+        <table>
+          <tr><td>PIN</td><td><strong>${p.PIN || '—'}</strong></td></tr>
+          <tr><td>City / ZIP</td><td>${p.CTYNAME || ''} ${p.ZIP5 || ''}</td></tr>
+          <tr><td>Total Assessed</td><td>${fmt$(p.totalAssessed)}</td></tr>
+          <tr><td>% of Median</td><td>${p.pctOfMedian ? p.pctOfMedian.toFixed(1) + '%' : '—'}</td></tr>
+          <tr><td>Lot Sq Ft</td><td>${fmtNum(p.LOTSQFT)}</td></tr>
+          <tr><td>Corner Lot</td><td>${p.CORNER_LOT === null ? '—' : p.isCorner ? 'Yes' : 'No'}</td></tr>
+          ${flagLine}
+        </table>
+      </div>
+    `, { maxWidth: 260 });
+
+    mapParcelGroup.addLayer(poly);
+
+    for (const ring of p._rings) {
+      for (const [lon, lat] of ring) bounds.push([lat, lon]);
+    }
+  }
+
+  if (bounds.length > 0) map.fitBounds(bounds, { padding: [20, 20] });
+
+  const note = data.length > MAX
+    ? `Showing first ${MAX.toLocaleString()} of ${data.length.toLocaleString()} filtered parcels on map.`
+    : `${shown.length.toLocaleString()} parcels shown on map. Click a parcel to see its PIN and details.`;
+  document.getElementById('mapCount').textContent = note;
+}
+
+// -- Corner lot spatial detection --
+
+function pointSegDist(px, py, ax, ay, bx, by) {
+  const dx = bx - ax, dy = by - ay;
+  if (dx === 0 && dy === 0) return Math.hypot(px - ax, py - ay);
+  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)));
+  return Math.hypot(px - ax - t * dx, py - ay - t * dy);
+}
+
+async function fetchAllRoads(geometry) {
+  const roads = [];
+  let offset = 0;
+  while (true) {
+    const params = new URLSearchParams({
+      geometry: JSON.stringify(geometry),
+      geometryType: 'esriGeometryEnvelope',
+      inSR: '4326',
+      spatialRel: 'esriSpatialRelIntersects',
+      where: '1=1',
+      outFields: 'TLINK_ID,FULLNAME_L,FULLNAME_R',
+      returnGeometry: 'true',
+      outSR: '4326',
+      resultOffset: String(offset),
+      resultRecordCount: '1000',
+      f: 'json'
+    });
+    const resp = await fetch(`${ROAD_URL}?${params}`);
+    if (!resp.ok) break;
+    const data = await resp.json();
+    if (data.error || !data.features || data.features.length === 0) break;
+    roads.push(...data.features);
+    if (!data.exceededTransferLimit) break;
+    offset += 1000;
+  }
+  return roads;
+}
+
+function computeCornerLots(properties, roads) {
+  // Flatten road polylines into segments with normalized names.
+  // At lat ~47.7°: 1 deg lat ≈ 111,139 m, 1 deg lon ≈ 74,900 m.
+  const LON_M = 74900, LAT_M = 111139;
+  const THRESHOLD_M = 25; // road centerline is ~5–15 m from parcel boundary
+
+  const segs = [];
+  for (const r of roads) {
+    const name = ((r.attributes.FULLNAME_L || r.attributes.FULLNAME_R) || '').trim().toUpperCase();
+    if (!name || !r.geometry) continue;
+    for (const path of r.geometry.paths) {
+      for (let i = 0; i < path.length - 1; i++) {
+        segs.push({
+          name,
+          x1: path[i][0] * LON_M, y1: path[i][1] * LAT_M,
+          x2: path[i + 1][0] * LON_M, y2: path[i + 1][1] * LAT_M
+        });
+      }
+    }
+  }
+
+  for (const p of properties) {
+    if (!p._rings) continue;
+
+    // Collect midpoints of each parcel edge
+    const mids = [];
+    for (const ring of p._rings) {
+      for (let i = 0; i < ring.length - 1; i++) {
+        mids.push([
+          ((ring[i][0] + ring[i + 1][0]) / 2) * LON_M,
+          ((ring[i][1] + ring[i + 1][1]) / 2) * LAT_M
+        ]);
+      }
+    }
+
+    const adjacent = new Set();
+    for (const [mx, my] of mids) {
+      for (const s of segs) {
+        if (pointSegDist(mx, my, s.x1, s.y1, s.x2, s.y2) < THRESHOLD_M) {
+          adjacent.add(s.name);
+        }
+      }
+    }
+
+    p.isCorner = adjacent.size >= 2;
+    p.CORNER_LOT = p.isCorner ? 'Y' : 'N';
+  }
+}
+
+function downloadCSV() {
+  const threshold = parseInt(document.getElementById('threshold').value);
+  const rows = [
+    ['PIN', 'Address', 'City', 'ZIP', 'Lot Sq Ft', 'Land Value', 'Improvement Value', 'Total Assessed Value', 'Pct of Median', 'Flagged (Below ' + threshold + '%)', 'Present Use', 'Corner Lot']
+  ];
+
+  const search = document.getElementById('searchBox').value.toLowerCase();
+  const flaggedOnly = document.getElementById('flaggedOnly').checked;
+
+  let data = allProperties.filter(p => {
+    if (flaggedOnly && !p.flagged) return false;
+    if (search && !p.ADDR_FULL.toLowerCase().includes(search) && !p.ZIP5.includes(search) && !p.CTYNAME.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  data.sort((a, b) => (a[sortCol] < b[sortCol] ? -1 : 1) * sortDir);
+
+  for (const p of data) {
+    rows.push([
+      p.PIN,
+      '"' + (p.ADDR_FULL || '').replace(/"/g, '""') + '"',
+      '"' + (p.CTYNAME || '').replace(/"/g, '""') + '"',
+      p.ZIP5,
+      p.LOTSQFT || 0,
+      p.APPRLNDVAL,
+      p.APPR_IMPR,
+      p.totalAssessed,
+      p.pctOfMedian.toFixed(2),
+      p.flagged ? 'YES' : 'NO',
+      '"' + (p.PREUSE_DESC || '').replace(/"/g, '""') + '"',
+      p.CORNER_LOT == null ? '' : p.isCorner ? 'YES' : 'NO'
+    ]);
+  }
+
+  const csv = rows.map(r => r.join(',')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'seattle_shoreline_property_tax_analysis.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
