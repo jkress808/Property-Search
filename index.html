@@ -73,7 +73,7 @@
 
 <header>
   <h1>Seattle / Shoreline Property Tax Analyzer</h1>
-  <p>Single-family homes with assessed values 15% or more below the area median</p>
+  <p>Residential properties with assessed values below the area median</p>
 </header>
 
 <div class="container">
@@ -106,7 +106,18 @@
         <span class="threshold-val" id="thresholdVal">15%</span>
       </div>
     </div>
-    <p class="note">Data source: King County GIS — KingCo_PropertyInfo MapServer (Layer 2 — Parcels). Single-family filter: present use description contains "Single Family" excluding vacant land.</p>
+    <div style="margin-top:16px;">
+      <label>Property Type</label>
+      <div style="display:flex;gap:20px;margin-top:6px;flex-wrap:wrap;">
+        <label style="font-size:0.88rem;color:#333;text-transform:none;letter-spacing:0;font-weight:400;">
+          <input type="radio" name="propType" value="singlefamily" checked> Single Family Only
+        </label>
+        <label style="font-size:0.88rem;color:#333;text-transform:none;letter-spacing:0;font-weight:400;">
+          <input type="radio" name="propType" value="residential"> All Residential (includes condos, townhouses, multi-family)
+        </label>
+      </div>
+    </div>
+    <p class="note">Data source: King County GIS — KingCo_PropertyInfo MapServer (Layer 2 — Parcels). Owner names and mailing addresses are not available via this API — use the <strong>Assessor Link</strong> column to look up each parcel on the King County eReal Property portal.</p>
   </div>
 
   <!-- Actions -->
@@ -177,6 +188,7 @@
             <th onclick="sortBy('flagged')">Flagged <span class="sort-arrow" id="sort-flagged"></span></th>
             <th onclick="sortBy('PREUSE_DESC')">Use Type <span class="sort-arrow" id="sort-PREUSE_DESC"></span></th>
             <th onclick="sortBy('CORNER_LOT')">Corner Lot <span class="sort-arrow" id="sort-CORNER_LOT"></span></th>
+            <th>Assessor / Owner Info</th>
           </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -218,14 +230,22 @@ function fmtNum(n) {
   return Math.round(n).toLocaleString();
 }
 
+function getWhereClause() {
+  const propType = document.querySelector('input[name="propType"]:checked').value;
+  if (propType === 'residential') {
+    return "PROPTYPE = 'R' AND PREUSE_DESC NOT LIKE '%Vacant%'";
+  }
+  return "PREUSE_DESC LIKE '%Single Family%' AND PREUSE_DESC NOT LIKE '%Vacant%'";
+}
+
 async function fetchBatch(geometry, offset, batchSize) {
   const params = new URLSearchParams({
     geometry: JSON.stringify(geometry),
     geometryType: 'esriGeometryEnvelope',
     inSR: '4326',
     spatialRel: 'esriSpatialRelIntersects',
-    where: "PREUSE_DESC LIKE '%Single Family%' AND PREUSE_DESC NOT LIKE '%Vacant%'",
-    outFields: 'PIN,ADDR_FULL,ADDR_HN,ZIP5,CTYNAME,APPRLNDVAL,APPR_IMPR,PREUSE_CODE,PREUSE_DESC,LOTSQFT',
+    where: getWhereClause(),
+    outFields: 'PIN,ADDR_FULL,ADDR_HN,ZIP5,CTYNAME,APPRLNDVAL,APPR_IMPR,PREUSE_CODE,PREUSE_DESC,LOTSQFT,PROPTYPE',
     returnGeometry: 'true',
     outSR: '4326',
     resultOffset: String(offset),
@@ -284,8 +304,9 @@ async function run() {
         const a = f.attributes;
         const land = a.APPRLNDVAL || 0;
         const impr = a.APPR_IMPR || 0;
+        const pin = a.PIN || '';
         allProperties.push({
-          PIN: a.PIN || '',
+          PIN: pin,
           ADDR_FULL: a.ADDR_FULL || '',
           CTYNAME: a.CTYNAME || '',
           ZIP5: a.ZIP5 || '',
@@ -295,6 +316,8 @@ async function run() {
           totalAssessed: land + impr,
           PREUSE_CODE: a.PREUSE_CODE || '',
           PREUSE_DESC: a.PREUSE_DESC || '',
+          PROPTYPE: a.PROPTYPE || '',
+          assessorUrl: pin ? `https://blue.kingcounty.com/Assessor/eRealProperty/Detail.aspx?ParcelNbr=${pin}` : '',
           CORNER_LOT: null,
           isCorner: false,
           _rings: f.geometry ? f.geometry.rings : null
@@ -312,7 +335,7 @@ async function run() {
     status.textContent = `Fetching road network for corner lot detection…`;
 
     if (allProperties.length === 0) {
-      throw new Error('No single-family properties found in the specified area. Try adjusting the boundary coordinates.');
+      throw new Error('No residential properties found in the specified area. Try adjusting the boundary coordinates or property type.');
     }
 
     const roads = await fetchAllRoads(geometry);
@@ -424,6 +447,7 @@ function renderTable() {
       <td>${flagBadge}</td>
       <td>${p.PREUSE_DESC || '—'}</td>
       <td>${p.CORNER_LOT === null ? '<span style="color:#aaa">—</span>' : p.isCorner ? '<span class="badge badge-green">Yes</span>' : 'No'}</td>
+      <td>${p.assessorUrl ? `<a href="${p.assessorUrl}" target="_blank" rel="noopener" style="color:#1a3a5c;font-size:0.8rem;">View Owner &amp; Mailing ↗</a>` : '—'}</td>
     `;
     tbody.appendChild(tr);
   }
@@ -516,9 +540,10 @@ function renderMapParcels(data) {
           <tr><td>Lot Sq Ft</td><td>${fmtNum(p.LOTSQFT)}</td></tr>
           <tr><td>Corner Lot</td><td>${p.CORNER_LOT === null ? '—' : p.isCorner ? 'Yes' : 'No'}</td></tr>
           ${flagLine}
+          ${p.assessorUrl ? `<tr><td colspan="2"><a href="${p.assessorUrl}" target="_blank" rel="noopener" style="color:#1a3a5c;">View Owner &amp; Mailing Address ↗</a></td></tr>` : ''}
         </table>
       </div>
-    `, { maxWidth: 260 });
+    `, { maxWidth: 280 });
 
     mapParcelGroup.addLayer(poly);
 
@@ -573,22 +598,29 @@ async function fetchAllRoads(geometry) {
 }
 
 function computeCornerLots(properties, roads) {
-  // Flatten road polylines into segments with normalized names.
   // At lat ~47.7°: 1 deg lat ≈ 111,139 m, 1 deg lon ≈ 74,900 m.
   const LON_M = 74900, LAT_M = 111139;
-  const THRESHOLD_M = 25; // road centerline is ~5–15 m from parcel boundary
+  const THRESHOLD_M = 25;   // max distance (m) from edge midpoint to road centerline
+  const MIN_EDGE_M = 6;     // ignore parcel edges shorter than this (meters)
+  const MIN_FRONTAGE_M = 10; // min total length of parcel edges that must face a street
+  const DIR_ALIGN = 0.5;    // min |cos θ| between edge direction and road direction
+                             // (~60° tolerance) — filters out T-intersection false positives
+                             // where a perpendicular dead-end road is near an edge
+  const DIR_PARALLEL = 0.9; // max |cos θ| between two street directions for them to be
+                             // "different enough" to form a real corner (~26° min turn)
 
+  // Build road segments with pre-normalised direction vectors
   const segs = [];
   for (const r of roads) {
     const name = ((r.attributes.FULLNAME_L || r.attributes.FULLNAME_R) || '').trim().toUpperCase();
     if (!name || !r.geometry) continue;
     for (const path of r.geometry.paths) {
       for (let i = 0; i < path.length - 1; i++) {
-        segs.push({
-          name,
-          x1: path[i][0] * LON_M, y1: path[i][1] * LAT_M,
-          x2: path[i + 1][0] * LON_M, y2: path[i + 1][1] * LAT_M
-        });
+        const x1 = path[i][0] * LON_M,     y1 = path[i][1] * LAT_M;
+        const x2 = path[i + 1][0] * LON_M, y2 = path[i + 1][1] * LAT_M;
+        const len = Math.hypot(x2 - x1, y2 - y1);
+        if (len < 1) continue;
+        segs.push({ name, x1, y1, x2, y2, dx: (x2 - x1) / len, dy: (y2 - y1) / len });
       }
     }
   }
@@ -596,35 +628,67 @@ function computeCornerLots(properties, roads) {
   for (const p of properties) {
     if (!p._rings) continue;
 
-    // Collect midpoints of each parcel edge
-    const mids = [];
+    // For each parcel edge, accumulate total frontage length and weighted direction
+    // per street — but only when the edge actually runs PARALLEL to the road.
+    // streetData: name → { totalLen, sumDx, sumDy }
+    const streetData = new Map();
+
     for (const ring of p._rings) {
       for (let i = 0; i < ring.length - 1; i++) {
-        mids.push([
-          ((ring[i][0] + ring[i + 1][0]) / 2) * LON_M,
-          ((ring[i][1] + ring[i + 1][1]) / 2) * LAT_M
-        ]);
-      }
-    }
+        const ex1 = ring[i][0] * LON_M,     ey1 = ring[i][1] * LAT_M;
+        const ex2 = ring[i + 1][0] * LON_M, ey2 = ring[i + 1][1] * LAT_M;
+        const eLen = Math.hypot(ex2 - ex1, ey2 - ey1);
+        if (eLen < MIN_EDGE_M) continue;
 
-    const adjacent = new Set();
-    for (const [mx, my] of mids) {
-      for (const s of segs) {
-        if (pointSegDist(mx, my, s.x1, s.y1, s.x2, s.y2) < THRESHOLD_M) {
-          adjacent.add(s.name);
+        const edx = (ex2 - ex1) / eLen;
+        const edy = (ey2 - ey1) / eLen;
+        const mx  = (ex1 + ex2) / 2;
+        const my  = (ey1 + ey2) / 2;
+
+        for (const s of segs) {
+          // Reject if the edge runs perpendicular to the road — this is the key fix:
+          // a parcel edge close to a T-stub's endpoint won't match because the edge
+          // runs along the main road while the stub runs the other way.
+          if (Math.abs(edx * s.dx + edy * s.dy) < DIR_ALIGN) continue;
+          if (pointSegDist(mx, my, s.x1, s.y1, s.x2, s.y2) >= THRESHOLD_M) continue;
+
+          const d = streetData.get(s.name) || { totalLen: 0, sumDx: 0, sumDy: 0 };
+          d.totalLen += eLen;
+          d.sumDx    += edx * eLen; // length-weighted direction accumulator
+          d.sumDy    += edy * eLen;
+          streetData.set(s.name, d);
         }
       }
     }
 
-    p.isCorner = adjacent.size >= 2;
-    p.CORNER_LOT = p.isCorner ? 'Y' : 'N';
+    // Only streets where the parcel has at least MIN_FRONTAGE_M of facing edge
+    const qualifying = [...streetData.entries()]
+      .filter(([, d]) => d.totalLen >= MIN_FRONTAGE_M);
+
+    // Corner lot: two qualifying streets whose average edge directions differ enough
+    // to form a real turn (not two parallel roads on opposite sides of the parcel).
+    let isCorner = false;
+    outer: for (let a = 0; a < qualifying.length; a++) {
+      const da = qualifying[a][1];
+      const la = Math.hypot(da.sumDx, da.sumDy);
+      for (let b = a + 1; b < qualifying.length; b++) {
+        const db = qualifying[b][1];
+        const lb = Math.hypot(db.sumDx, db.sumDy);
+        if (la === 0 || lb === 0) continue;
+        const dot = Math.abs((da.sumDx * db.sumDx + da.sumDy * db.sumDy) / (la * lb));
+        if (dot < DIR_PARALLEL) { isCorner = true; break outer; }
+      }
+    }
+
+    p.isCorner = isCorner;
+    p.CORNER_LOT = isCorner ? 'Y' : 'N';
   }
 }
 
 function downloadCSV() {
   const threshold = parseInt(document.getElementById('threshold').value);
   const rows = [
-    ['PIN', 'Address', 'City', 'ZIP', 'Lot Sq Ft', 'Land Value', 'Improvement Value', 'Total Assessed Value', 'Pct of Median', 'Flagged (Below ' + threshold + '%)', 'Present Use', 'Corner Lot']
+    ['PIN', 'Address', 'City', 'ZIP', 'Lot Sq Ft', 'Land Value', 'Improvement Value', 'Total Assessed Value', 'Pct of Median', 'Flagged (Below ' + threshold + '%)', 'Present Use', 'Corner Lot', 'Assessor URL (Owner/Mailing)']
   ];
 
   const search = document.getElementById('searchBox').value.toLowerCase();
@@ -651,7 +715,8 @@ function downloadCSV() {
       p.pctOfMedian.toFixed(2),
       p.flagged ? 'YES' : 'NO',
       '"' + (p.PREUSE_DESC || '').replace(/"/g, '""') + '"',
-      p.CORNER_LOT == null ? '' : p.isCorner ? 'YES' : 'NO'
+      p.CORNER_LOT == null ? '' : p.isCorner ? 'YES' : 'NO',
+      p.assessorUrl || ''
     ]);
   }
 
