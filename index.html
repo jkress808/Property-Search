@@ -805,6 +805,7 @@
             <th onclick="sortBy('pctOfMedian')">% of Median <span class="sort-arrow" id="sort-pctOfMedian"></span></th>
             <th onclick="sortBy('flagged')">Flagged <span class="sort-arrow" id="sort-flagged"></span></th>
             <th onclick="sortBy('PREUSE_DESC')">Use Type <span class="sort-arrow" id="sort-PREUSE_DESC"></span></th>
+            <th onclick="sortBy('ZONE_NAME')">Zoning <span class="sort-arrow" id="sort-ZONE_NAME"></span></th>
             <th onclick="sortBy('CORNER_LOT')">Corner Lot <span class="sort-arrow" id="sort-CORNER_LOT"></span></th>
             <th onclick="sortBy('ownerName')">Owner Name <span class="sort-arrow" id="sort-ownerName"></span></th>
           </tr>
@@ -870,7 +871,7 @@ async function fetchBatch(geometry, offset, batchSize) {
     inSR: '4326',
     spatialRel: 'esriSpatialRelIntersects',
     where: getWhereClause(),
-    outFields: 'PIN,ADDR_FULL,ADDR_HN,ZIP5,CTYNAME,APPRLNDVAL,APPR_IMPR,PREUSE_CODE,PREUSE_DESC,LOTSQFT,PROPTYPE',
+    outFields: 'PIN,ADDR_FULL,ADDR_HN,ZIP5,CTYNAME,APPRLNDVAL,APPR_IMPR,PREUSE_CODE,PREUSE_DESC,LOTSQFT,PROPTYPE,ZONE_NAME',
     returnGeometry: 'true',
     outSR: '4326',
     resultOffset: String(offset),
@@ -985,6 +986,7 @@ async function run() {
           PREUSE_CODE: a.PREUSE_CODE || '',
           PREUSE_DESC: a.PREUSE_DESC || '',
           PROPTYPE: a.PROPTYPE || '',
+          ZONE_NAME: a.ZONE_NAME || '',
           assessorUrl: pin ? `https://blue.kingcounty.com/Assessor/eRealProperty/Detail.aspx?ParcelNbr=${pin}` : '',
           CORNER_LOT: null,
           isCorner: false,
@@ -1121,6 +1123,7 @@ function renderTable() {
       <td class="${pctClass}">${pct}%</td>
       <td>${flagBadge}</td>
       <td>${p.PREUSE_DESC || '—'}</td>
+      <td>${p.ZONE_NAME || '—'}</td>
       <td>${p.CORNER_LOT === null ? '<span style="color:#aaa">—</span>' : p.isCorner ? '<span class="badge badge-green">Yes</span>' : 'No'}</td>
       <td>${p.ownerName || (p.assessorUrl ? `<a href="${p.assessorUrl}" target="_blank" rel="noopener" style="color:var(--accent);font-size:0.8rem;font-weight:500;">View ↗</a>` : '—')}</td>
     `;
@@ -1411,7 +1414,7 @@ function computeCornerLots(properties, roads) {
 function downloadCSV() {
   const threshold = parseInt(document.getElementById('threshold').value);
   const rows = [
-    ['PIN', 'Address', 'City', 'ZIP', 'Lot Sq Ft', 'Land Value', 'Improvement Value', 'Total Assessed Value', 'Pct of Median', 'Flagged (Below ' + threshold + '%)', 'Present Use', 'Corner Lot', 'Owner Name', 'Assessor URL']
+    ['PIN', 'Address', 'City', 'ZIP', 'Lot Sq Ft', 'Land Value', 'Improvement Value', 'Total Assessed Value', 'Pct of Median', 'Flagged (Below ' + threshold + '%)', 'Present Use', 'Zoning', 'Corner Lot', 'Owner Name', 'Assessor URL']
   ];
 
   const search = document.getElementById('searchBox').value.toLowerCase();
@@ -1438,6 +1441,7 @@ function downloadCSV() {
       p.pctOfMedian.toFixed(2),
       p.flagged ? 'YES' : 'NO',
       '"' + (p.PREUSE_DESC || '').replace(/"/g, '""') + '"',
+      '"' + (p.ZONE_NAME || '').replace(/"/g, '""') + '"',
       p.CORNER_LOT == null ? '' : p.isCorner ? 'YES' : 'NO',
       '"' + (p.ownerName || '').replace(/"/g, '""') + '"',
       p.assessorUrl || ''
