@@ -107,6 +107,38 @@
     border-radius: 2px;
   }
 
+  /* ── Settings section (no card background) ── */
+  .settings-section {
+    margin-bottom: 18px;
+    padding: 4px 0;
+  }
+  .settings-section h2 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: rgba(255,255,255,0.85);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+  }
+  .settings-section h2::before {
+    content: '';
+    display: inline-block;
+    width: 3px; height: 16px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+  .settings-section .note {
+    color: rgba(255,255,255,0.45);
+  }
+  .settings-section .proptype-section > .section-label {
+    color: rgba(255,255,255,0.6);
+  }
+
   /* ── Form elements ── */
   .bounds-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .field-group { display: flex; flex-direction: column; gap: 5px; }
@@ -613,7 +645,7 @@
 <div class="container">
 
   <!-- Configuration -->
-  <div class="card">
+  <div class="settings-section">
     <h2>Search Area &amp; Settings</h2>
 
     <div class="coord-grid">
