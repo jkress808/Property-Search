@@ -9,9 +9,9 @@
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
   :root {
-    --navy:       #0f2240;
-    --navy-mid:   #1a3a5c;
-    --navy-light: #254d77;
+    --navy:       #1a3a5c;
+    --navy-mid:   #254d77;
+    --navy-light: #2e6491;
     --accent:     #3b82f6;
     --accent-dim: #1d4ed8;
     --bg:         #eef1f6;
@@ -425,27 +425,28 @@
     margin-top: 2px;
     font-weight: 400;
   }
-  .coord-tile-body { background: var(--surface); padding: 12px 14px; }
+  .coord-tile-body { background: var(--navy); padding: 12px 14px; }
   .coord-tile-body input[type=number] {
     width: 100%;
     padding: 10px 13px;
-    border: 1.5px solid var(--border);
+    border: 1.5px solid rgba(255,255,255,0.15);
     border-radius: 8px;
     font-size: 1.05rem;
     font-family: 'Inter', monospace;
     font-variant-numeric: tabular-nums;
     font-weight: 600;
-    color: var(--navy-mid);
-    background: var(--surface-alt);
-    transition: border-color 0.15s, box-shadow 0.15s;
+    color: #fff;
+    background: rgba(255,255,255,0.1);
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
     margin: 0;
   }
   .coord-tile-body input[type=number]:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
-    background: var(--surface);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.3);
+    background: rgba(255,255,255,0.15);
   }
+  .coord-tile-body input[type=number]::placeholder { color: rgba(255,255,255,0.35); }
 
   /* ── Threshold tile ── */
   .threshold-tile {
@@ -475,7 +476,7 @@
     font-weight: 400;
   }
   .threshold-tile-body {
-    background: var(--surface);
+    background: var(--navy);
     padding: 14px 16px;
     display: flex;
     align-items: center;
@@ -489,7 +490,7 @@
   }
   .threshold-val {
     font-weight: 700;
-    color: var(--red);
+    color: #f87171;
     font-size: 1.15rem;
     min-width: 52px;
     text-align: right;
