@@ -117,7 +117,7 @@
         </label>
       </div>
     </div>
-    <p class="note">Data source: King County GIS — KingCo_PropertyInfo MapServer (Layer 2 — Parcels). Owner names and mailing addresses are not available via this API — use the <strong>Assessor Link</strong> column to look up each parcel on the King County eReal Property portal.</p>
+    <p class="note">Data source: King County GIS — KingCo_PropertyInfo MapServer (Layer 2 — Parcels + Layer 3 — Sales). Owner names are sourced from Layer 3 (properties sold in the last 3 years); properties without a recent sale show a link to the King County eReal Property portal. Mailing addresses are not available via the public GIS API — use the portal link for full details.</p>
   </div>
 
   <!-- Actions -->
@@ -188,7 +188,7 @@
             <th onclick="sortBy('flagged')">Flagged <span class="sort-arrow" id="sort-flagged"></span></th>
             <th onclick="sortBy('PREUSE_DESC')">Use Type <span class="sort-arrow" id="sort-PREUSE_DESC"></span></th>
             <th onclick="sortBy('CORNER_LOT')">Corner Lot <span class="sort-arrow" id="sort-CORNER_LOT"></span></th>
-            <th>Assessor / Owner Info</th>
+            <th onclick="sortBy('ownerName')">Owner Name <span class="sort-arrow" id="sort-ownerName"></span></th>
           </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -215,6 +215,7 @@
 <script>
 const SERVICE_URL = 'https://gismaps.kingcounty.gov/arcgis/rest/services/Property/KingCo_PropertyInfo/MapServer/2/query';
 const ROAD_URL    = 'https://gismaps.kingcounty.gov/arcgis/rest/services/Roads/KingCo_Roads/MapServer/6/query';
+const SALES_URL   = 'https://gismaps.kingcounty.gov/arcgis/rest/services/Property/KingCo_PropertyInfo/MapServer/3/query';
 
 let allProperties = [];
 let sortCol = 'pctOfMedian';
@@ -255,6 +256,49 @@ async function fetchBatch(geometry, offset, batchSize) {
   const resp = await fetch(`${SERVICE_URL}?${params}`);
   if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
   return await resp.json();
+}
+
+async function fetchSalesBatch(geometry, offset, batchSize) {
+  const params = new URLSearchParams({
+    geometry: JSON.stringify(geometry),
+    geometryType: 'esriGeometryEnvelope',
+    inSR: '4326',
+    spatialRel: 'esriSpatialRelIntersects',
+    where: '1=1',
+    outFields: 'PIN,buyername,SaleDate',
+    returnGeometry: 'false',
+    resultOffset: String(offset),
+    resultRecordCount: String(batchSize),
+    f: 'json'
+  });
+  const resp = await fetch(`${SALES_URL}?${params}`);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+  return await resp.json();
+}
+
+async function fetchAllSales(geometry) {
+  const salesByPin = new Map();
+  let offset = 0;
+  const batchSize = 1000;
+  while (true) {
+    const data = await fetchSalesBatch(geometry, offset, batchSize);
+    if (data.error || !data.features || data.features.length === 0) break;
+    for (const f of data.features) {
+      const a = f.attributes;
+      const pin = a.PIN || '';
+      const saleDate = a.SaleDate || 0;
+      const buyerName = (a.buyername || '').trim();
+      if (pin && buyerName) {
+        const existing = salesByPin.get(pin);
+        if (!existing || saleDate > existing.saleDate) {
+          salesByPin.set(pin, { buyerName, saleDate });
+        }
+      }
+    }
+    if (!data.exceededTransferLimit) break;
+    offset += batchSize;
+  }
+  return salesByPin;
 }
 
 async function run() {
@@ -342,6 +386,13 @@ async function run() {
     status.textContent = `Detecting corner lots against ${roads.length} road features…`;
     computeCornerLots(allProperties, roads);
 
+    status.textContent = `Fetching recent sales data for owner names…`;
+    const salesByPin = await fetchAllSales(geometry);
+    for (const p of allProperties) {
+      const sale = salesByPin.get(p.PIN);
+      p.ownerName = sale ? sale.buyerName : '';
+    }
+
     progressFill.style.width = '95%';
     status.textContent = `Processing ${total} properties…`;
 
@@ -414,7 +465,7 @@ function renderTable() {
   let data = allProperties.filter(p => {
     if (flaggedOnly && !p.flagged) return false;
     if (cornerOnly && !p.isCorner) return false;
-    if (search && !p.ADDR_FULL.toLowerCase().includes(search) && !p.ZIP5.includes(search) && !p.CTYNAME.toLowerCase().includes(search)) return false;
+    if (search && !p.ADDR_FULL.toLowerCase().includes(search) && !p.ZIP5.includes(search) && !p.CTYNAME.toLowerCase().includes(search) && !(p.ownerName || '').toLowerCase().includes(search)) return false;
     return true;
   });
 
@@ -447,7 +498,7 @@ function renderTable() {
       <td>${flagBadge}</td>
       <td>${p.PREUSE_DESC || '—'}</td>
       <td>${p.CORNER_LOT === null ? '<span style="color:#aaa">—</span>' : p.isCorner ? '<span class="badge badge-green">Yes</span>' : 'No'}</td>
-      <td>${p.assessorUrl ? `<a href="${p.assessorUrl}" target="_blank" rel="noopener" style="color:#1a3a5c;font-size:0.8rem;">View Owner &amp; Mailing ↗</a>` : '—'}</td>
+      <td>${p.ownerName || (p.assessorUrl ? `<a href="${p.assessorUrl}" target="_blank" rel="noopener" style="color:#1a3a5c;font-size:0.8rem;">View ↗</a>` : '—')}</td>
     `;
     tbody.appendChild(tr);
   }
@@ -540,7 +591,8 @@ function renderMapParcels(data) {
           <tr><td>Lot Sq Ft</td><td>${fmtNum(p.LOTSQFT)}</td></tr>
           <tr><td>Corner Lot</td><td>${p.CORNER_LOT === null ? '—' : p.isCorner ? 'Yes' : 'No'}</td></tr>
           ${flagLine}
-          ${p.assessorUrl ? `<tr><td colspan="2"><a href="${p.assessorUrl}" target="_blank" rel="noopener" style="color:#1a3a5c;">View Owner &amp; Mailing Address ↗</a></td></tr>` : ''}
+          ${p.ownerName ? `<tr><td>Owner</td><td>${p.ownerName}</td></tr>` : ''}
+          ${p.assessorUrl ? `<tr><td colspan="2"><a href="${p.assessorUrl}" target="_blank" rel="noopener" style="color:#1a3a5c;">Full Details ↗</a></td></tr>` : ''}
         </table>
       </div>
     `, { maxWidth: 280 });
@@ -735,7 +787,7 @@ function computeCornerLots(properties, roads) {
 function downloadCSV() {
   const threshold = parseInt(document.getElementById('threshold').value);
   const rows = [
-    ['PIN', 'Address', 'City', 'ZIP', 'Lot Sq Ft', 'Land Value', 'Improvement Value', 'Total Assessed Value', 'Pct of Median', 'Flagged (Below ' + threshold + '%)', 'Present Use', 'Corner Lot', 'Assessor URL (Owner/Mailing)']
+    ['PIN', 'Address', 'City', 'ZIP', 'Lot Sq Ft', 'Land Value', 'Improvement Value', 'Total Assessed Value', 'Pct of Median', 'Flagged (Below ' + threshold + '%)', 'Present Use', 'Corner Lot', 'Owner Name', 'Assessor URL']
   ];
 
   const search = document.getElementById('searchBox').value.toLowerCase();
@@ -763,6 +815,7 @@ function downloadCSV() {
       p.flagged ? 'YES' : 'NO',
       '"' + (p.PREUSE_DESC || '').replace(/"/g, '""') + '"',
       p.CORNER_LOT == null ? '' : p.isCorner ? 'YES' : 'NO',
+      '"' + (p.ownerName || '').replace(/"/g, '""') + '"',
       p.assessorUrl || ''
     ]);
   }
