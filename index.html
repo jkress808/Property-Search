@@ -193,15 +193,45 @@
 
   .btn-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
+  .actions-row {
+    margin-bottom: 18px;
+    padding: 4px 0;
+  }
+
+  .btn-white {
+    background: #fff;
+    color: var(--navy);
+    box-shadow: 0 2px 8px rgba(10,20,40,0.3);
+    border: none;
+  }
+  .btn-white:hover { background: #f0f6ff; box-shadow: 0 4px 14px rgba(10,20,40,0.4); }
+  .btn-white:disabled { background: rgba(255,255,255,0.45); color: rgba(26,58,92,0.5); box-shadow: none; cursor: not-allowed; }
+
+  .btn-white-green {
+    background: #fff;
+    color: var(--green);
+    box-shadow: 0 2px 8px rgba(10,20,40,0.3);
+    border: none;
+  }
+  .btn-white-green:hover { background: var(--green-dim); box-shadow: 0 4px 14px rgba(10,20,40,0.4); }
+
+  .btn-white-slate {
+    background: #fff;
+    color: #475569;
+    box-shadow: 0 2px 8px rgba(10,20,40,0.3);
+    border: none;
+  }
+  .btn-white-slate:hover { background: #f1f5f9; box-shadow: 0 4px 14px rgba(10,20,40,0.4); }
+
   /* ── Status & Progress ── */
   #status {
     font-size: 0.83rem;
-    color: var(--text-muted);
+    color: rgba(255,255,255,0.75);
     font-style: italic;
   }
   .progress-bar {
     height: 5px;
-    background: var(--surface-alt);
+    background: rgba(255,255,255,0.2);
     border-radius: 3px;
     margin-top: 14px;
     overflow: hidden;
@@ -677,11 +707,11 @@
   </div>
 
   <!-- Actions -->
-  <div class="card">
+  <div class="actions-row">
     <div class="btn-row">
-      <button class="btn btn-primary" id="fetchBtn" onclick="run()">&#9654; Fetch &amp; Analyze</button>
-      <button class="btn btn-success hidden" id="downloadBtn" onclick="downloadCSV()">&#8659; Download CSV</button>
-      <button class="btn btn-map hidden" id="mapBtn" onclick="toggleMap()">&#128205; Show Map</button>
+      <button class="btn btn-white" id="fetchBtn" onclick="run()">&#9654; Fetch &amp; Analyze</button>
+      <button class="btn btn-white-green hidden" id="downloadBtn" onclick="downloadCSV()">&#8659; Download CSV</button>
+      <button class="btn btn-white-slate hidden" id="mapBtn" onclick="toggleMap()">&#128205; Show Map</button>
       <span id="status"></span>
     </div>
     <div class="progress-bar hidden" id="progressBar">
