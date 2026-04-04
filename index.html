@@ -390,31 +390,171 @@
   .map-popup td     { padding: 2px 5px; font-size: 0.81rem; }
   .map-popup td:first-child { color: var(--text-muted); white-space: nowrap; }
 
-  /* ── Radio options ── */
-  .radio-group {
-    display: flex;
-    gap: 16px;
-    margin-top: 8px;
-    flex-wrap: wrap;
+  /* ── Coord tiles ── */
+  .coord-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
-  .radio-option {
+  .coord-tile {
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.15s;
+  }
+  .coord-tile:focus-within { box-shadow: 0 0 0 3px rgba(59,130,246,0.18), var(--shadow-md); }
+  .coord-tile-header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    padding: 13px 16px 11px;
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.86rem;
-    color: var(--text);
-    text-transform: none;
-    letter-spacing: 0;
-    font-weight: 400;
-    cursor: pointer;
-    padding: 6px 12px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    background: var(--surface-alt);
-    transition: all 0.15s;
+    gap: 10px;
   }
-  .radio-option:hover { border-color: var(--accent); background: #eff6ff; }
-  .radio-option input { accent-color: var(--accent); }
+  .coord-tile-icon { font-size: 1.1rem; flex-shrink: 0; }
+  .coord-tile-label {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.01em;
+    line-height: 1.2;
+  }
+  .coord-tile-sub {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.5);
+    margin-top: 2px;
+    font-weight: 400;
+  }
+  .coord-tile-body { background: var(--surface); padding: 12px 14px; }
+  .coord-tile-body input[type=number] {
+    width: 100%;
+    padding: 10px 13px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 1.05rem;
+    font-family: 'Inter', monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--navy-mid);
+    background: var(--surface-alt);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    margin: 0;
+  }
+  .coord-tile-body input[type=number]:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    background: var(--surface);
+  }
+
+  /* ── Threshold tile ── */
+  .threshold-tile {
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    margin-top: 12px;
+  }
+  .threshold-tile-header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    padding: 13px 16px 11px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .threshold-tile-label {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.01em;
+  }
+  .threshold-tile-sub {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.5);
+    margin-top: 2px;
+    font-weight: 400;
+  }
+  .threshold-tile-body {
+    background: var(--surface);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .threshold-tile-body input[type=range] {
+    flex: 1;
+    accent-color: var(--accent);
+    height: 6px;
+    cursor: pointer;
+  }
+  .threshold-val {
+    font-weight: 700;
+    color: var(--red);
+    font-size: 1.15rem;
+    min-width: 52px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Property type buttons ── */
+  .proptype-section { margin-top: 14px; }
+  .proptype-section > .section-label {
+    font-size: 0.73rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .proptype-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .proptype-btn {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    border: 2px solid var(--navy-mid);
+    background: var(--surface);
+    cursor: pointer;
+    transition: all 0.18s;
+    color: var(--navy-mid);
+    font-family: inherit;
+    text-align: left;
+  }
+  .proptype-btn:hover {
+    background: #e8f0f8;
+    border-color: var(--navy-light);
+    box-shadow: var(--shadow-md);
+  }
+  .proptype-btn.active {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    border-color: var(--navy);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(15,34,64,0.35);
+  }
+  .proptype-btn input[type=radio] { display: none; }
+  .proptype-btn-icon { font-size: 1.7rem; flex-shrink: 0; line-height: 1; }
+  .proptype-btn-text strong {
+    display: block;
+    font-size: 0.97rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .proptype-btn-text span {
+    display: block;
+    font-size: 0.75rem;
+    margin-top: 3px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+  .proptype-btn.active .proptype-btn-text span { color: rgba(255,255,255,0.6); }
 
   .hidden { display: none; }
 </style>
@@ -436,42 +576,94 @@
   <!-- Configuration -->
   <div class="card">
     <h2>Search Area &amp; Settings</h2>
-    <div class="bounds-grid">
-      <div class="field-group">
-        <label>North boundary latitude (NE 145th St ≈ 47.7225)</label>
-        <input type="number" id="ymax" value="47.7225" step="0.0001">
+
+    <div class="coord-grid">
+      <div class="coord-tile">
+        <div class="coord-tile-header">
+          <span class="coord-tile-icon">&#8593;</span>
+          <div>
+            <div class="coord-tile-label">North Boundary Latitude</div>
+            <div class="coord-tile-sub">NE 145th St &mdash; default 47.7225</div>
+          </div>
+        </div>
+        <div class="coord-tile-body">
+          <input type="number" id="ymax" value="47.7225" step="0.0001">
+        </div>
       </div>
-      <div class="field-group">
-        <label>South boundary latitude (NE 45th St ≈ 47.6612)</label>
-        <input type="number" id="ymin" value="47.6612" step="0.0001">
+      <div class="coord-tile">
+        <div class="coord-tile-header">
+          <span class="coord-tile-icon">&#8595;</span>
+          <div>
+            <div class="coord-tile-label">South Boundary Latitude</div>
+            <div class="coord-tile-sub">NE 45th St &mdash; default 47.6612</div>
+          </div>
+        </div>
+        <div class="coord-tile-body">
+          <input type="number" id="ymin" value="47.6612" step="0.0001">
+        </div>
       </div>
-      <div class="field-group">
-        <label>West boundary longitude (Roosevelt Way NE ≈ -122.3180)</label>
-        <input type="number" id="xmin" value="-122.3180" step="0.0001">
+      <div class="coord-tile">
+        <div class="coord-tile-header">
+          <span class="coord-tile-icon">&#8592;</span>
+          <div>
+            <div class="coord-tile-label">West Boundary Longitude</div>
+            <div class="coord-tile-sub">Roosevelt Way NE &mdash; default -122.3180</div>
+          </div>
+        </div>
+        <div class="coord-tile-body">
+          <input type="number" id="xmin" value="-122.3180" step="0.0001">
+        </div>
       </div>
-      <div class="field-group">
-        <label>East boundary longitude (Lake Washington / Lake City ≈ -122.2570)</label>
-        <input type="number" id="xmax" value="-122.2570" step="0.0001">
+      <div class="coord-tile">
+        <div class="coord-tile-header">
+          <span class="coord-tile-icon">&#8594;</span>
+          <div>
+            <div class="coord-tile-label">East Boundary Longitude</div>
+            <div class="coord-tile-sub">Lake Washington &mdash; default -122.2570</div>
+          </div>
+        </div>
+        <div class="coord-tile-body">
+          <input type="number" id="xmax" value="-122.2570" step="0.0001">
+        </div>
       </div>
     </div>
-    <div style="margin-top:16px;">
-      <label>Below-median threshold: homes flagged if assessed value is this far below median</label>
-      <div class="threshold-row">
+
+    <div class="threshold-tile">
+      <div class="threshold-tile-header">
+        <span class="coord-tile-icon">&#9660;</span>
+        <div>
+          <div class="threshold-tile-label">Below-Median Threshold</div>
+          <div class="threshold-tile-sub">Flag homes whose assessed value falls below this % of the area median</div>
+        </div>
+      </div>
+      <div class="threshold-tile-body">
         <input type="range" id="threshold" min="5" max="40" value="15" oninput="document.getElementById('thresholdVal').textContent=this.value+'%'">
         <span class="threshold-val" id="thresholdVal">15%</span>
       </div>
     </div>
-    <div style="margin-top:16px;">
-      <label>Property Type</label>
-      <div class="radio-group">
-        <label class="radio-option">
-          <input type="radio" name="propType" value="singlefamily" checked> Single Family Only
+
+    <div class="proptype-section">
+      <span class="section-label">Property Type</span>
+      <div class="proptype-group" id="proptypeGroup">
+        <label class="proptype-btn active" onclick="setPropType(this)">
+          <input type="radio" name="propType" value="singlefamily" checked>
+          <span class="proptype-btn-icon">&#127968;</span>
+          <div class="proptype-btn-text">
+            <strong>Single Family Only</strong>
+            <span>Detached single-family residences</span>
+          </div>
         </label>
-        <label class="radio-option">
-          <input type="radio" name="propType" value="residential"> All Residential (condos, townhouses, multi-family)
+        <label class="proptype-btn" onclick="setPropType(this)">
+          <input type="radio" name="propType" value="residential">
+          <span class="proptype-btn-icon">&#127963;</span>
+          <div class="proptype-btn-text">
+            <strong>All Residential</strong>
+            <span>Includes condos, townhouses &amp; multi-family</span>
+          </div>
         </label>
       </div>
     </div>
+
     <p class="note">Data source: King County GIS — KingCo_PropertyInfo MapServer (Layer 2 — Parcels + Layer 3 — Sales). Owner names are sourced from Layer 3 (properties sold in the last 3 years); properties without a recent sale show a link to the King County eReal Property portal. Mailing addresses are not available via the public GIS API — use the portal link for full details.</p>
   </div>
 
@@ -568,6 +760,12 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+function setPropType(clickedLabel) {
+  document.querySelectorAll('.proptype-btn').forEach(b => b.classList.remove('active'));
+  clickedLabel.classList.add('active');
+  clickedLabel.querySelector('input[type=radio]').checked = true;
+}
+
 const SERVICE_URL = 'https://gismaps.kingcounty.gov/arcgis/rest/services/Property/KingCo_PropertyInfo/MapServer/2/query';
 const ROAD_URL    = 'https://gismaps.kingcounty.gov/arcgis/rest/services/Roads/KingCo_Roads/MapServer/6/query';
 const SALES_URL   = 'https://gismaps.kingcounty.gov/arcgis/rest/services/Property/KingCo_PropertyInfo/MapServer/3/query';
