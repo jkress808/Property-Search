@@ -1625,6 +1625,8 @@ async function handleCsvFile(file) {
     const pinData = [];
     for (const row of rows) {
       let pin = (row[pinCol] || '').replace(/[^0-9]/g, '');
+      // King County PINs are 10 digits — zero-pad if shorter (leading zeros lost by Excel/CSV)
+      if (pin.length > 0 && pin.length < 10) pin = pin.padStart(10, '0');
       if (pin.length > 0) {
         pinData.push({
           pin,
