@@ -1319,12 +1319,6 @@ function renderMapParcels(data) {
 
 // -- Corner lot spatial detection --
 
-function pointSegDist(px, py, ax, ay, bx, by) {
-  const dx = bx - ax, dy = by - ay;
-  if (dx === 0 && dy === 0) return Math.hypot(px - ax, py - ay);
-  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)));
-  return Math.hypot(px - ax - t * dx, py - ay - t * dy);
-}
 
 async function fetchAllRoads(geometry) {
   const roads = [];
@@ -1354,136 +1348,122 @@ async function fetchAllRoads(geometry) {
   return roads;
 }
 
-// Returns [minDist, midX, midY] — closest approach between two road segments and where it is.
-// Used to find where two streets cross (or nearly cross) near a parcel.
-function segSegClosest(sa, sb) {
-  const dax = sa.x2 - sa.x1, day = sa.y2 - sa.y1;
-  const dbx = sb.x2 - sb.x1, dby = sb.y2 - sb.y1;
-  const denom = dax * dby - day * dbx;
-  let px, py, qx, qy;
-  if (Math.abs(denom) > 1e-10) {
-    const t = Math.max(0, Math.min(1, ((sb.x1 - sa.x1) * dby - (sb.y1 - sa.y1) * dbx) / denom));
-    const s = Math.max(0, Math.min(1, ((sb.x1 - sa.x1) * day - (sb.y1 - sa.y1) * dax) / denom));
-    px = sa.x1 + t * dax; py = sa.y1 + t * day;
-    qx = sb.x1 + s * dbx; qy = sb.y1 + s * dby;
-  } else {
-    px = (sa.x1 + sa.x2) / 2; py = (sa.y1 + sa.y2) / 2;
-    qx = (sb.x1 + sb.x2) / 2; qy = (sb.y1 + sb.y2) / 2;
-  }
-  return [Math.hypot(px - qx, py - qy), (px + qx) / 2, (py + qy) / 2];
-}
 
 function computeCornerLots(properties, roads) {
   // At lat ~47.7°: 1 deg lat ≈ 111,139 m, 1 deg lon ≈ 74,900 m.
   const LON_M = 74900, LAT_M = 111139;
+  const BUFFER = 25; // 25m buffer for matching roads to parcels
 
-  // --- Tightened thresholds ---
-  const THRESHOLD_M    = 12;  // max distance (m) from edge midpoint to road centerline
-                               // (residential streets ~9m wide → centerline ~5–8m from parcel edge)
-  const MIN_EDGE_M     = 10;  // ignore parcel edges shorter than 10 m (~33 ft)
-  const MIN_FRONTAGE_M = 22;  // each street needs ≥22 m (~72 ft) of facing parcel edge
-  const DIR_ALIGN      = 0.82; // min |cos θ| edge-to-road direction (within ~35°)
-  const DIR_PARALLEL   = 0.85; // max |cos θ| between two street dirs — need >32° turn
-  const CROSS_DIST     = 10;  // the two streets' road segments must come within 10 m of each other
-  const VERTEX_DIST    = 16;  // a parcel VERTEX must be within 16 m of that crossing point
-
-  // Build road segments with pre-normalised direction vectors
-  const segs = [];
+  // Build road segments in meter-scale coordinates
+  const roadSegs = []; // { name, seg: [[x1,y1],[x2,y2]], env }
   for (const r of roads) {
-    const name = ((r.attributes.FULLNAME_L || r.attributes.FULLNAME_R) || '').trim().toUpperCase();
+    const name = ((r.attributes.FULLNAME_L || r.attributes.FULLNAME_R) || '').trim();
     if (!name || !r.geometry) continue;
     for (const path of r.geometry.paths) {
       for (let i = 0; i < path.length - 1; i++) {
         const x1 = path[i][0] * LON_M,     y1 = path[i][1] * LAT_M;
         const x2 = path[i + 1][0] * LON_M, y2 = path[i + 1][1] * LAT_M;
-        const len = Math.hypot(x2 - x1, y2 - y1);
-        if (len < 1) continue;
-        segs.push({ name, x1, y1, x2, y2, dx: (x2 - x1) / len, dy: (y2 - y1) / len });
+        const seg = [[x1, y1], [x2, y2]];
+        const env = {
+          xmin: Math.min(x1, x2), ymin: Math.min(y1, y2),
+          xmax: Math.max(x1, x2), ymax: Math.max(y1, y2)
+        };
+        roadSegs.push({ name, seg, env });
       }
     }
+  }
+
+  // Build spatial index (200m grid cells)
+  const GRID_CELL = 200;
+  const roadIndex = new Map();
+  for (const road of roadSegs) {
+    const cxMin = Math.floor((road.env.xmin - BUFFER) / GRID_CELL);
+    const cxMax = Math.floor((road.env.xmax + BUFFER) / GRID_CELL);
+    const cyMin = Math.floor((road.env.ymin - BUFFER) / GRID_CELL);
+    const cyMax = Math.floor((road.env.ymax + BUFFER) / GRID_CELL);
+    for (let cx = cxMin; cx <= cxMax; cx++) {
+      for (let cy = cyMin; cy <= cyMax; cy++) {
+        const key = cx + ',' + cy;
+        if (!roadIndex.has(key)) roadIndex.set(key, []);
+        roadIndex.get(key).push(road);
+      }
+    }
+  }
+
+  // Helper: segment-to-segment distance
+  function segToSegDist(p1, p2, p3, p4) {
+    const d1 = ptSegDist(p1, p3, p4);
+    const d2 = ptSegDist(p2, p3, p4);
+    const d3 = ptSegDist(p3, p1, p2);
+    const d4 = ptSegDist(p4, p1, p2);
+    return Math.min(d1, d2, d3, d4);
+  }
+  function ptSegDist(p, a, b) {
+    const dx = b[0] - a[0], dy = b[1] - a[1];
+    const lenSq = dx * dx + dy * dy;
+    if (lenSq === 0) return Math.hypot(p[0] - a[0], p[1] - a[1]);
+    let t = ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / lenSq;
+    t = Math.max(0, Math.min(1, t));
+    return Math.hypot(p[0] - (a[0] + t * dx), p[1] - (a[1] + t * dy));
+  }
+
+  // Helper: check if road segment is near parcel polygon
+  function segNearPolygon(seg, rings, buffer) {
+    for (const ring of rings) {
+      for (let i = 0; i < ring.length - 1; i++) {
+        if (segToSegDist(seg[0], seg[1], ring[i], ring[i + 1]) <= buffer) return true;
+      }
+    }
+    return false;
   }
 
   for (const p of properties) {
     if (!p._rings) continue;
 
-    // For each parcel edge, find roads it faces (direction-aligned and close).
-    // Track: total facing length, weighted average direction, and which road segments matched.
-    // streetData: name → { totalLen, sumDx, sumDy, segSet }
-    const streetData = new Map();
+    // Convert parcel rings to meter-scale coordinates
+    const mRings = p._rings.map(ring => ring.map(([lon, lat]) => [lon * LON_M, lat * LAT_M]));
 
-    for (const ring of p._rings) {
-      for (let i = 0; i < ring.length - 1; i++) {
-        const ex1 = ring[i][0] * LON_M,     ey1 = ring[i][1] * LAT_M;
-        const ex2 = ring[i + 1][0] * LON_M, ey2 = ring[i + 1][1] * LAT_M;
-        const eLen = Math.hypot(ex2 - ex1, ey2 - ey1);
-        if (eLen < MIN_EDGE_M) continue;
+    // Compute parcel envelope in meters
+    let pxmin = Infinity, pymin = Infinity, pxmax = -Infinity, pymax = -Infinity;
+    for (const ring of mRings) {
+      for (const [x, y] of ring) {
+        pxmin = Math.min(pxmin, x); pymin = Math.min(pymin, y);
+        pxmax = Math.max(pxmax, x); pymax = Math.max(pymax, y);
+      }
+    }
+    const benv = {
+      xmin: pxmin - BUFFER, ymin: pymin - BUFFER,
+      xmax: pxmax + BUFFER, ymax: pymax + BUFFER
+    };
 
-        const edx = (ex2 - ex1) / eLen;
-        const edy = (ey2 - ey1) / eLen;
-        const mx  = (ex1 + ex2) / 2;
-        const my  = (ey1 + ey2) / 2;
+    // Get candidate roads from spatial index
+    const cxMin = Math.floor(benv.xmin / GRID_CELL);
+    const cxMax = Math.floor(benv.xmax / GRID_CELL);
+    const cyMin = Math.floor(benv.ymin / GRID_CELL);
+    const cyMax = Math.floor(benv.ymax / GRID_CELL);
 
-        for (const s of segs) {
-          // Edge must run roughly parallel to the road (filters T-stub false positives)
-          if (Math.abs(edx * s.dx + edy * s.dy) < DIR_ALIGN) continue;
-          if (pointSegDist(mx, my, s.x1, s.y1, s.x2, s.y2) >= THRESHOLD_M) continue;
-
-          if (!streetData.has(s.name)) {
-            streetData.set(s.name, { totalLen: 0, sumDx: 0, sumDy: 0, segSet: new Set() });
-          }
-          const d = streetData.get(s.name);
-          d.totalLen += eLen;
-          d.sumDx    += edx * eLen;
-          d.sumDy    += edy * eLen;
-          d.segSet.add(s);
-        }
+    const candidateRoads = new Set();
+    for (let cx = cxMin; cx <= cxMax; cx++) {
+      for (let cy = cyMin; cy <= cyMax; cy++) {
+        const cell = roadIndex.get(cx + ',' + cy);
+        if (cell) cell.forEach(r => candidateRoads.add(r));
       }
     }
 
-    // Streets with sufficient frontage
-    const qualifying = [...streetData.entries()]
-      .filter(([, d]) => d.totalLen >= MIN_FRONTAGE_M);
-
-    // Collect parcel vertices for the crossing-point proximity check
-    const vertices = [];
-    for (const ring of p._rings) {
-      for (const [lon, lat] of ring) vertices.push([lon * LON_M, lat * LAT_M]);
-    }
-
-    // A true corner lot requires ALL THREE conditions for some pair of streets:
-    //  1. Streets face different directions (angle check)
-    //  2. Their road segments actually cross or come very close to each other (crossing check)
-    //  3. A parcel vertex sits at/near that crossing point (vertex check)
-    let isCorner = false;
-    outer: for (let a = 0; a < qualifying.length; a++) {
-      const [, da] = qualifying[a];
-      const la = Math.hypot(da.sumDx, da.sumDy);
-      for (let b = a + 1; b < qualifying.length; b++) {
-        const [, db] = qualifying[b];
-        const lb = Math.hypot(db.sumDx, db.sumDy);
-        if (la === 0 || lb === 0) continue;
-
-        // 1. Angle check
-        const dot = Math.abs((da.sumDx * db.sumDx + da.sumDy * db.sumDy) / (la * lb));
-        if (dot >= DIR_PARALLEL) continue;
-
-        // 2 & 3. For each pair of road segments from the two streets, find their
-        //        closest approach; if it's tight enough AND a parcel vertex is nearby → corner.
-        for (const sa of da.segSet) {
-          for (const sb of db.segSet) {
-            const [dist, cx, cy] = segSegClosest(sa, sb);
-            if (dist > CROSS_DIST) continue;
-            for (const [vx, vy] of vertices) {
-              if (Math.hypot(vx - cx, vy - cy) < VERTEX_DIST) {
-                isCorner = true;
-                break outer;
-              }
-            }
-          }
-        }
+    // Check each candidate road segment against parcel polygon
+    const touchingStreets = new Set();
+    for (const road of candidateRoads) {
+      const upper = road.name.toUpperCase();
+      if (touchingStreets.has(upper)) continue;
+      // Quick envelope overlap check
+      if (benv.xmin > road.env.xmax || benv.xmax < road.env.xmin ||
+          benv.ymin > road.env.ymax || benv.ymax < road.env.ymin) continue;
+      if (segNearPolygon(road.seg, mRings, BUFFER)) {
+        touchingStreets.add(upper);
       }
     }
 
+    const isCorner = touchingStreets.size >= 2;
     p.isCorner = isCorner;
     p.CORNER_LOT = isCorner ? 'Y' : 'N';
   }
