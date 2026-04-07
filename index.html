@@ -628,6 +628,57 @@
   .proptype-btn.active .proptype-btn-text span { color: rgba(255,255,255,0.6); }
 
   .hidden { display: none; }
+
+  /* ── CSV Upload ── */
+  .upload-zone {
+    border: 2px dashed rgba(255,255,255,0.3);
+    border-radius: 12px;
+    padding: 32px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    background: rgba(255,255,255,0.04);
+  }
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(59,130,246,0.08);
+  }
+  .upload-zone-icon { font-size: 2rem; margin-bottom: 8px; }
+  .upload-zone-text { color: rgba(255,255,255,0.7); font-size: 0.9rem; font-weight: 500; }
+  .upload-zone-sub  { color: rgba(255,255,255,0.4); font-size: 0.78rem; margin-top: 6px; }
+  .upload-file-input { display: none; }
+
+  #csvMap {
+    height: 560px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+  }
+  .csv-stats {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    margin-bottom: 14px;
+    font-size: 0.85rem;
+  }
+  .csv-stat {
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .csv-stat .num { font-weight: 700; font-size: 1.1rem; color: var(--navy-mid); }
+  .csv-stat .lbl { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .csv-stat.highlight { border-color: rgba(59,130,246,0.4); background: #eff6ff; }
+  .csv-stat.highlight .num { color: var(--accent); }
+
+  .csv-legend {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    margin-top: 12px;
+    font-size: 0.79rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .csv-legend span { display: flex; align-items: center; gap: 6px; }
 </style>
 </head>
 <body>
@@ -813,6 +864,36 @@
       </table>
     </div>
     <p class="note" id="rowCount"></p>
+  </div>
+
+  <!-- CSV Upload -->
+  <div class="settings-section">
+    <h2>Upload Parcel CSV</h2>
+    <div class="upload-zone" id="uploadZone">
+      <div class="upload-zone-icon">&#128196;</div>
+      <div class="upload-zone-text">Drop a CSV file here or click to browse</div>
+      <div class="upload-zone-sub">Auto-detects PIN / APN column. All parcels will be highlighted on the map below.</div>
+      <input type="file" accept=".csv" class="upload-file-input" id="csvFileInput">
+    </div>
+    <div class="btn-row" style="margin-top:12px;">
+      <span id="csvStatus" style="font-size:0.83rem;color:rgba(255,255,255,0.75);font-style:italic;"></span>
+    </div>
+    <div class="progress-bar hidden" id="csvProgressBar" style="margin-top:10px;">
+      <div class="progress-fill" id="csvProgressFill"></div>
+    </div>
+    <div id="csvErrorBox" class="error-box hidden" style="margin-top:10px;"></div>
+  </div>
+
+  <div class="card hidden" id="csvMapCard">
+    <h2>Uploaded Parcels Map</h2>
+    <div class="csv-stats" id="csvStats"></div>
+    <div id="csvMap"></div>
+    <div class="csv-legend">
+      <span><span class="legend-swatch" style="background:#3b82f6;opacity:0.7;"></span> Found in GIS</span>
+      <span><span class="legend-swatch" style="background:#f59e0b;opacity:0.7;"></span> Flagged (if analyzed)</span>
+      <span><span class="legend-swatch" style="background:transparent;border:2.5px solid #ef4444;"></span> Not found / no geometry</span>
+    </div>
+    <p class="note" id="csvMapCount"></p>
   </div>
 
   <!-- Map -->
@@ -1406,6 +1487,295 @@ function computeCornerLots(properties, roads) {
     p.isCorner = isCorner;
     p.CORNER_LOT = isCorner ? 'Y' : 'N';
   }
+}
+
+// ── CSV Upload & Parcel Map ──
+
+let csvMap = null;
+let csvParcelGroup = null;
+
+(function initCsvUpload() {
+  const zone = document.getElementById('uploadZone');
+  const input = document.getElementById('csvFileInput');
+
+  zone.addEventListener('click', () => input.click());
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleCsvFile(e.dataTransfer.files[0]);
+  });
+  input.addEventListener('change', () => { if (input.files.length) handleCsvFile(input.files[0]); });
+})();
+
+function parseCSV(text) {
+  const lines = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '"') {
+      if (inQuotes && text[i + 1] === '"') { current += '"'; i++; }
+      else inQuotes = !inQuotes;
+    } else if ((ch === '\n' || ch === '\r') && !inQuotes) {
+      if (current.length || lines.length) lines.push(current);
+      current = '';
+      if (ch === '\r' && text[i + 1] === '\n') i++;
+    } else {
+      current += ch;
+    }
+  }
+  if (current.length) lines.push(current);
+
+  if (lines.length === 0) return [];
+
+  // Split each line by commas, respecting quotes
+  function splitRow(line) {
+    const cols = [];
+    let cur = '';
+    let q = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        if (q && line[i + 1] === '"') { cur += '"'; i++; }
+        else q = !q;
+      } else if (ch === ',' && !q) {
+        cols.push(cur.trim());
+        cur = '';
+      } else {
+        cur += ch;
+      }
+    }
+    cols.push(cur.trim());
+    return cols;
+  }
+
+  const headers = splitRow(lines[0]);
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const vals = splitRow(lines[i]);
+    const obj = {};
+    for (let j = 0; j < headers.length; j++) {
+      obj[headers[j]] = vals[j] || '';
+    }
+    rows.push(obj);
+  }
+  return rows;
+}
+
+function detectPinColumn(headers) {
+  const candidates = [
+    'PIN', 'pin', 'Pin',
+    'APN - UNFORMATTED', 'APN', 'apn',
+    'APN - FORMATTED',
+    'PARCEL', 'Parcel', 'parcel',
+    'PARCEL_ID', 'ParcelID', 'parcel_id',
+    'TAX_ID', 'TaxID'
+  ];
+  for (const c of candidates) {
+    if (headers.includes(c)) return c;
+  }
+  // Fuzzy: find first header containing "pin" or "apn" or "parcel"
+  const lower = headers.map(h => h.toLowerCase());
+  for (const kw of ['pin', 'apn', 'parcel']) {
+    const idx = lower.findIndex(h => h.includes(kw));
+    if (idx !== -1) return headers[idx];
+  }
+  return null;
+}
+
+function detectAddressColumn(headers) {
+  const candidates = [
+    'Address', 'ADDR_FULL', 'SITUS STREET ADDRESS',
+    'address', 'ADDRESS', 'Street Address', 'STREET_ADDRESS'
+  ];
+  for (const c of candidates) {
+    if (headers.includes(c)) return c;
+  }
+  const lower = headers.map(h => h.toLowerCase());
+  const idx = lower.findIndex(h => h.includes('address') || h.includes('situs'));
+  return idx !== -1 ? headers[idx] : null;
+}
+
+async function handleCsvFile(file) {
+  const status = document.getElementById('csvStatus');
+  const progressBar = document.getElementById('csvProgressBar');
+  const progressFill = document.getElementById('csvProgressFill');
+  const errorBox = document.getElementById('csvErrorBox');
+
+  errorBox.classList.add('hidden');
+  progressBar.classList.remove('hidden');
+  progressFill.style.width = '5%';
+  status.textContent = 'Reading CSV file...';
+
+  try {
+    const text = await file.text();
+    const rows = parseCSV(text);
+    if (rows.length === 0) throw new Error('CSV file is empty or could not be parsed.');
+
+    const headers = Object.keys(rows[0]);
+    const pinCol = detectPinColumn(headers);
+    if (!pinCol) throw new Error('Could not find a PIN/APN/Parcel column. Found columns: ' + headers.slice(0, 10).join(', '));
+
+    const addrCol = detectAddressColumn(headers);
+
+    // Extract and clean PINs
+    const pinData = [];
+    for (const row of rows) {
+      let pin = (row[pinCol] || '').replace(/[^0-9]/g, '');
+      if (pin.length > 0) {
+        pinData.push({
+          pin,
+          address: addrCol ? (row[addrCol] || '').trim() : '',
+          row
+        });
+      }
+    }
+
+    if (pinData.length === 0) throw new Error('No valid PINs found in the "' + pinCol + '" column.');
+
+    status.textContent = `Found ${pinData.length} parcels. Fetching geometries from King County GIS...`;
+    progressFill.style.width = '15%';
+
+    // Batch query GIS for geometries — query 50 PINs at a time
+    const BATCH = 50;
+    const foundParcels = new Map();
+    for (let i = 0; i < pinData.length; i += BATCH) {
+      const batch = pinData.slice(i, i + BATCH);
+      const pinList = batch.map(p => `'${p.pin}'`).join(',');
+      const whereClause = `PIN IN (${pinList})`;
+
+      const params = new URLSearchParams({
+        where: whereClause,
+        outFields: 'PIN,ADDR_FULL,CTYNAME,ZIP5,APPRLNDVAL,APPR_IMPR,LOTSQFT,PREUSE_DESC',
+        returnGeometry: 'true',
+        outSR: '4326',
+        f: 'json'
+      });
+
+      try {
+        const resp = await fetch(`${SERVICE_URL}?${params}`);
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data.features) {
+            for (const f of data.features) {
+              foundParcels.set(f.attributes.PIN, f);
+            }
+          }
+        }
+      } catch (e) {
+        // Continue with remaining batches
+      }
+
+      const pct = 15 + ((i + BATCH) / pinData.length) * 75;
+      progressFill.style.width = Math.min(pct, 90) + '%';
+      status.textContent = `Fetching geometries... ${Math.min(i + BATCH, pinData.length)} / ${pinData.length}`;
+    }
+
+    progressFill.style.width = '95%';
+    status.textContent = 'Rendering map...';
+
+    renderCsvMap(pinData, foundParcels);
+
+    progressFill.style.width = '100%';
+    status.textContent = `Done — ${foundParcels.size} of ${pinData.length} parcels found and mapped from "${file.name}".`;
+
+  } catch (err) {
+    errorBox.classList.remove('hidden');
+    errorBox.innerHTML = '&#9888; ' + err.message;
+    status.textContent = '';
+    progressBar.classList.add('hidden');
+  }
+}
+
+function initCsvMap() {
+  if (csvMap) return;
+  csvMap = L.map('csvMap');
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 20
+  }).addTo(csvMap);
+  csvParcelGroup = L.layerGroup().addTo(csvMap);
+}
+
+function renderCsvMap(pinData, foundParcels) {
+  document.getElementById('csvMapCard').classList.remove('hidden');
+  initCsvMap();
+  csvParcelGroup.clearLayers();
+
+  const bounds = [];
+  let foundCount = 0;
+  let notFoundCount = 0;
+
+  for (const pd of pinData) {
+    const feature = foundParcels.get(pd.pin);
+    if (feature && feature.geometry && feature.geometry.rings) {
+      foundCount++;
+      const a = feature.attributes;
+      const rings = feature.geometry.rings;
+      const latlngs = rings.map(ring => ring.map(([lon, lat]) => [lat, lon]));
+
+      const land = a.APPRLNDVAL || 0;
+      const impr = a.APPR_IMPR || 0;
+      const total = land + impr;
+
+      const poly = L.polygon(latlngs, {
+        color: '#3b82f6',
+        weight: 2.5,
+        fillColor: '#3b82f6',
+        fillOpacity: 0.4
+      });
+
+      const addr = a.ADDR_FULL || pd.address || '—';
+      const assessorUrl = pd.pin ? `https://blue.kingcounty.com/Assessor/eRealProperty/Detail.aspx?ParcelNbr=${pd.pin}` : '';
+
+      poly.bindPopup(`
+        <div class="map-popup">
+          <strong>${addr}</strong>
+          <table>
+            <tr><td>PIN</td><td><strong>${pd.pin}</strong></td></tr>
+            ${a.CTYNAME ? `<tr><td>City / ZIP</td><td>${a.CTYNAME} ${a.ZIP5 || ''}</td></tr>` : ''}
+            ${total ? `<tr><td>Total Assessed</td><td>${fmt$(total)}</td></tr>` : ''}
+            ${a.LOTSQFT ? `<tr><td>Lot Sq Ft</td><td>${fmtNum(a.LOTSQFT)}</td></tr>` : ''}
+            ${a.PREUSE_DESC ? `<tr><td>Use Type</td><td>${(a.PREUSE_DESC || '').trim()}</td></tr>` : ''}
+            ${assessorUrl ? `<tr><td colspan="2"><a href="${assessorUrl}" target="_blank" rel="noopener" style="color:#2563eb;font-weight:500;">Full Details ↗</a></td></tr>` : ''}
+          </table>
+        </div>
+      `, { maxWidth: 280 });
+
+      csvParcelGroup.addLayer(poly);
+
+      for (const ring of rings) {
+        for (const [lon, lat] of ring) bounds.push([lat, lon]);
+      }
+    } else {
+      notFoundCount++;
+    }
+  }
+
+  // Fit map to parcels
+  if (bounds.length > 0) {
+    csvMap.fitBounds(bounds, { padding: [30, 30] });
+  } else {
+    // Default to King County center
+    csvMap.setView([47.5, -122.2], 10);
+  }
+
+  // Stats
+  const statsEl = document.getElementById('csvStats');
+  statsEl.innerHTML = `
+    <div class="csv-stat"><div><div class="num">${pinData.length}</div><div class="lbl">Total in CSV</div></div></div>
+    <div class="csv-stat highlight"><div><div class="num">${foundCount}</div><div class="lbl">Found & Mapped</div></div></div>
+    ${notFoundCount > 0 ? `<div class="csv-stat"><div><div class="num" style="color:var(--red)">${notFoundCount}</div><div class="lbl">Not Found</div></div></div>` : ''}
+  `;
+
+  document.getElementById('csvMapCount').textContent =
+    `${foundCount} parcels displayed. ${notFoundCount > 0 ? notFoundCount + ' PINs not found in King County GIS.' : 'All PINs resolved.'}`;
+
+  // Force Leaflet to recalc size after card becomes visible
+  setTimeout(() => csvMap.invalidateSize(), 200);
 }
 
 function downloadCSV() {
