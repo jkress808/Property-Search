@@ -198,74 +198,192 @@ function loadParcels(file, zone) {
 
 function loadSales(file, zone) {
   const prog = document.getElementById('progress');
-  prog.textContent = 'Loading sales file (2.4M rows, may take a moment)...';
-  const reader = new FileReader();
-  reader.onload = e => {
-    const rows = parseCsv(e.target.result);
-    const hdr = rows[0].map(h => h.toLowerCase().trim());
-    const iMaj = hdr.indexOf('major'), iMin = hdr.indexOf('minor');
-    const iBuyer = hdr.indexOf('buyername'), iSeller = hdr.indexOf('sellername');
-    const iDate = hdr.indexOf('documentdate'), iPrice = hdr.indexOf('saleprice');
-    if (iMaj === -1 || iMin === -1) { prog.textContent = 'Sales file missing Major/Minor columns!'; return; }
-    salesMap = {};
-    for (let r = 1; r < rows.length; r++) {
-      const row = rows[r];
-      const pin = normPin(row[iMaj] + row[iMin]);
-      if (!pin) continue;
-      const date = row[iDate] || '';
-      // Keep most recent sale
-      if (!salesMap[pin] || date > salesMap[pin].date) {
-        salesMap[pin] = {
-          buyer: (row[iBuyer] || '').trim(),
-          seller: (row[iSeller] || '').trim(),
-          date: date,
-          price: row[iPrice] || ''
-        };
+  prog.textContent = 'Loading sales file (streaming)...';
+  salesMap = {};
+  const sizeMB = (file.size / 1048576).toFixed(0);
+  let headerParsed = false, iMaj, iMin, iBuyer, iSeller, iDate, iPrice;
+  let leftover = '';
+  let rowCount = 0;
+  let bytesRead = 0;
+
+  function parseLine(line) {
+    const row = [];
+    let i = 0, len = line.length;
+    while (i < len) {
+      if (line[i] === '"') {
+        i++;
+        let val = '';
+        while (i < len) {
+          if (line[i] === '"') {
+            if (i + 1 < len && line[i+1] === '"') { val += '"'; i += 2; }
+            else { i++; break; }
+          } else { val += line[i]; i++; }
+        }
+        row.push(val.trim());
+        if (i < len && line[i] === ',') i++;
+      } else {
+        let end = i;
+        while (end < len && line[end] !== ',') end++;
+        row.push(line.substring(i, end).trim());
+        i = end;
+        if (i < len && line[i] === ',') i++;
       }
     }
-    zone.classList.add('loaded');
-    document.getElementById('infoS').textContent = `${file.name} - ${Object.keys(salesMap).length.toLocaleString()} unique PINs indexed`;
-    prog.textContent = '';
-    checkReady();
-  };
-  reader.readAsText(file);
+    return row;
+  }
+
+  const stream = file.stream();
+  const reader = stream.getReader();
+  const decoder = new TextDecoder();
+
+  function processChunk({ done, value }) {
+    if (done) {
+      // Process any remaining leftover
+      if (leftover.trim()) {
+        processLine(leftover);
+      }
+      zone.classList.add('loaded');
+      document.getElementById('infoS').textContent = `${file.name} - ${Object.keys(salesMap).length.toLocaleString()} unique PINs indexed`;
+      prog.textContent = '';
+      checkReady();
+      return;
+    }
+    bytesRead += value.length;
+    const text = leftover + decoder.decode(value, { stream: true });
+    const lines = text.split('\n');
+    leftover = lines.pop(); // last partial line
+
+    for (const rawLine of lines) {
+      const line = rawLine.replace(/\r$/, '');
+      if (!line) continue;
+      processLine(line);
+    }
+
+    const pct = ((bytesRead / file.size) * 100).toFixed(0);
+    prog.textContent = `Loading sales: ${pct}% (${rowCount.toLocaleString()} rows)...`;
+    reader.read().then(processChunk);
+  }
+
+  function processLine(line) {
+    if (!headerParsed) {
+      const hdr = parseLine(line).map(h => h.toLowerCase().trim());
+      iMaj = hdr.indexOf('major'); iMin = hdr.indexOf('minor');
+      iBuyer = hdr.indexOf('buyername'); iSeller = hdr.indexOf('sellername');
+      iDate = hdr.indexOf('documentdate'); iPrice = hdr.indexOf('saleprice');
+      if (iMaj === -1 || iMin === -1) { prog.textContent = 'Sales file missing Major/Minor columns!'; return; }
+      headerParsed = true;
+      return;
+    }
+    const row = parseLine(line);
+    rowCount++;
+    const pin = normPin((row[iMaj] || '') + (row[iMin] || ''));
+    if (!pin) return;
+    const date = row[iDate] || '';
+    if (!salesMap[pin] || date > salesMap[pin].date) {
+      salesMap[pin] = {
+        buyer: (row[iBuyer] || '').trim(),
+        seller: (row[iSeller] || '').trim(),
+        date: date,
+        price: row[iPrice] || ''
+      };
+    }
+  }
+
+  reader.read().then(processChunk);
 }
 
 function loadAcct(file, zone) {
   const prog = document.getElementById('progress');
-  prog.textContent = 'Loading account file...';
-  const reader = new FileReader();
-  reader.onload = e => {
-    const rows = parseCsv(e.target.result);
-    const hdr = rows[0].map(h => h.toLowerCase().trim());
-    const iMaj = hdr.indexOf('major'), iMin = hdr.indexOf('minor');
-    const iAddr = hdr.indexOf('addrline'), iCity = hdr.indexOf('citystate'), iZip = hdr.indexOf('zipcode');
-    const iLand = hdr.indexOf('apprlandval'), iImps = hdr.indexOf('apprimpsval');
-    const iBillYr = hdr.indexOf('billyr');
-    if (iMaj === -1 || iMin === -1) { prog.textContent = 'Account file missing Major/Minor columns!'; return; }
-    acctMap = {};
-    for (let r = 1; r < rows.length; r++) {
-      const row = rows[r];
-      const pin = normPin(row[iMaj] + row[iMin]);
-      if (!pin) continue;
-      const yr = row[iBillYr] || '';
-      if (!acctMap[pin] || yr > acctMap[pin].yr) {
-        acctMap[pin] = {
-          addr: (row[iAddr] || '').trim(),
-          cityState: (row[iCity] || '').trim(),
-          zip: (row[iZip] || '').trim(),
-          landVal: row[iLand] || '',
-          impsVal: row[iImps] || '',
-          yr: yr
-        };
+  prog.textContent = 'Loading account file (streaming)...';
+  acctMap = {};
+  let headerParsed = false, iMaj, iMin, iAddr, iCity, iZip, iLand, iImps, iBillYr;
+  let leftover = '';
+  let rowCount = 0, bytesRead = 0;
+
+  function parseLine(line) {
+    const row = [];
+    let i = 0, len = line.length;
+    while (i < len) {
+      if (line[i] === '"') {
+        i++;
+        let val = '';
+        while (i < len) {
+          if (line[i] === '"') {
+            if (i + 1 < len && line[i+1] === '"') { val += '"'; i += 2; }
+            else { i++; break; }
+          } else { val += line[i]; i++; }
+        }
+        row.push(val.trim());
+        if (i < len && line[i] === ',') i++;
+      } else {
+        let end = i;
+        while (end < len && line[end] !== ',') end++;
+        row.push(line.substring(i, end).trim());
+        i = end;
+        if (i < len && line[i] === ',') i++;
       }
     }
-    zone.classList.add('loaded');
-    document.getElementById('infoA').textContent = `${file.name} - ${Object.keys(acctMap).length.toLocaleString()} unique PINs indexed`;
-    prog.textContent = '';
-    checkReady();
-  };
-  reader.readAsText(file);
+    return row;
+  }
+
+  const stream = file.stream();
+  const reader = stream.getReader();
+  const decoder = new TextDecoder();
+
+  function processChunk({ done, value }) {
+    if (done) {
+      if (leftover.trim()) processLine(leftover);
+      zone.classList.add('loaded');
+      document.getElementById('infoA').textContent = `${file.name} - ${Object.keys(acctMap).length.toLocaleString()} unique PINs indexed`;
+      prog.textContent = '';
+      checkReady();
+      return;
+    }
+    bytesRead += value.length;
+    const text = leftover + decoder.decode(value, { stream: true });
+    const lines = text.split('\n');
+    leftover = lines.pop();
+
+    for (const rawLine of lines) {
+      const line = rawLine.replace(/\r$/, '');
+      if (!line) continue;
+      processLine(line);
+    }
+
+    const pct = ((bytesRead / file.size) * 100).toFixed(0);
+    prog.textContent = `Loading account: ${pct}% (${rowCount.toLocaleString()} rows)...`;
+    reader.read().then(processChunk);
+  }
+
+  function processLine(line) {
+    if (!headerParsed) {
+      const hdr = parseLine(line).map(h => h.toLowerCase().trim());
+      iMaj = hdr.indexOf('major'); iMin = hdr.indexOf('minor');
+      iAddr = hdr.indexOf('addrline'); iCity = hdr.indexOf('citystate'); iZip = hdr.indexOf('zipcode');
+      iLand = hdr.indexOf('apprlandval'); iImps = hdr.indexOf('apprimpsval');
+      iBillYr = hdr.indexOf('billyr');
+      if (iMaj === -1 || iMin === -1) { prog.textContent = 'Account file missing Major/Minor columns!'; return; }
+      headerParsed = true;
+      return;
+    }
+    const row = parseLine(line);
+    rowCount++;
+    const pin = normPin((row[iMaj] || '') + (row[iMin] || ''));
+    if (!pin) return;
+    const yr = row[iBillYr] || '';
+    if (!acctMap[pin] || yr > acctMap[pin].yr) {
+      acctMap[pin] = {
+        addr: (row[iAddr] || '').trim(),
+        cityState: (row[iCity] || '').trim(),
+        zip: (row[iZip] || '').trim(),
+        landVal: row[iLand] || '',
+        impsVal: row[iImps] || '',
+        yr: yr
+      };
+    }
+  }
+
+  reader.read().then(processChunk);
 }
 
 setupDrop('dropParcels', 'fileParcels', loadParcels);
