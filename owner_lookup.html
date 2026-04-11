@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Owner Lookup - King County PIN Matcher</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 20px; }
+  h1 { font-size: 1.5rem; margin-bottom: 4px; }
+  .subtitle { color: #94a3b8; margin-bottom: 20px; font-size: 0.9rem; }
+  .container { max-width: 1200px; margin: 0 auto; }
+  .step { background: #1e293b; border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+  .step h2 { font-size: 1.1rem; margin-bottom: 12px; color: #38bdf8; }
+  .step h2 span { background: #38bdf8; color: #0f172a; border-radius: 50%; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; margin-right: 8px; }
+  .drop-zone { border: 2px dashed #475569; border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; transition: all 0.2s; }
+  .drop-zone:hover, .drop-zone.dragover { border-color: #38bdf8; background: #1e3a5f; }
+  .drop-zone.loaded { border-color: #22c55e; background: #14532d33; }
+  .drop-zone input { display: none; }
+  .file-info { color: #22c55e; margin-top: 8px; font-size: 0.85rem; }
+  .stats { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+  .stat { background: #0f172a; padding: 12px 16px; border-radius: 8px; }
+  .stat .num { font-size: 1.4rem; font-weight: 700; color: #38bdf8; }
+  .stat .label { font-size: 0.75rem; color: #94a3b8; }
+  button { background: #38bdf8; color: #0f172a; border: none; padding: 10px 24px; border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
+  button:hover { background: #7dd3fc; }
+  button:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
+  .btn-export { background: #22c55e; margin-left: 8px; }
+  .btn-export:hover { background: #4ade80; }
+  #progress { margin-top: 12px; color: #94a3b8; font-size: 0.85rem; }
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.82rem; }
+  th { background: #334155; padding: 8px; text-align: left; position: sticky; top: 0; cursor: pointer; user-select: none; }
+  th:hover { background: #475569; }
+  td { padding: 6px 8px; border-bottom: 1px solid #334155; }
+  tr:hover td { background: #1e3a5f; }
+  .table-wrap { max-height: 500px; overflow: auto; border-radius: 8px; border: 1px solid #334155; }
+  .search-bar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
+  .search-bar input { background: #0f172a; border: 1px solid #475569; color: #e2e8f0; padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; width: 250px; }
+  .search-bar label { font-size: 0.85rem; color: #94a3b8; cursor: pointer; }
+  .search-bar input[type="checkbox"] { margin-right: 4px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
+  .tag-match { background: #22c55e33; color: #4ade80; }
+  .tag-miss { background: #ef444433; color: #f87171; }
+  .tag-acct { background: #8b5cf633; color: #a78bfa; }
+  .hidden { display: none; }
+  .note { color: #94a3b8; font-size: 0.8rem; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Owner Lookup Tool</h1>
+  <p class="subtitle">Match your parcel PINs against King County bulk data (Real Property Sales + Account files)</p>
+
+  <div class="step">
+    <h2><span>1</span> Load Your Parcel List</h2>
+    <div class="drop-zone" id="dropParcels">
+      <div>Drop your CSV here or click to browse</div>
+      <div style="color:#64748b;font-size:0.8rem;margin-top:4px;">Needs a PIN column (PIN, Parcel ID, APN, Tax-ID, etc.)</div>
+      <input type="file" accept=".csv" id="fileParcels">
+      <div class="file-info" id="infoP"></div>
+    </div>
+  </div>
+
+  <div class="step">
+    <h2><span>2</span> Load King County Data</h2>
+    <p style="color:#94a3b8;font-size:0.85rem;margin-bottom:12px;">Load one or both files from the Assessor bulk download</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:280px;">
+        <div class="drop-zone" id="dropSales">
+          <div>EXTR_RPSale.csv</div>
+          <div style="color:#64748b;font-size:0.8rem;">Real Property Sales (buyer/seller names)</div>
+          <input type="file" accept=".csv" id="fileSales">
+          <div class="file-info" id="infoS"></div>
+        </div>
+      </div>
+      <div style="flex:1;min-width:280px;">
+        <div class="drop-zone" id="dropAcct">
+          <div>EXTR_RPAcct_NoName.csv</div>
+          <div style="color:#64748b;font-size:0.8rem;">Real Property Account (address, tax info)</div>
+          <input type="file" accept=".csv" id="fileAcct">
+          <div class="file-info" id="infoA"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <h2><span>3</span> Match</h2>
+    <button id="btnMatch" disabled onclick="runMatch()">Match PINs</button>
+    <div id="progress"></div>
+    <div class="stats hidden" id="statsBox">
+      <div class="stat"><div class="num" id="statTotal">0</div><div class="label">Your PINs</div></div>
+      <div class="stat"><div class="num" id="statSale">0</div><div class="label">Sale Matches</div></div>
+      <div class="stat"><div class="num" id="statAcct">0</div><div class="label">Account Matches</div></div>
+      <div class="stat"><div class="num" id="statMiss">0</div><div class="label">No Match</div></div>
+    </div>
+  </div>
+
+  <div class="step hidden" id="resultsStep">
+    <h2><span>4</span> Results</h2>
+    <div class="search-bar">
+      <input type="text" id="searchBox" placeholder="Search address, owner, PIN..." oninput="renderTable()">
+      <label><input type="checkbox" id="chkMissing" onchange="renderTable()"> Missing owners only</label>
+      <label><input type="checkbox" id="chkMatched" onchange="renderTable()"> Matched only</label>
+      <button class="btn-export" onclick="exportCsv()">Export CSV</button>
+      <button class="btn-export" onclick="exportFiltered()">Export Filtered</button>
+    </div>
+    <div class="table-wrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+    <div class="note" id="rowCount"></div>
+  </div>
+</div>
+
+<script>
+// State
+let parcelRows = [], parcelHeaders = [], pinColIdx = -1;
+let salesMap = {};  // PIN -> {buyer, seller, date, price} (most recent)
+let acctMap = {};   // PIN -> {addr, cityState, zip, landVal, impsVal}
+let results = [];
+let sortCol = -1, sortAsc = true;
+
+// PIN column detection
+const PIN_NAMES = ['pin','parcel id','parcel_id','parcelid','apn','apn - unformatted','apn_unformatted','tax-id','tax_id','taxid','parcel','parcel number','parcel_number','parcelnumber','major'];
+
+function normPin(v) {
+  if (!v) return '';
+  let s = v.toString().replace(/[^0-9]/g, '');
+  if (s.length > 0 && s.length < 10) s = s.padStart(10, '0');
+  return s;
+}
+
+// CSV parser (handles quoted fields)
+function parseCsv(text) {
+  const rows = [];
+  let i = 0, len = text.length;
+  while (i < len) {
+    const row = [];
+    while (i < len) {
+      if (text[i] === '"') {
+        i++;
+        let val = '';
+        while (i < len) {
+          if (text[i] === '"') {
+            if (i + 1 < len && text[i+1] === '"') { val += '"'; i += 2; }
+            else { i++; break; }
+          } else { val += text[i]; i++; }
+        }
+        row.push(val.trim());
+        if (i < len && text[i] === ',') i++;
+      } else {
+        let end = i;
+        while (end < len && text[end] !== ',' && text[end] !== '\n' && text[end] !== '\r') end++;
+        row.push(text.substring(i, end).trim());
+        i = end;
+        if (i < len && text[i] === ',') { i++; }
+      }
+      if (i >= len || text[i] === '\n' || text[i] === '\r') break;
+    }
+    if (i < len && text[i] === '\r') i++;
+    if (i < len && text[i] === '\n') i++;
+    if (row.length > 1 || (row.length === 1 && row[0] !== '')) rows.push(row);
+  }
+  return rows;
+}
+
+// Drop zone setup
+function setupDrop(zoneId, inputId, handler) {
+  const zone = document.getElementById(zoneId);
+  const input = document.getElementById(inputId);
+  zone.addEventListener('click', () => input.click());
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('dragover'); if (e.dataTransfer.files.length) handler(e.dataTransfer.files[0], zone); });
+  input.addEventListener('change', () => { if (input.files.length) handler(input.files[0], zone); });
+}
+
+function loadParcels(file, zone) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const rows = parseCsv(e.target.result);
+    if (rows.length < 2) return;
+    parcelHeaders = rows[0];
+    parcelRows = rows.slice(1);
+    // Find PIN column
+    pinColIdx = -1;
+    for (let i = 0; i < parcelHeaders.length; i++) {
+      if (PIN_NAMES.includes(parcelHeaders[i].toLowerCase().trim())) { pinColIdx = i; break; }
+    }
+    if (pinColIdx === -1) {
+      document.getElementById('infoP').textContent = 'No PIN column found! Headers: ' + parcelHeaders.join(', ');
+      return;
+    }
+    zone.classList.add('loaded');
+    document.getElementById('infoP').textContent = `${file.name} - ${parcelRows.length.toLocaleString()} rows, PIN column: "${parcelHeaders[pinColIdx]}"`;
+    checkReady();
+  };
+  reader.readAsText(file);
+}
+
+function loadSales(file, zone) {
+  const prog = document.getElementById('progress');
+  prog.textContent = 'Loading sales file (2.4M rows, may take a moment)...';
+  const reader = new FileReader();
+  reader.onload = e => {
+    const rows = parseCsv(e.target.result);
+    const hdr = rows[0].map(h => h.toLowerCase().trim());
+    const iMaj = hdr.indexOf('major'), iMin = hdr.indexOf('minor');
+    const iBuyer = hdr.indexOf('buyername'), iSeller = hdr.indexOf('sellername');
+    const iDate = hdr.indexOf('documentdate'), iPrice = hdr.indexOf('saleprice');
+    if (iMaj === -1 || iMin === -1) { prog.textContent = 'Sales file missing Major/Minor columns!'; return; }
+    salesMap = {};
+    for (let r = 1; r < rows.length; r++) {
+      const row = rows[r];
+      const pin = normPin(row[iMaj] + row[iMin]);
+      if (!pin) continue;
+      const date = row[iDate] || '';
+      // Keep most recent sale
+      if (!salesMap[pin] || date > salesMap[pin].date) {
+        salesMap[pin] = {
+          buyer: (row[iBuyer] || '').trim(),
+          seller: (row[iSeller] || '').trim(),
+          date: date,
+          price: row[iPrice] || ''
+        };
+      }
+    }
+    zone.classList.add('loaded');
+    document.getElementById('infoS').textContent = `${file.name} - ${Object.keys(salesMap).length.toLocaleString()} unique PINs indexed`;
+    prog.textContent = '';
+    checkReady();
+  };
+  reader.readAsText(file);
+}
+
+function loadAcct(file, zone) {
+  const prog = document.getElementById('progress');
+  prog.textContent = 'Loading account file...';
+  const reader = new FileReader();
+  reader.onload = e => {
+    const rows = parseCsv(e.target.result);
+    const hdr = rows[0].map(h => h.toLowerCase().trim());
+    const iMaj = hdr.indexOf('major'), iMin = hdr.indexOf('minor');
+    const iAddr = hdr.indexOf('addrline'), iCity = hdr.indexOf('citystate'), iZip = hdr.indexOf('zipcode');
+    const iLand = hdr.indexOf('apprlandval'), iImps = hdr.indexOf('apprimpsval');
+    const iBillYr = hdr.indexOf('billyr');
+    if (iMaj === -1 || iMin === -1) { prog.textContent = 'Account file missing Major/Minor columns!'; return; }
+    acctMap = {};
+    for (let r = 1; r < rows.length; r++) {
+      const row = rows[r];
+      const pin = normPin(row[iMaj] + row[iMin]);
+      if (!pin) continue;
+      const yr = row[iBillYr] || '';
+      if (!acctMap[pin] || yr > acctMap[pin].yr) {
+        acctMap[pin] = {
+          addr: (row[iAddr] || '').trim(),
+          cityState: (row[iCity] || '').trim(),
+          zip: (row[iZip] || '').trim(),
+          landVal: row[iLand] || '',
+          impsVal: row[iImps] || '',
+          yr: yr
+        };
+      }
+    }
+    zone.classList.add('loaded');
+    document.getElementById('infoA').textContent = `${file.name} - ${Object.keys(acctMap).length.toLocaleString()} unique PINs indexed`;
+    prog.textContent = '';
+    checkReady();
+  };
+  reader.readAsText(file);
+}
+
+setupDrop('dropParcels', 'fileParcels', loadParcels);
+setupDrop('dropSales', 'fileSales', loadSales);
+setupDrop('dropAcct', 'fileAcct', loadAcct);
+
+function checkReady() {
+  const hasParcels = parcelRows.length > 0 && pinColIdx >= 0;
+  const hasData = Object.keys(salesMap).length > 0 || Object.keys(acctMap).length > 0;
+  document.getElementById('btnMatch').disabled = !(hasParcels && hasData);
+}
+
+function runMatch() {
+  const hasSales = Object.keys(salesMap).length > 0;
+  const hasAcct = Object.keys(acctMap).length > 0;
+  results = [];
+  let saleHits = 0, acctHits = 0, misses = 0;
+
+  for (const row of parcelRows) {
+    const rawPin = row[pinColIdx] || '';
+    const pin = normPin(rawPin);
+    const sale = hasSales ? salesMap[pin] : null;
+    const acct = hasAcct ? acctMap[pin] : null;
+    if (sale) saleHits++;
+    if (acct) acctHits++;
+    if (!sale && !acct) misses++;
+
+    // Preserve all original columns plus append matched data
+    results.push({
+      origRow: row,
+      pin: pin,
+      buyer: sale ? sale.buyer : '',
+      seller: sale ? sale.seller : '',
+      saleDate: sale ? sale.date : '',
+      salePrice: sale ? sale.price : '',
+      acctAddr: acct ? acct.addr : '',
+      acctCityState: acct ? acct.cityState : '',
+      acctZip: acct ? acct.zip : '',
+      landVal: acct ? acct.landVal : '',
+      impsVal: acct ? acct.impsVal : '',
+      matched: !!(sale || acct)
+    });
+  }
+
+  document.getElementById('statTotal').textContent = results.length.toLocaleString();
+  document.getElementById('statSale').textContent = saleHits.toLocaleString();
+  document.getElementById('statAcct').textContent = acctHits.toLocaleString();
+  document.getElementById('statMiss').textContent = misses.toLocaleString();
+  document.getElementById('statsBox').classList.remove('hidden');
+  document.getElementById('resultsStep').classList.remove('hidden');
+  sortCol = -1;
+  renderTable();
+}
+
+const EXTRA_COLS = ['Buyer Name', 'Seller Name', 'Sale Date', 'Sale Price', 'Mailing Address', 'City/State', 'Zip', 'Land Value', 'Impr Value', 'Match'];
+
+function getResultCols(r) {
+  return [...r.origRow, r.buyer, r.seller, r.saleDate, r.salePrice, r.acctAddr, r.acctCityState, r.acctZip, r.landVal, r.impsVal, r.matched ? 'YES' : ''];
+}
+
+function renderTable() {
+  const query = document.getElementById('searchBox').value.toLowerCase();
+  const missOnly = document.getElementById('chkMissing').checked;
+  const matchOnly = document.getElementById('chkMatched').checked;
+
+  let filtered = results;
+  if (missOnly) filtered = filtered.filter(r => !r.buyer && !r.seller);
+  if (matchOnly) filtered = filtered.filter(r => r.matched);
+  if (query) {
+    filtered = filtered.filter(r => {
+      const cols = getResultCols(r);
+      return cols.some(c => (c || '').toString().toLowerCase().includes(query));
+    });
+  }
+
+  if (sortCol >= 0) {
+    filtered.sort((a, b) => {
+      const av = getResultCols(a)[sortCol] || '';
+      const bv = getResultCols(b)[sortCol] || '';
+      const cmp = av.localeCompare(bv, undefined, { numeric: true });
+      return sortAsc ? cmp : -cmp;
+    });
+  }
+
+  const allHeaders = [...parcelHeaders, ...EXTRA_COLS];
+  const thead = document.getElementById('thead');
+  thead.innerHTML = '<tr>' + allHeaders.map((h, i) =>
+    `<th onclick="sortBy(${i})">${h}${sortCol === i ? (sortAsc ? ' &#9650;' : ' &#9660;') : ''}</th>`
+  ).join('') + '</tr>';
+
+  const show = filtered.slice(0, 500);
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = show.map(r => {
+    const cols = getResultCols(r);
+    const lastIdx = cols.length - 1;
+    return '<tr>' + cols.map((c, i) => {
+      if (i === lastIdx) return `<td>${c ? '<span class="tag tag-match">YES</span>' : '<span class="tag tag-miss">NO</span>'}</td>`;
+      return `<td>${c || ''}</td>`;
+    }).join('') + '</tr>';
+  }).join('');
+
+  document.getElementById('rowCount').textContent = `Showing ${show.length} of ${filtered.length.toLocaleString()} rows${filtered.length < results.length ? ` (${results.length.toLocaleString()} total)` : ''}`;
+}
+
+function sortBy(col) {
+  if (sortCol === col) sortAsc = !sortAsc;
+  else { sortCol = col; sortAsc = true; }
+  renderTable();
+}
+
+function makeCsvString(rows, headers) {
+  const escape = v => {
+    const s = (v || '').toString();
+    return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  const lines = [headers.map(escape).join(',')];
+  for (const r of rows) lines.push(getResultCols(r).map(escape).join(','));
+  return lines.join('\n');
+}
+
+function exportCsv() {
+  const allHeaders = [...parcelHeaders, ...EXTRA_COLS];
+  const csv = makeCsvString(results, allHeaders);
+  download(csv, 'owner_lookup_results.csv');
+}
+
+function exportFiltered() {
+  const query = document.getElementById('searchBox').value.toLowerCase();
+  const missOnly = document.getElementById('chkMissing').checked;
+  const matchOnly = document.getElementById('chkMatched').checked;
+  let filtered = results;
+  if (missOnly) filtered = filtered.filter(r => !r.buyer && !r.seller);
+  if (matchOnly) filtered = filtered.filter(r => r.matched);
+  if (query) filtered = filtered.filter(r => getResultCols(r).some(c => (c || '').toString().toLowerCase().includes(query)));
+  const allHeaders = [...parcelHeaders, ...EXTRA_COLS];
+  const csv = makeCsvString(filtered, allHeaders);
+  download(csv, 'owner_lookup_filtered.csv');
+}
+
+function download(csv, name) {
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+</script>
+</body>
+</html>
