@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shoreline Real Estate Agent | [AGENT NAME]</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       RESET & BASE
+       ============================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #003057;
+      --dark-blue: #0f2b52;
+      --accent: #e35205;
+      --text-dark: #333333;
+      --text-light: #666666;
+      --white: #ffffff;
+      --off-white: #f8f8f8;
+      --light-gray: #eeeeee;
+      --font-primary: 'Montserrat', Verdana, Geneva, sans-serif;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --max-width: 1200px;
+      --section-padding: 80px 0;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-primary);
+      color: var(--text-dark);
+      line-height: 1.7;
+      font-size: 16px;
+      background: var(--white);
+    }
+
+    a { color: var(--navy); text-decoration: none; transition: color 0.3s; }
+    a:hover { color: var(--accent); }
+
+    img { max-width: 100%; height: auto; display: block; }
+
+    .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
+
+    /* ============================================
+       HEADER / NAVIGATION
+       ============================================ */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      transition: box-shadow 0.3s;
+    }
+
+    header.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.1); }
+
+    .header-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+
+    .logo {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: 0.5px;
+    }
+
+    nav { display: flex; align-items: center; gap: 8px; }
+
+    nav .nav-item {
+      position: relative;
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-dark);
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    nav .nav-item:hover { color: var(--accent); }
+
+    .nav-item .dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: var(--white);
+      min-width: 200px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      border-radius: 4px;
+      overflow: hidden;
+      z-index: 100;
+    }
+
+    .nav-item:hover .dropdown { display: block; }
+
+    .dropdown a {
+      display: block;
+      padding: 12px 20px;
+      font-size: 13px;
+      font-weight: 400;
+      text-transform: none;
+      color: var(--text-dark);
+      transition: background 0.2s;
+    }
+
+    .dropdown a:hover { background: var(--off-white); color: var(--accent); }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    .hamburger span {
+      width: 24px;
+      height: 2px;
+      background: var(--navy);
+      transition: transform 0.3s;
+    }
+
+    /* ============================================
+       HERO SECTION
+       ============================================ */
+    .hero {
+      position: relative;
+      height: 90vh;
+      min-height: 600px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+      margin-top: 72px;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--dark-blue) 100%);
+    }
+
+    .hero-bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.35;
+    }
+
+    /* Placeholder for hero background image */
+    .hero-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(15,43,82,0.4), rgba(0,48,87,0.7));
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      color: var(--white);
+      max-width: 700px;
+      padding: 0 24px;
+    }
+
+    .hero-content h1 {
+      font-family: var(--font-display);
+      font-size: 52px;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 16px;
+      letter-spacing: -0.5px;
+    }
+
+    .hero-content p {
+      font-size: 18px;
+      font-weight: 300;
+      margin-bottom: 36px;
+      opacity: 0.9;
+      letter-spacing: 1px;
+    }
+
+    .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      font-family: var(--font-primary);
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+
+    .btn-primary {
+      background: var(--white);
+      color: var(--navy);
+      border-color: var(--white);
+    }
+
+    .btn-primary:hover {
+      background: transparent;
+      color: var(--white);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--white);
+      border-color: var(--white);
+    }
+
+    .btn-outline:hover {
+      background: var(--white);
+      color: var(--navy);
+    }
+
+    .btn-dark {
+      background: var(--navy);
+      color: var(--white);
+      border-color: var(--navy);
+    }
+
+    .btn-dark:hover {
+      background: var(--dark-blue);
+      border-color: var(--dark-blue);
+    }
+
+    .btn .arrow { font-size: 18px; transition: transform 0.3s; }
+    .btn:hover .arrow { transform: translateX(4px); }
+
+    /* ============================================
+       MEET THE AGENT SECTION
+       ============================================ */
+    .meet-agent {
+      padding: var(--section-padding);
+      background: var(--white);
+    }
+
+    .meet-agent-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .agent-photo {
+      position: relative;
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    }
+
+    .agent-photo .photo-placeholder {
+      width: 100%;
+      aspect-ratio: 3/4;
+      background: linear-gradient(135deg, var(--light-gray), #ddd);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-light);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .meet-agent h2 {
+      font-family: var(--font-display);
+      font-size: 38px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 24px;
+    }
+
+    .meet-agent .bio-text {
+      color: var(--text-light);
+      font-size: 16px;
+      line-height: 1.8;
+      margin-bottom: 24px;
+    }
+
+    .text-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--navy);
+      margin-right: 24px;
+      margin-bottom: 8px;
+    }
+
+    .text-link:hover { color: var(--accent); }
+    .text-link .arrow { transition: transform 0.3s; }
+    .text-link:hover .arrow { transform: translateX(4px); }
+
+    /* ============================================
+       SERVICES SECTION
+       ============================================ */
+    .services {
+      padding: var(--section-padding);
+      background: var(--off-white);
+    }
+
+    .section-title {
+      text-align: center;
+      font-family: var(--font-display);
+      font-size: 38px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 50px;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+    }
+
+    .service-card {
+      background: var(--white);
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+    }
+
+    .service-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    }
+
+    .service-card .card-image {
+      width: 100%;
+      aspect-ratio: 16/10;
+      background: linear-gradient(135deg, var(--light-gray), #ddd);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-light);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .service-card .card-content {
+      padding: 28px 24px;
+    }
+
+    .service-card h3 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+
+    .service-card p {
+      color: var(--text-light);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    /* ============================================
+       TESTIMONIALS SECTION
+       ============================================ */
+    .testimonials {
+      padding: var(--section-padding);
+      background: var(--white);
+    }
+
+    .testimonial-list {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .testimonial {
+      text-align: center;
+      margin-bottom: 50px;
+      padding-bottom: 50px;
+      border-bottom: 1px solid var(--light-gray);
+    }
+
+    .testimonial:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+    .testimonial .quote-mark {
+      font-family: var(--font-display);
+      font-size: 60px;
+      color: var(--navy);
+      opacity: 0.2;
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+
+    .testimonial blockquote {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 18px;
+      line-height: 1.8;
+      color: var(--text-dark);
+      margin-bottom: 20px;
+    }
+
+    .testimonial .attribution {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--navy);
+      letter-spacing: 0.5px;
+    }
+
+    /* ============================================
+       FEATURED COMMUNITY SECTION
+       ============================================ */
+    .featured-community {
+      padding: var(--section-padding);
+      background: var(--off-white);
+    }
+
+    .community-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .community-image {
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+    }
+
+    .community-image .photo-placeholder {
+      width: 100%;
+      aspect-ratio: 16/10;
+      background: linear-gradient(135deg, var(--light-gray), #ddd);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-light);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .community-content h3 {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--accent);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .community-content h2 {
+      font-family: var(--font-display);
+      font-size: 38px;
+      color: var(--navy);
+      margin-bottom: 20px;
+    }
+
+    .community-content p {
+      color: var(--text-light);
+      font-size: 16px;
+      line-height: 1.8;
+      margin-bottom: 24px;
+    }
+
+    /* ============================================
+       MARKET TRENDS CTA
+       ============================================ */
+    .market-cta {
+      position: relative;
+      padding: 120px 0;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .market-cta .cta-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--navy), var(--dark-blue));
+    }
+
+    .market-cta .cta-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(15,43,82,0.7);
+    }
+
+    .market-cta .cta-content {
+      position: relative;
+      z-index: 2;
+      color: var(--white);
+    }
+
+    .market-cta h2 {
+      font-family: var(--font-display);
+      font-size: 38px;
+      margin-bottom: 28px;
+    }
+
+    /* ============================================
+       CONTACT CTA SECTION
+       ============================================ */
+    .contact-cta {
+      padding: var(--section-padding);
+      background: var(--white);
+    }
+
+    .contact-cta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .contact-photo {
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    }
+
+    .contact-photo .photo-placeholder {
+      width: 100%;
+      aspect-ratio: 4/5;
+      background: linear-gradient(135deg, var(--light-gray), #ddd);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-light);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .contact-text h2 {
+      font-family: var(--font-display);
+      font-size: 34px;
+      color: var(--navy);
+      margin-bottom: 16px;
+    }
+
+    .contact-text p {
+      color: var(--text-light);
+      font-size: 16px;
+      line-height: 1.8;
+      margin-bottom: 28px;
+    }
+
+    /* ============================================
+       FOOTER
+       ============================================ */
+    footer {
+      background: var(--navy);
+      color: var(--white);
+      padding: 60px 0 30px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+
+    .footer-agent {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .footer-agent .footer-photo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .footer-agent h4 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    .footer-agent .brokerage {
+      font-size: 13px;
+      opacity: 0.7;
+      margin-bottom: 10px;
+    }
+
+    .footer-agent a {
+      display: block;
+      color: var(--white);
+      font-size: 14px;
+      opacity: 0.8;
+      margin-bottom: 4px;
+    }
+
+    .footer-agent a:hover { opacity: 1; color: var(--accent); }
+
+    .footer-nav h4 {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+      opacity: 0.6;
+    }
+
+    .footer-nav a {
+      display: block;
+      color: var(--white);
+      font-size: 14px;
+      opacity: 0.8;
+      margin-bottom: 10px;
+    }
+
+    .footer-nav a:hover { opacity: 1; color: var(--accent); }
+
+    .footer-social {
+      display: flex;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .footer-social a {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    .footer-social a:hover { opacity: 1; background: rgba(255,255,255,0.1); }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-bottom span {
+      font-size: 12px;
+      opacity: 0.5;
+    }
+
+    .footer-bottom a {
+      color: var(--white);
+      font-size: 12px;
+      opacity: 0.5;
+      margin-left: 20px;
+    }
+
+    .footer-bottom a:hover { opacity: 0.8; }
+
+    .brokerage-logo {
+      height: 40px;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.6);
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* ============================================
+       CONTACT PAGE
+       ============================================ */
+    .page-banner {
+      margin-top: 72px;
+      height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--navy), var(--dark-blue));
+      color: var(--white);
+    }
+
+    .page-banner h1 {
+      font-family: var(--font-display);
+      font-size: 48px;
+    }
+
+    .contact-page { padding: var(--section-padding); }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 60px;
+    }
+
+    .contact-info h3 {
+      font-family: var(--font-display);
+      font-size: 24px;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+
+    .contact-info .title {
+      font-size: 14px;
+      color: var(--text-light);
+      margin-bottom: 4px;
+    }
+
+    .contact-info .credentials {
+      font-size: 13px;
+      color: var(--accent);
+      margin-bottom: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    .contact-info .info-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-size: 15px;
+    }
+
+    .contact-info .info-item .icon { color: var(--navy); font-size: 18px; }
+
+    .contact-form label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dark);
+      margin-bottom: 6px;
+    }
+
+    .contact-form select,
+    .contact-form input,
+    .contact-form textarea {
+      width: 100%;
+      padding: 12px 16px;
+      font-family: var(--font-primary);
+      font-size: 15px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      margin-bottom: 20px;
+      transition: border-color 0.3s;
+      background: var(--white);
+    }
+
+    .contact-form select:focus,
+    .contact-form input:focus,
+    .contact-form textarea:focus {
+      outline: none;
+      border-color: var(--navy);
+    }
+
+    .contact-form textarea { min-height: 120px; resize: vertical; }
+
+    .contact-form .checkbox-group {
+      margin-bottom: 20px;
+    }
+
+    .contact-form .checkbox-group label {
+      display: inline;
+      text-transform: none;
+      font-weight: 400;
+      font-size: 15px;
+      margin-left: 8px;
+      letter-spacing: 0;
+    }
+
+    /* ============================================
+       ABOUT PAGE
+       ============================================ */
+    .about-page { padding: var(--section-padding); }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 60px;
+      align-items: start;
+    }
+
+    .about-sidebar .photo-placeholder {
+      width: 100%;
+      aspect-ratio: 3/4;
+      background: linear-gradient(135deg, var(--light-gray), #ddd);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-light);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+    }
+
+    .about-sidebar .agent-credentials {
+      text-align: center;
+    }
+
+    .about-sidebar .agent-credentials h3 {
+      font-family: var(--font-display);
+      font-size: 20px;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+
+    .about-sidebar .agent-credentials p {
+      font-size: 13px;
+      color: var(--text-light);
+      margin-bottom: 16px;
+    }
+
+    .about-sidebar .social-links {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .about-sidebar .social-links a {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--light-gray);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--navy);
+      font-size: 14px;
+    }
+
+    .about-sidebar .social-links a:hover { background: var(--off-white); color: var(--accent); }
+
+    .about-content h1 {
+      font-family: var(--font-display);
+      font-size: 38px;
+      color: var(--navy);
+      margin-bottom: 24px;
+    }
+
+    .about-content .featured-quote {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 20px;
+      color: var(--text-dark);
+      padding: 24px 0;
+      margin-bottom: 24px;
+      border-left: 3px solid var(--accent);
+      padding-left: 24px;
+    }
+
+    .about-content .featured-quote .attr {
+      display: block;
+      font-style: normal;
+      font-family: var(--font-primary);
+      font-size: 13px;
+      color: var(--text-light);
+      margin-top: 8px;
+    }
+
+    .about-content p {
+      color: var(--text-light);
+      font-size: 16px;
+      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+
+    /* Sold properties grid */
+    .sold-section { padding: var(--section-padding); background: var(--off-white); }
+
+    .sold-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .sold-card {
+      background: var(--white);
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    .sold-card .card-image {
+      width: 100%;
+      aspect-ratio: 16/10;
+      background: linear-gradient(135deg, var(--light-gray), #ddd);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-light);
+      font-size: 12px;
+    }
+
+    .sold-card .card-details {
+      padding: 16px;
+    }
+
+    .sold-card .price {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+
+    .sold-card .address {
+      font-size: 14px;
+      color: var(--text-light);
+    }
+
+    /* ============================================
+       MOBILE MENU
+       ============================================ */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 72px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--white);
+      padding: 24px;
+      z-index: 999;
+      overflow-y: auto;
+    }
+
+    .mobile-menu.active { display: block; }
+
+    .mobile-menu a {
+      display: block;
+      padding: 14px 0;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-dark);
+      border-bottom: 1px solid var(--light-gray);
+    }
+
+    .mobile-menu .sub-link {
+      padding-left: 20px;
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-light);
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 900px) {
+      nav { display: none; }
+      .hamburger { display: flex; }
+
+      .hero-content h1 { font-size: 36px; }
+      .hero-content p { font-size: 16px; }
+
+      .meet-agent-grid,
+      .community-grid,
+      .contact-cta-grid,
+      .contact-grid,
+      .about-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      .services-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+
+      .section-title,
+      .meet-agent h2,
+      .community-content h2,
+      .contact-text h2,
+      .market-cta h2 { font-size: 30px; }
+
+      .about-grid { grid-template-columns: 1fr; }
+      .about-sidebar { max-width: 300px; margin: 0 auto; }
+    }
+
+    /* ============================================
+       PAGE VISIBILITY (SPA-style toggle)
+       ============================================ */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ============================================
+       ANIMATIONS
+       ============================================ */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================
+       HEADER
+       ======================================== -->
+  <header id="header">
+    <div class="header-inner">
+      <a href="#" class="logo" onclick="showPage('home')"><!-- AGENT NAME -->[Agent Name]</a>
+      <nav>
+        <div class="nav-item">
+          <span>About</span>
+          <div class="dropdown">
+            <a href="#" onclick="showPage('about')">About</a>
+            <a href="#" onclick="showPage('testimonials-page')">Testimonials</a>
+            <a href="#">Previously Sold</a>
+            <a href="#">Selling</a>
+          </div>
+        </div>
+        <div class="nav-item">
+          <span>Buying</span>
+          <div class="dropdown">
+            <a href="#">Buying</a>
+            <a href="#">Property Search</a>
+          </div>
+        </div>
+        <div class="nav-item">
+          <span>Communities</span>
+          <div class="dropdown">
+            <!-- COMMUNITIES - Replace with your service area -->
+            <a href="#">[Community 1]</a>
+            <a href="#">[Community 2]</a>
+            <a href="#">[Community 3]</a>
+            <a href="#">[Community 4]</a>
+          </div>
+        </div>
+        <a class="nav-item" href="#">Market Trends</a>
+        <a class="nav-item" href="#">Blog</a>
+        <a class="nav-item" href="#" onclick="showPage('contact')">Contact</a>
+      </nav>
+      <div class="hamburger" onclick="toggleMobile()">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#" onclick="showPage('about')">About</a>
+    <a href="#" class="sub-link">Testimonials</a>
+    <a href="#" class="sub-link">Previously Sold</a>
+    <a href="#" class="sub-link">Selling</a>
+    <a href="#">Buying</a>
+    <a href="#" class="sub-link">Property Search</a>
+    <a href="#">Communities</a>
+    <!-- COMMUNITIES -->
+    <a href="#" class="sub-link">[Community 1]</a>
+    <a href="#" class="sub-link">[Community 2]</a>
+    <a href="#" class="sub-link">[Community 3]</a>
+    <a href="#">Market Trends</a>
+    <a href="#">Blog</a>
+    <a href="#" onclick="showPage('contact')">Contact</a>
+  </div>
+
+  <!-- ========================================
+       HOME PAGE
+       ======================================== -->
+  <div class="page active" id="page-home">
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-bg">
+        <!-- Replace with your hero background image -->
+        <!-- <img src="hero-image.jpg" alt="[Area Name] Real Estate"> -->
+      </div>
+      <div class="hero-content fade-in">
+        <!-- HEADLINE - Replace with your area -->
+        <h1>[Area Name] Real Estate Agent</h1>
+        <!-- TAGLINE -->
+        <p>Exceptional Service, Proven Results since [YEAR]</p>
+        <div class="hero-buttons">
+          <a href="#" class="btn btn-primary">Let's Buy A Home <span class="arrow">&rarr;</span></a>
+          <a href="#" class="btn btn-outline">Let's Sell Your Home <span class="arrow">&rarr;</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Meet the Agent -->
+    <section class="meet-agent">
+      <div class="container">
+        <div class="meet-agent-grid">
+          <div class="agent-photo">
+            <div class="photo-placeholder">
+              <!-- Replace with agent headshot -->
+              Agent Photo
+            </div>
+          </div>
+          <div class="agent-bio fade-in">
+            <!-- AGENT NAME -->
+            <h2>Meet [Agent Name]</h2>
+            <!-- BIO PARAGRAPH 1 -->
+            <p class="bio-text">
+              Imagine feeling an instant connection with someone you've just met and knowing they
+              understand your values, goals, and uniqueness within the first conversation. You'll get
+              that by working with [Agent Name] &mdash; one of the top real estate agents in [Area Name].
+            </p>
+            <!-- BIO PARAGRAPH 2 -->
+            <p class="bio-text">
+              With [Agent Name] at your side, you have a partner who is always looking out for your
+              best interests. [His/Her] exceptional work ethic, hands-on personal attention, and
+              devotion to [his/her] clients set [him/her] apart.
+            </p>
+            <!-- BIO PARAGRAPH 3 -->
+            <p class="bio-text">
+              Boasting a career spanning over [X] years, [Agent Name] is passionate about empowering
+              you in one of the most defining moments of your life.
+            </p>
+            <div>
+              <a href="#" onclick="showPage('about')" class="text-link">More About [Agent Name] <span class="arrow">&rarr;</span></a>
+              <a href="#" class="text-link">Active Listings <span class="arrow">&rarr;</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Real Estate Services -->
+    <section class="services">
+      <div class="container">
+        <h2 class="section-title">Real Estate Services</h2>
+        <div class="services-grid">
+          <a href="#" class="service-card fade-in">
+            <div class="card-image">
+              <!-- Replace with image -->
+              Buying Image
+            </div>
+            <div class="card-content">
+              <h3>Buying a Home</h3>
+              <p>Expert guidance through every step of the home buying process.</p>
+            </div>
+          </a>
+          <a href="#" class="service-card fade-in">
+            <div class="card-image">
+              <!-- Replace with image -->
+              Selling Image
+            </div>
+            <div class="card-content">
+              <h3>Selling a Home</h3>
+              <p>Strategic marketing to get your home sold for top dollar.</p>
+            </div>
+          </a>
+          <a href="#" class="service-card fade-in">
+            <div class="card-image">
+              <!-- Replace with image -->
+              Community Image
+            </div>
+            <div class="card-content">
+              <!-- AREA NAME -->
+              <h3>Living in [Area Name]</h3>
+              <p>Discover the neighborhoods and communities that make this area special.</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials">
+      <div class="container">
+        <h2 class="section-title">Client Testimonials</h2>
+        <div class="testimonial-list">
+
+          <!-- TESTIMONIAL 1 -->
+          <div class="testimonial fade-in">
+            <div class="quote-mark">&ldquo;</div>
+            <blockquote>
+              [Testimonial text from your first client. Describe their experience working with you,
+              your dedication, marketing skills, negotiation expertise, and the overall positive
+              outcome of their transaction.]
+            </blockquote>
+            <div class="attribution">&mdash; [Client Name] | [Neighborhood], [City], [State]</div>
+          </div>
+
+          <!-- TESTIMONIAL 2 -->
+          <div class="testimonial fade-in">
+            <div class="quote-mark">&ldquo;</div>
+            <blockquote>
+              [Testimonial text from your second client. Highlight your knowledge of the area,
+              experience, and why they would work with you again.]
+            </blockquote>
+            <div class="attribution">&mdash; [Client Name] | [Neighborhood], [City], [State]</div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Community -->
+    <section class="featured-community">
+      <div class="container">
+        <div class="community-grid">
+          <div class="community-image">
+            <div class="photo-placeholder">
+              <!-- Replace with community image -->
+              Community Photo
+            </div>
+          </div>
+          <div class="community-content fade-in">
+            <h3>Featured Community</h3>
+            <!-- COMMUNITY NAME -->
+            <h2>[Community Name]</h2>
+            <!-- COMMUNITY DESCRIPTION -->
+            <p>
+              [A vibrant suburban community with beautiful views, miles of trails, exclusive
+              community amenities, and a welcoming atmosphere. Describe what makes this neighborhood
+              special and desirable.]
+            </p>
+            <a href="#" class="text-link">Learn more about [Community Name] <span class="arrow">&rarr;</span></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Market Trends CTA -->
+    <section class="market-cta">
+      <div class="cta-bg">
+        <!-- Replace with area image -->
+        <!-- <img src="market-bg.jpg" alt="[Area Name]"> -->
+      </div>
+      <div class="cta-content fade-in">
+        <!-- AREA NAME -->
+        <h2>Thinking of calling [Area Name] home?</h2>
+        <a href="#" class="btn btn-primary">View Market Trends <span class="arrow">&rarr;</span></a>
+      </div>
+    </section>
+
+    <!-- Contact CTA -->
+    <section class="contact-cta">
+      <div class="container">
+        <div class="contact-cta-grid">
+          <div class="contact-photo">
+            <div class="photo-placeholder">
+              <!-- Replace with agent photo -->
+              Agent Photo
+            </div>
+          </div>
+          <div class="contact-text fade-in">
+            <!-- AGENT NAME -->
+            <h2>[Agent Name] looks forward to working with you.</h2>
+            <p>Get in touch to find out how [he/she] can assist you with your real estate needs.</p>
+            <a href="#" onclick="showPage('contact')" class="btn btn-dark">Contact <span class="arrow">&rarr;</span></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ========================================
+       ABOUT PAGE
+       ======================================== -->
+  <div class="page" id="page-about">
+    <div class="page-banner">
+      <h1>About</h1>
+    </div>
+    <section class="about-page">
+      <div class="container">
+        <div class="about-grid">
+          <div class="about-sidebar">
+            <div class="photo-placeholder">
+              <!-- Replace with agent headshot -->
+              Agent Photo
+            </div>
+            <div class="agent-credentials">
+              <!-- AGENT NAME & CREDENTIALS -->
+              <h3>[Agent Name]</h3>
+              <p>[Managing Broker, Luxury Advisor, MCNE&reg;, SRES&reg;, Realtor&reg;]</p>
+              <div class="social-links">
+                <!-- SOCIAL LINKS -->
+                <a href="#" title="Facebook">f</a>
+                <a href="#" title="LinkedIn">in</a>
+                <a href="#" title="Zillow">Z</a>
+              </div>
+            </div>
+          </div>
+          <div class="about-content">
+            <!-- AGENT NAME -->
+            <h1>[Agent Name], Real Estate Agent</h1>
+
+            <!-- FEATURED QUOTE -->
+            <div class="featured-quote">
+              "[A short, compelling testimonial quote that introduces who you are.]"
+              <span class="attr">&mdash; [Client Name]</span>
+            </div>
+
+            <!-- ABOUT PARAGRAPHS -->
+            <p>
+              [First paragraph: Describe your approach to real estate. What makes you different?
+              Emphasize your personalized service, boutique-style business approach, and dedication
+              to client satisfaction.]
+            </p>
+            <p>
+              [Second paragraph: Your experience and credentials. How many years in the business?
+              What designations do you hold? What areas do you specialize in?]
+            </p>
+            <p>
+              [Third paragraph: Personal details that help clients connect with you. Where do you
+              live? Family? Hobbies and interests? Community involvement?]
+            </p>
+            <p>
+              [Fourth paragraph: Your professional affiliations. Member of local, state and
+              National Association of Realtors&reg;, MLS membership, any awards or recognitions.]
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Previously Sold -->
+    <section class="sold-section">
+      <div class="container">
+        <h2 class="section-title">Previously Sold</h2>
+        <div class="sold-grid">
+          <!-- SOLD PROPERTY 1 -->
+          <div class="sold-card">
+            <div class="card-image">Property Photo</div>
+            <div class="card-details">
+              <div class="price">$[XXX,XXX]</div>
+              <div class="address">[Address, City, State]</div>
+            </div>
+          </div>
+          <!-- SOLD PROPERTY 2 -->
+          <div class="sold-card">
+            <div class="card-image">Property Photo</div>
+            <div class="card-details">
+              <div class="price">$[XXX,XXX]</div>
+              <div class="address">[Address, City, State]</div>
+            </div>
+          </div>
+          <!-- SOLD PROPERTY 3 -->
+          <div class="sold-card">
+            <div class="card-image">Property Photo</div>
+            <div class="card-details">
+              <div class="price">$[XXX,XXX]</div>
+              <div class="address">[Address, City, State]</div>
+            </div>
+          </div>
+          <!-- SOLD PROPERTY 4 -->
+          <div class="sold-card">
+            <div class="card-image">Property Photo</div>
+            <div class="card-details">
+              <div class="price">$[XXX,XXX]</div>
+              <div class="address">[Address, City, State]</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ========================================
+       CONTACT PAGE
+       ======================================== -->
+  <div class="page" id="page-contact">
+    <div class="page-banner">
+      <h1>Contact</h1>
+    </div>
+    <section class="contact-page">
+      <div class="container">
+        <div class="contact-grid">
+          <div class="contact-info">
+            <div class="agent-photo" style="margin-bottom: 24px;">
+              <div class="photo-placeholder" style="aspect-ratio: 1/1; max-width: 200px;">Agent Photo</div>
+            </div>
+            <!-- AGENT DETAILS -->
+            <h3>[Agent Name]</h3>
+            <div class="title">[Managing Broker]</div>
+            <div class="credentials">[Credentials, e.g. MCNE, SRES]</div>
+
+            <div class="info-item">
+              <span class="icon">&#9742;</span>
+              <!-- PHONE -->
+              <a href="tel:[PHONE]">[XXX-XXX-XXXX]</a>
+            </div>
+            <div class="info-item">
+              <span class="icon">&#9993;</span>
+              <!-- EMAIL -->
+              <a href="mailto:[EMAIL]">[email@brokerage.com]</a>
+            </div>
+            <div class="info-item">
+              <span class="icon">&#9873;</span>
+              <!-- OFFICE ADDRESS -->
+              <span>[Office Address, City, State ZIP]</span>
+            </div>
+          </div>
+
+          <div class="contact-form">
+            <form onsubmit="handleSubmit(event)">
+              <label for="intent">I'm looking to</label>
+              <select id="intent" required>
+                <option value="">Select one...</option>
+                <option value="buy">Buy a home</option>
+                <option value="sell">Sell a home</option>
+                <option value="both">Buy and sell a home</option>
+              </select>
+
+              <label for="name">Name *</label>
+              <input type="text" id="name" required>
+
+              <label for="email">Email *</label>
+              <input type="email" id="email" required>
+
+              <label for="phone">Phone *</label>
+              <input type="tel" id="phone" required>
+
+              <div class="checkbox-group">
+                <label style="display:block; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
+                  Are you currently working with a real estate agent? *
+                </label>
+                <input type="radio" name="has_agent" value="yes" id="agent-yes" required>
+                <label for="agent-yes">Yes</label>
+                &nbsp;&nbsp;
+                <input type="radio" name="has_agent" value="no" id="agent-no">
+                <label for="agent-no">No</label>
+              </div>
+
+              <label for="message">Message</label>
+              <textarea id="message" placeholder="Tell me about what you're looking for..."></textarea>
+
+              <button type="submit" class="btn btn-dark" style="width: 100%; justify-content: center;">
+                Submit <span class="arrow">&rarr;</span>
+              </button>
+            </form>
+            <p id="form-success" style="display:none; text-align:center; color: green; margin-top: 16px; font-weight: 600;">
+              Thank you! I'll be in touch soon.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ========================================
+       FOOTER
+       ======================================== -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-agent">
+          <div class="footer-photo">Photo</div>
+          <div>
+            <!-- AGENT NAME -->
+            <h4>[Agent Name]</h4>
+            <!-- BROKERAGE -->
+            <div class="brokerage">[Brokerage Name]</div>
+            <!-- PHONE -->
+            <a href="tel:[PHONE]">[XXX-XXX-XXXX]</a>
+            <!-- EMAIL -->
+            <a href="mailto:[EMAIL]">[email@brokerage.com]</a>
+          </div>
+        </div>
+        <div class="footer-nav">
+          <h4>Navigation</h4>
+          <a href="#" onclick="showPage('home')">Home</a>
+          <a href="#">Sellers</a>
+          <a href="#">Buyers</a>
+          <a href="#">[Area Name]</a>
+          <a href="#" onclick="showPage('contact')">Contact</a>
+        </div>
+        <div>
+          <!-- BROKERAGE LOGO -->
+          <div class="brokerage-logo">[Brokerage Logo]</div>
+          <div class="footer-social" style="margin-top: 20px;">
+            <!-- SOCIAL LINKS -->
+            <a href="#" title="Facebook">f</a>
+            <a href="#" title="LinkedIn">in</a>
+            <a href="#" title="Zillow">Z</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 [Agent Name]. All rights reserved.</span>
+        <div>
+          <a href="#">Privacy Policy</a>
+          <a href="#">DMCA Notice</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================
+       JAVASCRIPT
+       ======================================== -->
+  <script>
+    // SPA-style page navigation
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const page = document.getElementById('page-' + pageId);
+      if (page) {
+        page.classList.add('active');
+        window.scrollTo(0, 0);
+      }
+      // Close mobile menu
+      document.getElementById('mobileMenu').classList.remove('active');
+    }
+
+    // Mobile menu toggle
+    function toggleMobile() {
+      document.getElementById('mobileMenu').classList.toggle('active');
+    }
+
+    // Header scroll effect
+    window.addEventListener('scroll', () => {
+      const header = document.getElementById('header');
+      header.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // Intersection Observer for fade-in animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // Contact form handler
+    function handleSubmit(e) {
+      e.preventDefault();
+      // Replace with your form submission logic (e.g., email service, CRM API)
+      document.getElementById('form-success').style.display = 'block';
+      e.target.style.display = 'none';
+    }
+  </script>
+
+</body>
+</html>
