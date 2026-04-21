@@ -104,11 +104,11 @@
   ul, ol { padding-left: 22px; margin: 8px 0 14px; }
   li { margin-bottom: 6px; }
 
-  /* Three-option overview cards */
+  /* Option overview cards */
   .options-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
     margin-top: 8px;
   }
   .opt-card {
@@ -123,6 +123,7 @@
   .opt-card.opt-1 { border-top: 5px solid var(--accent); }
   .opt-card.opt-2 { border-top: 5px solid var(--blue); }
   .opt-card.opt-3 { border-top: 5px solid var(--purple); }
+  .opt-card.opt-4 { border-top: 5px solid var(--risk); }
   .opt-card .opt-num {
     font-family: ui-monospace, monospace;
     font-size: 12px;
@@ -180,6 +181,7 @@
   .opt-card.opt-1 .cta a { background: var(--accent); }
   .opt-card.opt-2 .cta a { background: var(--blue); }
   .opt-card.opt-3 .cta a { background: var(--purple); }
+  .opt-card.opt-4 .cta a { background: var(--risk); }
   .opt-card .cta a:hover { opacity: 0.9; }
 
   /* Tabs */
@@ -228,6 +230,8 @@
   .tab-btn[data-target="panel-2"].active .tnum { color: var(--blue); }
   .tab-btn[data-target="panel-3"].active { border-bottom-color: var(--purple); }
   .tab-btn[data-target="panel-3"].active .tnum { color: var(--purple); }
+  .tab-btn[data-target="panel-4"].active { border-bottom-color: var(--risk); }
+  .tab-btn[data-target="panel-4"].active .tnum { color: var(--risk); }
 
   .tab-panel {
     display: none;
@@ -295,6 +299,7 @@
   }
   #panel-2 ol.steps > li:before { background: var(--blue-soft); color: var(--blue); }
   #panel-3 ol.steps > li:before { background: var(--purple-soft); color: var(--purple); }
+  #panel-4 ol.steps > li:before { background: var(--risk-soft); color: var(--risk); }
 
   /* Econ table */
   table.matrix {
@@ -349,6 +354,9 @@
     margin-top: 10px;
   }
 
+  @media (max-width: 1100px) {
+    .options-grid { grid-template-columns: repeat(2, 1fr); }
+  }
   @media (max-width: 900px) {
     .options-grid { grid-template-columns: 1fr; }
     .tabs-nav { flex-direction: column; }
@@ -372,7 +380,7 @@
   <div class="inner">
     <div style="font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:#b8d6c7; margin-bottom:8px;">Haynes Team &middot; Licensed WA Brokers</div>
     <h1>Corner Lot Listing Playbook</h1>
-    <p class="sub">Three legitimate paths for us, as licensed brokers, to become the listing agent on every new-construction home built on a corner lot we source. Pick the path, execute the plan.</p>
+    <p class="sub">Four paths for us, as licensed brokers, to become the listing agent on every new-construction home built on a corner lot we source. Three clean, one high-risk. Pick the path, execute the plan.</p>
     <div class="tagrow">
       <span class="tag">Licensed WA brokers &mdash; not principal buyers</span>
       <span class="tag">Two commissions per deal: land + vertical</span>
@@ -383,10 +391,10 @@
 
 <div class="container">
 
-  <!-- THREE OPTIONS OVERVIEW -->
+  <!-- OPTIONS OVERVIEW -->
   <section class="card">
-    <h2>The Three Paths</h2>
-    <p class="lead">Each path ends the same way &mdash; we list the new homes. They differ in who we represent, who holds the contract with the owner, and how we get paid on the land sale.</p>
+    <h2>The Four Paths</h2>
+    <p class="lead">Each path ends the same way &mdash; we list the new homes. They differ in who we represent, who holds the contract with the owner, and how we get paid on the land sale. Options 1&ndash;3 are the clean paths. Path D (assignable PSA) is the high-risk path &mdash; only pursued with full guardrails.</p>
 
     <div class="options-grid">
 
@@ -486,6 +494,37 @@
         <div class="cta"><a href="#panel-3" onclick="showTab('panel-3')">See full plan &rarr;</a></div>
       </div>
 
+      <!-- PATH D -->
+      <div class="opt-card opt-4">
+        <div class="opt-num">Path D &middot; High Risk</div>
+        <h3 class="opt-title">Assignable PSA (Principal)</h3>
+        <p class="opt-sub">We sign the owner onto an assignable PSA as principal buyer, then assign to a network builder for a separately-disclosed fee. Requires firm approval and full disclosure at every step.</p>
+        <div class="opt-meta">
+          <strong>Agency:</strong> Principal (not broker for either side)<br>
+          <strong>Land compensation:</strong> Assignment fee<br>
+          <strong>Vertical commission:</strong> Listing on new builds
+        </div>
+        <div class="prosCons">
+          <div class="pros">
+            <h4>Pros</h4>
+            <ul>
+              <li>Fastest path to tying up the lot</li>
+              <li>Highest potential spread per deal</li>
+              <li>No need to pre-commit a specific builder</li>
+            </ul>
+          </div>
+          <div class="cons">
+            <h4>Cons</h4>
+            <ul>
+              <li>DOL / plaintiff&rsquo;s-attorney exposure is real</li>
+              <li>Needs designated broker sign-off + E&amp;O notified</li>
+              <li>Permanent question about seller representation</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cta"><a href="#panel-4" onclick="showTab('panel-4')">See full plan &rarr;</a></div>
+      </div>
+
     </div>
   </section>
 
@@ -503,6 +542,10 @@
       <button class="tab-btn" data-target="panel-3" onclick="showTab('panel-3')">
         <span class="tnum">Option 3</span>
         Developer Option Agreements
+      </button>
+      <button class="tab-btn" data-target="panel-4" onclick="showTab('panel-4')">
+        <span class="tnum">Path D &middot; High Risk</span>
+        Assignable PSA (Principal)
       </button>
     </div>
 
@@ -667,18 +710,77 @@
         The option agreement is not a standard form. Budget $500&ndash;$1,500 for attorney drafting per deal (or reusable template). Do not attempt to draft this yourselves.
       </div>
     </div>
-  </div>
 
-  <!-- CONSIDERED & REJECTED -->
-  <section class="card" style="margin-top: 22px; border-left: 5px solid var(--risk);">
-    <h2 style="color: var(--risk);">Considered &amp; Not Pursued &mdash; Assignable PSA</h2>
-    <p class="lead">We evaluated signing the owner onto an assignable purchase and sale agreement ourselves (wholesaler-style) and then assigning to a builder for a fee. We are not pursuing this path.</p>
-    <p>Even with full guardrails &mdash; designated broker approval, written disclosure of principal role, separate assignment fee disclosure, reasonable earnest money, no opaque entity names, E&amp;O notified &mdash; the fact pattern is one a DOL investigator or plaintiff&rsquo;s attorney can credibly frame as predatory. The three paths above deliver the same economics without that exposure.</p>
-    <div class="callout risk">
-      <span class="label">Why we&rsquo;re passing</span>
-      Assignment-for-profit by a licensee creates a permanent question about whether the seller was fairly represented. The Option 3 structure delivers the same feasibility window to builders with seller-positive optics.
+    <!-- PANEL 4: ASSIGNABLE PSA -->
+    <div class="tab-panel" id="panel-4" role="tabpanel">
+      <div class="panel-head">
+        <h2>Path D &mdash; Assignable PSA (Principal Acquisition)</h2>
+        <p class="lead">We sign the owner onto an assignable PSA as principal buyer, then assign to a network builder for a separately-disclosed fee. Highest optics risk of any path &mdash; only viable with every guardrail below in place.</p>
+      </div>
+
+      <div class="callout risk">
+        <span class="label">Read this first</span>
+        Even with every guardrail below, you are creating fact patterns that a DOL investigator or a plaintiff&rsquo;s attorney can credibly frame as predatory. Options 1&ndash;3 deliver comparable economics without that exposure. Reserve Path D for situations where the owner explicitly declines to list and declines a direct builder offer, but is willing to sign a contract with a known principal buyer.
+      </div>
+
+      <h3>How it works</h3>
+      <ol class="steps">
+        <li><strong>Designated broker approval &mdash; in writing.</strong> Our firm&rsquo;s designated broker is fully read in on the playbook and has signed off before we make a single outreach. No approval, no outreach. No exceptions.</li>
+        <li><strong>E&amp;O carrier notified.</strong> Confirm in writing that our errors &amp; omissions coverage extends to licensee-as-principal transactions with intent to assign. Keep the confirmation in the deal file.</li>
+        <li><strong>Line up the builder network.</strong> Master Brokerage Agreement signed with each network builder granting us exclusive listing rights on the vertical product &mdash; same instrument used in Options 1&ndash;3.</li>
+        <li><strong>Owner outreach with principal disclosure up front.</strong> Letter or door contact states clearly: &ldquo;I&rsquo;m a licensed broker. I&rsquo;d like to sign a contract to buy your lot myself and then assign that contract to a builder for a fee.&rdquo; No euphemisms.</li>
+        <li><strong>Written principal-role disclosure at the table.</strong> Signed acknowledgement that we are acting as principal, intend to assign the contract for profit, and are <em>not</em> representing the seller&rsquo;s interests in this transaction.</li>
+        <li><strong>Written recommendation to retain counsel.</strong> Seller advised in writing to engage their own broker or attorney before signing anything. Keep the signed acknowledgement in the deal file.</li>
+        <li><strong>Execute the assignable PSA.</strong> Earnest money is reasonable and actually at risk if we can&rsquo;t assign &mdash; not a token $500 with a walk-for-any-reason contingency. Buyer entity on the contract is one a reasonable seller can google back to our brokerage &mdash; no opaque shell LLCs.</li>
+        <li><strong>Separate assignment fee disclosure.</strong> Exact dollar amount of the assignment fee disclosed in writing to seller, builder, and closing agent before any party signs. Fee is itemized separately from any real estate commission.</li>
+        <li><strong>Shop the contract to the builder network during the inspection/feasibility window.</strong> Collect best price and written assignment consideration.</li>
+        <li><strong>Close or assign.</strong> Builder takes title at closing (or via formal assignment of the PSA). We collect the assignment fee at closing, disclosed separately from any commission.</li>
+        <li><strong>Build period: 12&ndash;24 months.</strong> Stay close to the builder.</li>
+        <li><strong>List the new homes.</strong> Exclusive listing per the Master Brokerage Agreement.</li>
+      </ol>
+
+      <h3>Economics</h3>
+      <table class="matrix">
+        <thead>
+          <tr><th>Event</th><th>Our role</th><th class="num">Typical dollars</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Assignment at close</td><td>Principal (assignor)</td><td class="num">$25K&ndash;$100K assignment fee (varies with lot)</td></tr>
+          <tr><td>New construction list #1</td><td>Listing broker for builder</td><td class="num">2.5&ndash;3.0% listing side</td></tr>
+          <tr><td>New construction list #2 (if multi-unit)</td><td>Listing broker for builder</td><td class="num">2.5&ndash;3.0% listing side</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Documents required</h3>
+      <ul class="docs">
+        <li><strong>Designated Broker Written Approval</strong> &mdash; of the principal-acquisition playbook; required before first owner contact.</li>
+        <li><strong>E&amp;O Carrier Confirmation</strong> &mdash; coverage extends to licensee-as-principal transactions with intent to assign.</li>
+        <li><strong>Assignable PSA</strong> &mdash; standard WA form with assignment language. Buyer entity must be traceable to our brokerage &mdash; no opaque shells.</li>
+        <li><strong>Principal Role Disclosure</strong> &mdash; signed acknowledgement that we are a licensed broker acting as principal and intend to assign for profit.</li>
+        <li><strong>Written Recommendation</strong> &mdash; that the seller retain their own broker or attorney before signing.</li>
+        <li><strong>Assignment Fee Disclosure</strong> &mdash; exact dollar amount, itemized separately from any commission, disclosed to seller, builder, and closing agent before signing.</li>
+        <li><strong>Master Brokerage Agreement</strong> &mdash; with each network builder for vertical listing rights.</li>
+      </ul>
+
+      <h3>Risks &amp; guardrails</h3>
+      <div class="callout risk">
+        <span class="label">Regulatory and litigation exposure</span>
+        Assignment-for-profit by a licensee creates a permanent question about whether the seller was fairly represented. This is the primary reason Options 1&ndash;3 exist. Every guardrail below is mitigation, not elimination.
+      </div>
+      <div class="callout warn">
+        <span class="label">Earnest money must be real</span>
+        EM has to read as real buyer consideration. A token deposit with a walk-for-any-reason contingency undermines the &ldquo;genuine principal&rdquo; framing and converts this into exactly the wholesaler pattern regulators target.
+      </div>
+      <div class="callout warn">
+        <span class="label">No opaque entity names</span>
+        The entity on the contract must be traceable to our brokerage &mdash; not a shell LLC designed to hide licensee involvement. Obscuring the licensee relationship is the single strongest signal of intent a regulator looks for.
+      </div>
+      <div class="callout info">
+        <span class="label">When to actually use this</span>
+        Reserve Path D for owners who have explicitly declined to list and declined a direct builder offer but are willing to sign a contract with a known principal buyer. It is the fallback path, not the default. If Option 1, 2, or 3 would close the same deal, use them.
+      </div>
     </div>
-  </section>
+  </div>
 
   <div class="footer-note">Haynes Team &middot; Licensed Washington Brokers &middot; Reference playbook &mdash; not legal advice. Confirm all forms and disclosures with your designated broker and firm&rsquo;s legal counsel before use.</div>
 </div>
