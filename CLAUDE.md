@@ -15,8 +15,13 @@ Always commit and push all changes to git after every update. Do not wait for th
 | File | Purpose |
 |------|---------|
 | `index.html` | **Primary app.** Property tax analyzer with GIS search, CSV upload parcel mapper, corner lot detection, and interactive map |
+| `corner_lot_finder.html` | Standalone corner lot finder for Chris Haynes PCP dataset (uses same GIS endpoints as `index.html` but scoped to a single CSV) |
+| `owner_lookup.html` | PIN matcher for King County bulk data CSVs (Parcel + Real Property Sales + Real Property Account). Uses streaming file reader for multi-GB Sales file |
 | `corner_lot_targets.html` | Static corner lot target list for developer acquisition |
-| `corner_lot_finder.html` | Standalone corner lot finder for Chris Haynes PCP dataset |
+| `corner_lot_outreach_plan.html` | Business playbook (non-technical) for licensed-broker corner-lot acquisition and developer sprint. Reference document, not an app |
+| `agent-website/index.html` | Real estate agent marketing site template (standalone, based on Lella Norberg design) — unrelated to the analysis tools |
+
+All HTML files open directly via `file://` &mdash; no server, no build, no package manager. Leaflet is the only external dependency and loads from CDN.
 
 ## Architecture: `index.html`
 
@@ -48,6 +53,15 @@ Single-file app (~1800 lines) with no external dependencies except Leaflet (load
 
 **Key data flow:** Fetch parcels (with geometry rings) -> fetch roads -> compute corners -> fetch sales -> analyze (median/flagging) -> render table + map
 
+## Architecture: `owner_lookup.html`
+
+Different model than `index.html`: instead of the live GIS API, this tool joins three King County bulk-data CSV exports locally in the browser. It's the path for batch work on tens of thousands of rows without API rate limits.
+
+- **Three required uploads** (any order): Parcel CSV, Real Property Sales CSV, Real Property Account CSV. Each maps to a distinct slot in the UI (`loadParcels()`, `loadSales()`, `loadAcct()`).
+- **Sales file is multi-GB.** `loadSales()` uses `file.stream().getReader()` + chunked line parsing rather than `FileReader.readAsText()` — loading the whole string would OOM. Maintains a `leftover` buffer across chunks so rows aren't split at chunk boundaries. Most recent sale per PIN wins.
+- **Join key is 10-digit zero-padded PIN.** `normPin()` handles both string PINs and concatenated Major/Minor integer fields (Sales data uses Major+Minor; Parcel data uses a single PIN field).
+- **Output** is a joined table (filterable by absentee-owner flag, exportable to CSV) &mdash; this is how you produce the taxpayer-mailing-address list referenced by `corner_lot_outreach_plan.html`.
+
 ## King County GIS API Notes
 
 - PIN field is a 10-digit zero-padded string (e.g., `0164000381`)
@@ -57,7 +71,13 @@ Single-file app (~1800 lines) with no external dependencies except Leaflet (load
 
 ## Data Files (gitignored)
 
-CSV, PDF, XLSX files are in `.gitignore`. Key datasets:
+`.gitignore` excludes `*.csv`, `*.pdf`, `*.xlsx`, `*.xls`, and `memory/`. Team CSVs and King County bulk exports live alongside the HTML files but never commit. Key datasets in use:
+
+**Team / input CSVs:**
 - `Chris Haynes Filtered Properties.csv` — uses `APN - UNFORMATTED` as PIN column
-- `seattle_shoreline_property_tax_analysis.csv` — uses `PIN` column, exported by this app
+- `seattle_shoreline_property_tax_analysis.csv` — uses `PIN` column, exported by `index.html`
 - `Chris Haynes Poor Condition Properties 03.18.csv` — large PCP dataset (~1.9 MB)
+- `Haynes Team Corner Lot Search Owners 04.15.26.csv` — current corner-lot target list referenced in the outreach plan
+
+**King County bulk exports (zipped):**
+- `Parcel.zip`, `Real Property Sales.zip`, `Real Property Account.zip`, `Tax Data.zip` — the canonical King County data dumps. Unzip and feed to `owner_lookup.html` to produce owner mailing lists. The Sales CSV specifically is large enough that non-streaming parsers will crash the tab.
