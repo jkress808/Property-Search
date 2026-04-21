@@ -22,6 +22,8 @@
     --ok-soft: #e2f0e5;
     --blue: #1e466e;
     --blue-soft: #e3ecf5;
+    --purple: #4a2a6b;
+    --purple-soft: #ece3f5;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -61,54 +63,17 @@
     border-radius: 99px;
     letter-spacing: 0.02em;
   }
-  .layout {
+  .container {
     max-width: 1120px;
     margin: 0 auto;
-    padding: 24px 28px 80px;
-    display: grid;
-    grid-template-columns: 230px 1fr;
-    gap: 32px;
+    padding: 32px 28px 80px;
   }
-  nav.side {
-    position: sticky;
-    top: 20px;
-    align-self: start;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 14px 12px;
-    font-size: 14px;
-  }
-  nav.side h4 {
-    margin: 0 0 8px;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    padding: 0 6px;
-  }
-  nav.side a {
-    display: block;
-    padding: 7px 10px;
-    color: var(--ink-2);
-    text-decoration: none;
-    border-radius: 6px;
-    border-left: 3px solid transparent;
-  }
-  nav.side a:hover { background: var(--accent-soft); color: var(--accent); border-left-color: var(--accent); }
-  nav.side a.sprint { color: var(--blue); font-weight: 600; }
-  nav.side a.sprint:hover { background: var(--blue-soft); border-left-color: var(--blue); }
-  main { min-width: 0; }
   section.card {
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 12px;
     padding: 28px 30px;
     margin-bottom: 22px;
-    scroll-margin-top: 14px;
-  }
-  section.card.sprint-card {
-    border-left: 5px solid var(--blue);
   }
   section.card h2 {
     margin: 0 0 4px;
@@ -116,22 +81,6 @@
     font-weight: 600;
     letter-spacing: -0.01em;
     color: var(--ink);
-  }
-  section.card h2 .num {
-    display: inline-block;
-    background: var(--accent-soft);
-    color: var(--accent);
-    border-radius: 6px;
-    padding: 2px 9px;
-    font-size: 14px;
-    font-weight: 600;
-    margin-right: 10px;
-    vertical-align: middle;
-    font-family: ui-monospace, monospace;
-  }
-  section.card.sprint-card h2 .num {
-    background: var(--blue-soft);
-    color: var(--blue);
   }
   section.card .lead {
     color: var(--muted);
@@ -144,31 +93,160 @@
     color: var(--ink);
     font-weight: 600;
   }
+  h4 {
+    font-size: 14px;
+    margin: 14px 0 6px;
+    color: var(--ink-2);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
   ul, ol { padding-left: 22px; margin: 8px 0 14px; }
   li { margin-bottom: 6px; }
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  .stat {
-    background: var(--accent-soft);
-    border-left: 4px solid var(--accent);
-    padding: 12px 14px;
-    border-radius: 6px;
+
+  /* Three-option overview cards */
+  .options-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 8px;
   }
-  .stat.blue { background: var(--blue-soft); border-left-color: var(--blue); }
-  .stat .k {
-    font-size: 11px;
+  .opt-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 22px 20px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .opt-card.opt-1 { border-top: 5px solid var(--accent); }
+  .opt-card.opt-2 { border-top: 5px solid var(--blue); }
+  .opt-card.opt-3 { border-top: 5px solid var(--purple); }
+  .opt-card .opt-num {
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
     text-transform: uppercase;
-    color: var(--accent);
-    letter-spacing: 0.05em;
-    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 6px;
   }
-  .stat.blue .k { color: var(--blue); }
-  .stat .v {
+  .opt-card h3.opt-title {
+    margin: 0 0 8px;
     font-size: 17px;
     font-weight: 600;
     color: var(--ink);
-    margin-top: 2px;
   }
+  .opt-card .opt-sub {
+    color: var(--ink-2);
+    font-size: 13.5px;
+    margin: 0 0 14px;
+    min-height: 60px;
+  }
+  .opt-card .opt-meta {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 8px 0;
+    border-top: 1px dashed var(--line);
+    border-bottom: 1px dashed var(--line);
+    margin-bottom: 12px;
+  }
+  .opt-card .opt-meta strong { color: var(--ink-2); font-weight: 600; }
+  .opt-card .prosCons h4 {
+    font-size: 11px;
+    margin: 10px 0 4px;
+  }
+  .opt-card .prosCons ul {
+    margin: 0 0 8px;
+    padding-left: 18px;
+    font-size: 13px;
+  }
+  .opt-card .prosCons li { margin-bottom: 3px; }
+  .opt-card .pros h4 { color: var(--ok); }
+  .opt-card .cons h4 { color: var(--risk); }
+  .opt-card .cta {
+    margin-top: auto;
+    padding-top: 12px;
+  }
+  .opt-card .cta a {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    color: #fff;
+  }
+  .opt-card.opt-1 .cta a { background: var(--accent); }
+  .opt-card.opt-2 .cta a { background: var(--blue); }
+  .opt-card.opt-3 .cta a { background: var(--purple); }
+  .opt-card .cta a:hover { opacity: 0.9; }
+
+  /* Tabs */
+  .tabs-wrap {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .tabs-nav {
+    display: flex;
+    border-bottom: 1px solid var(--line);
+    background: #f1efe6;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 16px 18px;
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--line);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-2);
+    text-align: left;
+    line-height: 1.35;
+    border-bottom: 3px solid transparent;
+    transition: background 0.15s;
+  }
+  .tab-btn:last-child { border-right: none; }
+  .tab-btn:hover { background: #ebe9df; }
+  .tab-btn .tnum {
+    display: block;
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 3px;
+    font-weight: 500;
+  }
+  .tab-btn.active { background: #fff; color: var(--ink); }
+  .tab-btn[data-target="panel-1"].active { border-bottom-color: var(--accent); }
+  .tab-btn[data-target="panel-1"].active .tnum { color: var(--accent); }
+  .tab-btn[data-target="panel-2"].active { border-bottom-color: var(--blue); }
+  .tab-btn[data-target="panel-2"].active .tnum { color: var(--blue); }
+  .tab-btn[data-target="panel-3"].active { border-bottom-color: var(--purple); }
+  .tab-btn[data-target="panel-3"].active .tnum { color: var(--purple); }
+
+  .tab-panel {
+    display: none;
+    padding: 30px 32px;
+  }
+  .tab-panel.active { display: block; }
+  .tab-panel .panel-head {
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .tab-panel h2 {
+    margin: 0 0 6px;
+    font-size: 22px;
+    font-weight: 600;
+  }
+  .tab-panel .panel-head .lead { margin: 0; color: var(--muted); font-size: 14.5px; }
+
+  /* Callouts */
   .callout {
     margin: 14px 0;
     padding: 14px 16px;
@@ -188,6 +266,37 @@
     display: block;
     margin-bottom: 4px;
   }
+
+  /* Step list */
+  ol.steps { counter-reset: step; list-style: none; padding-left: 0; }
+  ol.steps > li {
+    position: relative;
+    padding: 10px 0 10px 42px;
+    border-bottom: 1px dashed var(--line);
+    counter-increment: step;
+  }
+  ol.steps > li:last-child { border-bottom: none; }
+  ol.steps > li:before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-family: ui-monospace, monospace;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #panel-2 ol.steps > li:before { background: var(--blue-soft); color: var(--blue); }
+  #panel-3 ol.steps > li:before { background: var(--purple-soft); color: var(--purple); }
+
+  /* Econ table */
   table.matrix {
     width: 100%;
     border-collapse: collapse;
@@ -209,89 +318,51 @@
     letter-spacing: 0.04em;
   }
   table.matrix tr:last-child td { border-bottom: none; }
-  .pill {
-    display: inline-block;
-    font-size: 11.5px;
-    padding: 2px 8px;
-    border-radius: 99px;
-    font-weight: 600;
+  table.matrix .num { text-align: right; font-family: ui-monospace, monospace; }
+
+  /* Doc list */
+  ul.docs {
+    list-style: none;
+    padding-left: 0;
+    margin: 8px 0;
   }
-  .pill.low { background: var(--ok-soft); color: var(--ok); }
-  .pill.med { background: var(--warn-soft); color: var(--warn); }
-  .pill.high { background: var(--risk-soft); color: var(--risk); }
-  .checklist { list-style: none; padding-left: 0; }
-  .checklist li {
-    padding: 7px 0 7px 28px;
-    position: relative;
-    border-bottom: 1px dashed var(--line);
-  }
-  .checklist li:before {
-    content: "";
-    position: absolute;
-    left: 4px;
-    top: 12px;
-    width: 14px;
-    height: 14px;
-    border: 1.5px solid var(--accent);
-    border-radius: 3px;
-  }
-  .sample {
-    background: #f9f7ef;
-    border: 1px dashed #c9c2a0;
-    border-radius: 8px;
-    padding: 16px 18px;
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: 14.5px;
-    color: #2d2d2d;
-    white-space: pre-wrap;
-    margin: 10px 0;
-  }
-  .day {
+  ul.docs li {
+    padding: 8px 12px;
+    background: #faf9f2;
     border: 1px solid var(--line);
-    border-left: 4px solid var(--blue);
-    border-radius: 8px;
-    padding: 16px 18px;
-    margin: 12px 0;
-    background: #fbfbf7;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    font-size: 14px;
   }
-  .day h4 {
-    margin: 0 0 8px;
-    font-size: 15px;
-    color: var(--blue);
-  }
-  .day .time {
-    font-family: ui-monospace, monospace;
-    font-size: 12px;
-    color: var(--muted);
-    margin-right: 6px;
-  }
-  .econ-table td { font-size: 14px; }
-  .econ-table .num { text-align: right; font-family: ui-monospace, monospace; }
-  code.k {
-    background: #efece1;
-    padding: 1px 6px;
-    border-radius: 3px;
-    font-size: 13px;
-    color: #3a3a3a;
-  }
+  ul.docs li strong { color: var(--ink); }
+
   .footer-note {
     color: var(--muted);
     font-size: 12.5px;
     text-align: center;
     padding: 18px 20px 4px;
   }
-  @media (max-width: 880px) {
-    .layout { grid-template-columns: 1fr; padding: 18px; }
-    nav.side { position: static; }
-    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-top: 10px;
+  }
+
+  @media (max-width: 900px) {
+    .options-grid { grid-template-columns: 1fr; }
+    .tabs-nav { flex-direction: column; }
+    .tab-btn { border-right: none; border-bottom: 1px solid var(--line); }
+    .tab-btn.active { border-bottom-width: 3px; }
+    .two-col { grid-template-columns: 1fr; }
     header.hero { padding: 36px 20px 40px; }
-    section.card { padding: 22px 20px; }
+    section.card, .tab-panel { padding: 22px 20px; }
+    .container { padding: 20px 18px 60px; }
   }
   @media print {
     header.hero { background: #1f5a46 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    nav.side { display: none; }
-    .layout { grid-template-columns: 1fr; padding: 0 20px; }
-    section.card { box-shadow: none; page-break-inside: avoid; border: 1px solid #ccc; }
+    .tab-panel { display: block !important; page-break-before: always; }
+    .tabs-nav { display: none; }
   }
 </style>
 </head>
@@ -301,731 +372,334 @@
   <div class="inner">
     <div style="font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:#b8d6c7; margin-bottom:8px;">Haynes Team &middot; Licensed WA Brokers</div>
     <h1>Corner Lot Listing Playbook</h1>
-    <p class="sub">We&rsquo;re not wholesalers. We&rsquo;re licensed brokers representing the <strong>seller</strong>, finding development-ready corner lots, introducing them to our developer network, and earning <strong>(a) the land-sale commission</strong> + <strong>(b) the exclusive listing on every home built on the lot</strong>.</p>
+    <p class="sub">Three legitimate paths for us, as licensed brokers, to become the listing agent on every new-construction home built on a corner lot we source. Pick the path, execute the plan.</p>
     <div class="tagrow">
       <span class="tag">Licensed WA brokers &mdash; not principal buyers</span>
-      <span class="tag">Payoff = land listing + new-construction listings</span>
-      <span class="tag">Developer network already warm</span>
-      <span class="tag">Speed: 3&ndash;5 day developer sprint</span>
+      <span class="tag">Two commissions per deal: land + vertical</span>
+      <span class="tag">Builder master agreements required</span>
     </div>
   </div>
 </header>
 
-<div class="layout">
-  <nav class="side">
-    <h4>Sections</h4>
-    <a href="#overview">Overview &amp; Economics</a>
-    <a href="#legal">Legal Framework (WA)</a>
-    <a href="#plan-postcard">Path A &mdash; Owner Postcard</a>
-    <a href="#plan-consult">Path B &mdash; Listing Consultation</a>
-    <a href="#alternatives">Other Owner Paths</a>
-    <a href="#sprint" class="sprint">&#9733; Developer Sprint (3&ndash;5 day)</a>
-    <a href="#commitment">Commission Commitment Letter</a>
-    <a href="#matrix">Comparison Matrix</a>
-    <a href="#clarity">Seller Clarity / Agency</a>
-    <a href="#liability">Liability Guardrails</a>
-    <a href="#recommended">Recommended Sequence</a>
-    <a href="#checklist">Launch Checklist</a>
-  </nav>
+<div class="container">
 
-  <main>
+  <!-- THREE OPTIONS OVERVIEW -->
+  <section class="card">
+    <h2>The Three Paths</h2>
+    <p class="lead">Each path ends the same way &mdash; we list the new homes. They differ in who we represent, who holds the contract with the owner, and how we get paid on the land sale.</p>
 
-    <!-- OVERVIEW -->
-    <section class="card" id="overview">
-      <h2><span class="num">00</span>Overview &amp; Economics</h2>
-      <p class="lead">The CSV is a list of corner-lot owners in Seattle/Shoreline with assessed value at or below $600K &mdash; i.e., where the dirt is worth more than the house. Our role is to be the owner&rsquo;s <em>listing broker</em>, sell the raw lot to a developer in our network, and secure the exclusive listing on the new construction as a written condition of the introduction.</p>
+    <div class="options-grid">
 
-      <h3>The two commissions on every deal</h3>
-      <table class="matrix econ-table">
-        <thead>
-          <tr><th>Leg</th><th>Counterparty</th><th>Trigger</th><th>Typical take</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>1. Land sale listing</strong></td>
-            <td>Owner (seller)</td>
-            <td>Close of land to developer</td>
-            <td class="num">2.5&ndash;3% of land price</td>
-          </tr>
-          <tr>
-            <td><strong>2. New-construction listings</strong></td>
-            <td>Developer</td>
-            <td>Sale of each finished home/townhome</td>
-            <td class="num">2.5&ndash;3% per unit &times; N units</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div class="callout ok">
-        <span class="label">Why leg 2 dominates the math</span>
-        A $550K lot that becomes 4 townhomes at $900K each = $3.6M of retail sell-through. At 2.5% that&rsquo;s $90K on the back end, compared to ~$15K on the front-end land sale. This is why we give up the buyer-side commission and source owners aggressively &mdash; we&rsquo;re underwriting to the <em>finished-home</em> payoff, not the lot trade.
+      <!-- OPTION 1 -->
+      <div class="opt-card opt-1">
+        <div class="opt-num">Option 1</div>
+        <h3 class="opt-title">Represent the Seller</h3>
+        <p class="opt-sub">Sign a listing agreement with the lot owner. Market the lot to our builder network. Builders who buy our lots have pre-signed an exclusive on the vertical product.</p>
+        <div class="opt-meta">
+          <strong>Agency:</strong> Listing broker for seller<br>
+          <strong>Land commission:</strong> Listing side<br>
+          <strong>Vertical commission:</strong> Listing on new builds
+        </div>
+        <div class="prosCons">
+          <div class="pros">
+            <h4>Pros</h4>
+            <ul>
+              <li>Cleanest agency setup, no principal conflict</li>
+              <li>Seller represented throughout &mdash; no optics risk</li>
+              <li>Standard WA listing agreement, nothing exotic</li>
+              <li>No assignment, no wholesaler framing</li>
+            </ul>
+          </div>
+          <div class="cons">
+            <h4>Cons</h4>
+            <ul>
+              <li>Owner has to agree to list &mdash; hardest first ask</li>
+              <li>Relies on builder honoring master agreement 12&ndash;24 months later</li>
+              <li>Vertical commission is deferred (pay-on-build)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cta"><a href="#panel-1" onclick="showTab('panel-1')">See full plan &rarr;</a></div>
       </div>
 
-      <h3>Posture and agency</h3>
-      <ul>
-        <li>We represent the <strong>owner / seller</strong>. We are not the developer&rsquo;s broker on the land purchase.</li>
-        <li>Our compensation on the new-construction listings is a <strong>separate written agreement with the developer</strong>, executed <em>before</em> the land sale closes.</li>
-        <li>This keeps our fiduciary duty clean: we owe the seller our best effort to maximize their price; the back-end commission is paid by the developer and does not come out of the seller&rsquo;s proceeds.</li>
-      </ul>
-    </section>
+      <!-- OPTION 2 -->
+      <div class="opt-card opt-2">
+        <div class="opt-num">Option 2</div>
+        <h3 class="opt-title">Represent the Builder</h3>
+        <p class="opt-sub">Sign buyer agency with 3&ndash;5 builders, each under a master giving us exclusive vertical listing rights. Cold-outreach owners as the builder&rsquo;s agent. Builder makes the offer directly.</p>
+        <div class="opt-meta">
+          <strong>Agency:</strong> Buyer broker for builder<br>
+          <strong>Land commission:</strong> Buyer side<br>
+          <strong>Vertical commission:</strong> Listing on new builds
+        </div>
+        <div class="prosCons">
+          <div class="pros">
+            <h4>Pros</h4>
+            <ul>
+              <li>We control both sides of our client relationship</li>
+              <li>No &ldquo;convince the owner to list with us&rdquo; step</li>
+              <li>Faster to offer &mdash; builder makes the move directly</li>
+              <li>No assignment in the chain</li>
+            </ul>
+          </div>
+          <div class="cons">
+            <h4>Cons</h4>
+            <ul>
+              <li>Seller is unrepresented (must be disclosed)</li>
+              <li>Optics risk if owner feels pressured by a licensee</li>
+              <li>Single-offer dynamic &mdash; no multi-builder bidding</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cta"><a href="#panel-2" onclick="showTab('panel-2')">See full plan &rarr;</a></div>
+      </div>
 
-    <!-- LEGAL -->
-    <section class="card" id="legal">
-      <h2><span class="num">01</span>Legal Framework (Washington State)</h2>
-      <p class="lead">Because we&rsquo;re licensed brokers, the usual wholesaler-adjacent exposures (RCW 18.85 unlicensed-brokerage risk, assignment-disclosure gray area) do not apply. The exposures that <em>do</em> apply are the ones every WA listing broker carries &mdash; agency relationships, written compensation agreements, and the 2024 NAR-settlement changes to commission disclosure.</p>
+      <!-- OPTION 3 -->
+      <div class="opt-card opt-3">
+        <div class="opt-num">Option 3</div>
+        <h3 class="opt-title">Option Agreements with Developer Partner</h3>
+        <p class="opt-sub">Builder pays seller a non-refundable option fee ($2&ndash;10K) for 30&ndash;90 days of feasibility. Builder exercises or walks; owner keeps the fee either way. We act as buyer&rsquo;s agent for the builder.</p>
+        <div class="opt-meta">
+          <strong>Agency:</strong> Buyer broker for builder<br>
+          <strong>Land commission:</strong> Buyer side on exercise<br>
+          <strong>Vertical commission:</strong> Listing on new builds
+        </div>
+        <div class="prosCons">
+          <div class="pros">
+            <h4>Pros</h4>
+            <ul>
+              <li>Seller gets real money upfront &mdash; defensible vs. wholesaler</li>
+              <li>Builder gets feasibility window without tying owner up for nothing</li>
+              <li>Pattern already used by sophisticated infill builders</li>
+              <li>Productizable &mdash; we become &ldquo;the team that brings sites&rdquo;</li>
+            </ul>
+          </div>
+          <div class="cons">
+            <h4>Cons</h4>
+            <ul>
+              <li>More complex contract than a standard PSA</li>
+              <li>Builder must put real money at risk upfront</li>
+              <li>Slower close-to-cash on land-side commission</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cta"><a href="#panel-3" onclick="showTab('panel-3')">See full plan &rarr;</a></div>
+      </div>
 
-      <h3>RCW 18.86 &mdash; Brokerage Relationships Act</h3>
-      <ul>
-        <li>Deliver the <strong>&ldquo;Real Estate Brokerage in Washington&rdquo; pamphlet</strong> to every buyer/seller we interact with before substantive discussions. This is mandatory under RCW 18.86.030.</li>
-        <li>Execute a <strong>written listing agreement</strong> (exclusive right-to-sell preferred) with the owner before marketing the lot. Verbal listings are not actionable for commission in WA.</li>
-        <li>If a developer we&rsquo;ve teed up also wants us as their buyer&rsquo;s broker, it&rsquo;s <strong>limited dual agency</strong> &mdash; requires informed written consent from both sides and a modified duty of care. Default to avoiding this on the land purchase; keep it clean.</li>
-      </ul>
+    </div>
+  </section>
 
-      <h3>Written commission agreement &mdash; the key document</h3>
-      <p>WA courts have repeatedly held that a broker cannot recover commission without a written agreement signed by the party they expect to be paid by. For this play, that means two signed documents per deal:</p>
-      <ol>
-        <li><strong>Exclusive listing agreement</strong> (owner &rarr; us) for the land sale.</li>
-        <li><strong>Future listing commitment</strong> (developer &rarr; us) for the new-construction units, signed <em>before</em> we introduce the developer to the property. This is the leverage that keeps the developer honest after close.</li>
+  <!-- TABBED FULL PLANS -->
+  <div class="tabs-wrap" id="plans">
+    <div class="tabs-nav" role="tablist">
+      <button class="tab-btn active" data-target="panel-1" onclick="showTab('panel-1')">
+        <span class="tnum">Option 1</span>
+        Represent the Seller
+      </button>
+      <button class="tab-btn" data-target="panel-2" onclick="showTab('panel-2')">
+        <span class="tnum">Option 2</span>
+        Represent the Builder
+      </button>
+      <button class="tab-btn" data-target="panel-3" onclick="showTab('panel-3')">
+        <span class="tnum">Option 3</span>
+        Developer Option Agreements
+      </button>
+    </div>
+
+    <!-- PANEL 1: SELLER REP -->
+    <div class="tab-panel active" id="panel-1" role="tabpanel">
+      <div class="panel-head">
+        <h2>Option 1 &mdash; Represent the Seller</h2>
+        <p class="lead">The cleanest path. We sign the owner as our listing client on the raw lot, and our builder network has already committed in writing to give us the new-construction listings.</p>
+      </div>
+
+      <h3>How it works</h3>
+      <ol class="steps">
+        <li><strong>Identify the target.</strong> Corner lot on our list where the dirt is worth materially more than the house. Pull assessor data, zoning, and comps.</li>
+        <li><strong>Line up the builder side first.</strong> Before we knock on owners&rsquo; doors, 3&ndash;5 developers in our network have signed a <em>Builder Master Brokerage Agreement</em>: &ldquo;if the Haynes Team brings you a lot, you grant us the exclusive listing on the vertical product.&rdquo;</li>
+        <li><strong>Owner outreach.</strong> Postcard, letter, or door-knock from a licensed broker. Pitch: &ldquo;Your lot is worth more than your house. Here&rsquo;s the comp. We&rsquo;d like 15 minutes to walk you through what a builder would pay.&rdquo;</li>
+        <li><strong>Listing consultation.</strong> At the table: current assessed value, developer-paid comp range, a one-page transaction summary, and the listing agreement. Recommend in writing that the owner engage their own attorney.</li>
+        <li><strong>Sign the listing agreement.</strong> Standard WA NWMLS form with a land-sale amendment. Disclose our compensation structure in full.</li>
+        <li><strong>Run the 3&ndash;5 day builder sprint.</strong> Blast the lot to committed builders. Collect written offers. Present all offers to seller; seller picks.</li>
+        <li><strong>Close the land sale.</strong> We collect the listing-side commission at closing.</li>
+        <li><strong>Build period: 12&ndash;24 months.</strong> Stay in touch with builder. Pre-market coming-soon lists to our database.</li>
+        <li><strong>List the new homes.</strong> Exclusive listing per the master agreement. Collect listing commission on each unit.</li>
       </ol>
 
-      <h3>NAR settlement (effective August 2024)</h3>
-      <ul>
-        <li>Buyer-broker compensation can no longer be offered through the MLS.</li>
-        <li>Any buyer-broker compensation must be in a written buyer-broker agreement between the developer and their own broker (if any). Since we are not representing the developer, this mostly doesn&rsquo;t touch us &mdash; but the listing agreement with the owner should explicitly state whether any buyer-side compensation is being offered and who pays.</li>
-        <li>The cleanest structure: owner pays <strong>only our listing-side commission</strong> (2.5&ndash;3%) on the land sale. Developer brings their own representation or comes direct. No cooperating broker fee on MLS.</li>
-      </ul>
-
-      <div class="callout warn">
-        <span class="label">RCW 61.34 &mdash; Equity Skimming / Distressed Homeowner</span>
-        Still applies. If any owner on the target list is in default, tax-delinquent, or pre-foreclosure, follow the Distressed Property Law pathway specifically &mdash; separate script, separate disclosures. Licensed status does not insulate you from this statute.
-      </div>
-
-      <div class="callout warn">
-        <span class="label">RCW 19.86 &mdash; Consumer Protection Act</span>
-        Still applies. Don&rsquo;t understate land value to the owner to push them to sell fast, and don&rsquo;t overstate development potential to the developer. Both are CPA violations with treble damages and fees.
-      </div>
-
-      <div class="callout info">
-        <span class="label">Firm / broker paperwork</span>
-        Every template below (listing agreement, commission commitment letter, postcard copy) should be reviewed once by your designated broker and your firm&rsquo;s attorney. After that the forms are reusable across the entire campaign.
-      </div>
-    </section>
-
-    <!-- PATH A - POSTCARD -->
-    <section class="card" id="plan-postcard">
-      <h2><span class="num">A</span>Path A &mdash; Owner Postcard (Listing Lead Gen)</h2>
-      <p class="lead">Reframed from the wholesale version. The postcard now pitches our <strong>listing service</strong>: &ldquo;Your lot may be worth more as a development site than as a house.&rdquo; We&rsquo;re offering a free valuation, not a cash offer.</p>
-
-      <div class="grid-3">
-        <div class="stat"><div class="k">Cost / piece</div><div class="v">$0.55&ndash;$0.90</div></div>
-        <div class="stat"><div class="k">Typical response</div><div class="v">1&ndash;3%</div><div style="color:var(--muted); font-size:12px; margin-top:4px;">Higher than wholesale &mdash; we&rsquo;re offering money, not taking it</div></div>
-        <div class="stat"><div class="k">First listing</div><div class="v">2&ndash;4 weeks</div></div>
-      </div>
-
-      <h3>Execution steps</h3>
-      <ol>
-        <li><strong>Clean the list.</strong> From the corner-lot CSV, pull each owner&rsquo;s taxpayer mailing address from the King County Real Property Account dataset (already in repo as <code class="k">Real Property Account.zip</code>).</li>
-        <li><strong>Segment absentee vs. owner-occupant.</strong> Absentee owners (taxpayer address &ne; property address) respond at 2&ndash;3x. Mail them first.</li>
-        <li><strong>Design + print.</strong> Vistaprint / Click2Mail / PostcardMania. Jumbo 6&times;9 or 6&times;11 gets best open rate.</li>
-        <li><strong>Track.</strong> Dedicated CallRail number + unique landing page + unique email per campaign tranche.</li>
-        <li><strong>Inbound screening call.</strong> Motivation &rarr; timeline &rarr; price expectation &rarr; schedule in-person listing consultation (Path B).</li>
-        <li><strong>Deliver the agency pamphlet</strong> before any substantive discussion of price or terms &mdash; even on the phone. Follow with email copy immediately.</li>
-      </ol>
-
-      <h3>Sample postcard &mdash; front</h3>
-      <div class="sample">Your corner lot may be worth more than your tax bill suggests.
-
-Hi [FIRST NAME or &ldquo;Neighbor&rdquo;],
-
-We&rsquo;re licensed Seattle-area brokers specializing in development-ready corner lots. Based on current zoning at [PROPERTY ADDRESS] and recent land sales nearby, your lot may have significant value to a builder &mdash; often well above what a traditional home sale would net you.
-
-We&rsquo;d like to offer you a free, no-obligation valuation.
-
-Call or text: (206) XXX-XXXX
-[your-landing-page.com]
-
-&mdash; The Haynes Team
-[Firm Name] &middot; WA License #[#]</div>
-
-      <h3>Sample postcard &mdash; back (compliance strip)</h3>
-      <div class="sample">The Haynes Team &middot; Licensed real estate brokers in Washington State &middot; [Firm name and address]. This is a marketing solicitation. We are not making an offer to purchase your property. We are offering listing and valuation services. If you have a current listing agreement with another broker, please disregard this mailer. To opt out of future mailings, call (206) XXX-XXXX.</div>
-
-      <div class="callout ok">
-        <span class="label">Why this copy beats the wholesale pitch</span>
-        &ldquo;We want to buy your house&rdquo; triggers skepticism. &ldquo;Your lot may be worth more than you think and we can get you that price&rdquo; is what brokers have always offered. The owner&rsquo;s mental model now fits a world they understand &mdash; hiring a Realtor &mdash; instead of the sketchy world of cash investors and wholesalers.
-      </div>
-    </section>
-
-    <!-- PATH B - LISTING CONSULT -->
-    <section class="card" id="plan-consult">
-      <h2><span class="num">B</span>Path B &mdash; In-Person Listing Consultation</h2>
-      <p class="lead">Where Path A generates the lead, Path B converts it. This replaces the old &ldquo;mailed contract&rdquo; approach entirely. We are not sending a purchase contract &mdash; we are asking for a signed exclusive listing agreement after a sit-down conversation backed by real numbers.</p>
-
-      <div class="grid-3">
-        <div class="stat"><div class="k">Conversion</div><div class="v">40&ndash;60%</div><div style="color:var(--muted); font-size:12px; margin-top:4px;">Of warm leads who sit down</div></div>
-        <div class="stat"><div class="k">Listing term</div><div class="v">90&ndash;180 days</div></div>
-        <div class="stat"><div class="k">Time to executed listing</div><div class="v">3&ndash;10 days from first call</div></div>
-      </div>
-
-      <h3>What we bring to the table</h3>
-      <ol>
-        <li><strong>Side-by-side net sheet.</strong> Two columns: (a) traditional as-is home sale net-to-seller, (b) land sale to developer net-to-seller. For most target lots the land path is $100K&ndash;$400K higher.</li>
-        <li><strong>Comparable land sales</strong> within 0.5 miles, last 12 months. Pulled from MLS + NWMLS vacant-land data + CoStar if available.</li>
-        <li><strong>Development scenarios.</strong> Under current zoning, what can be built here? (Example: &ldquo;Your 9,200 sq ft LR2 lot supports 4 townhomes at ~$900K each retail.&rdquo;)</li>
-        <li><strong>Developer interest indicator.</strong> &ldquo;We have [N] developers in our network actively buying in [neighborhood] this quarter.&rdquo; (Truthful &mdash; don&rsquo;t promise a named buyer you haven&rsquo;t committed.)</li>
-        <li><strong>Mandatory disclosures.</strong> Agency pamphlet delivered and acknowledged, dual-agency possibility explained if applicable, disclosed compensation on the back end.</li>
-      </ol>
-
-      <h3>The listing agreement &mdash; specific to this play</h3>
-      <ul>
-        <li><strong>Exclusive right to sell</strong>, 90&ndash;180 day term. Avoid open listings; they lose deals to other brokers.</li>
-        <li><strong>2.5&ndash;3% commission</strong> to listing firm, no cooperating-broker split (developer brings their own representation or comes unrepresented).</li>
-        <li><strong>Marketing strategy paragraph</strong> naming private-network / off-market marketing to developers as the primary channel. Seller consents in writing to a delayed or waived MLS entry.</li>
-        <li><strong>Disclosure of our back-end arrangement.</strong> Plain-language paragraph: &ldquo;Broker discloses that broker may receive additional compensation from the ultimate buyer (developer) as the listing broker on any new construction built on this lot. This additional compensation is paid by the developer, not the seller, and is separate from this agreement.&rdquo;</li>
-        <li><strong>No dual agency on the land sale</strong> without an explicit written consent rider.</li>
-      </ul>
-
-      <h3>Sample owner talking-point pack (for the living-room meeting)</h3>
-      <div class="sample">"Mr./Ms. [Owner],
-
-Your corner lot at [address] is currently assessed at $[X]. Based on the zoning here &mdash; [LR2 / R4 / etc.] &mdash; and what we&rsquo;ve seen local builders pay for similar lots in the last 12 months, we believe a builder would pay between $[low] and $[high].
-
-If you were to sell the house traditionally, after a few repairs, 6% total commission, and closing costs, you&rsquo;d likely net $[Y].
-
-If we list it as a development lot to our builder network, after our 3% listing fee and closing costs, you&rsquo;d likely net $[Z], which is about $[delta] more.
-
-We&rsquo;d like to list your lot for 90 days. We market it privately first, to four or five developers we already know are buying. If it doesn&rsquo;t move, we can re-strategize or terminate at day 90 &mdash; your choice.
-
-A few things I have to disclose up front: [hand them the agency pamphlet]. Also, our compensation on the land sale is 3%, paid by you. Separately, we have an arrangement with the developer who ends up buying that lets us list the homes they build here. That part is paid by them, not you &mdash; but I want you to know about it.
-
-Any questions?"</div>
-
-      <div class="callout ok">
-        <span class="label">Why written disclosure of the back-end protects us</span>
-        If the owner later discovers we collected a second commission from the developer and we never said so, they can (and will) argue breach of fiduciary duty. Disclosing it in writing inside the listing agreement kills that claim and costs us literally nothing &mdash; almost every owner will sign anyway because it&rsquo;s not coming out of their pocket.
-      </div>
-    </section>
-
-    <!-- ALTERNATIVES -->
-    <section class="card" id="alternatives">
-      <h2><span class="num">C</span>Other Owner-Side Paths</h2>
-
-      <h3>C1. Door-knock campaign</h3>
-      <ul>
-        <li>Pair with the Path A postcard &mdash; knock the top 100 absentee-flagged lots 10&ndash;14 days after the mailing.</li>
-        <li>Leave a branded folder with the net-sheet template + agency pamphlet + your card.</li>
-        <li>Conversion 3&ndash;8% vs 1&ndash;3% for postcard only.</li>
-      </ul>
-
-      <h3>C2. Hand-written letter + comparable sales packet</h3>
-      <ul>
-        <li>More personal than a postcard; competes less with junk mail.</li>
-        <li>Works especially well on long-time owner-occupants where we need to build trust before they talk about selling.</li>
-      </ul>
-
-      <h3>C3. Facebook + Nextdoor geo-targeted ads</h3>
-      <ul>
-        <li>Radius target the neighborhoods where the CSV is concentrated.</li>
-        <li>Creative: &ldquo;See what a builder would pay for your corner lot &mdash; free valuation from a local broker.&rdquo;</li>
-        <li>Drives to the same landing page. Augment, don&rsquo;t replace, direct mail.</li>
-      </ul>
-
-      <h3>C4. Referral partnerships with local estate attorneys / CPAs</h3>
-      <ul>
-        <li>Attorneys doing estate planning, trust admin, and probate for long-time Seattle/Shoreline homeowners are sitting on a goldmine of future-listing leads.</li>
-        <li>Offer a written referral fee or co-marketed valuation service.</li>
-      </ul>
-
-      <h3>C5. Net-sheet direct mail (premium version of Path A)</h3>
-      <ul>
-        <li>Instead of a postcard, mail a personalized 2-page net-sheet (traditional sale vs. developer sale) with the owner&rsquo;s actual parcel number and zoning printed on it.</li>
-        <li>Cost: $2&ndash;$4 per piece. Response rate: 3&ndash;5%.</li>
-        <li>The copy quite literally tells them &ldquo;here is how much more money you&rsquo;d make if you sold as a lot.&rdquo; Very persuasive; modest volume.</li>
-      </ul>
-
-      <h3>C6. Dual-listing flip (owner won&rsquo;t sell as lot)</h3>
-      <ul>
-        <li>Some owners will refuse to list as a development lot (emotional attachment, &ldquo;I don&rsquo;t want my house torn down&rdquo;).</li>
-        <li>Fallback: offer to list the home traditionally. You keep the listing either way. Don&rsquo;t walk away from a 2.5% commission because the land play didn&rsquo;t land.</li>
-      </ul>
-
-      <h3>C7. Pre-listing option from developer</h3>
-      <ul>
-        <li>For premium lots only: developer pays the owner a small option fee ($2K&ndash;$10K) to hold the price for 90 days while permits are scoped.</li>
-        <li>You broker the option; commission earned at exercise.</li>
-        <li>Owners love this because they get cash now with no obligation to do anything.</li>
-      </ul>
-    </section>
-
-    <!-- DEVELOPER SPRINT -->
-    <section class="card sprint-card" id="sprint">
-      <h2><span class="num">&#9733;</span>Developer Sprint &mdash; 3 to 5 Day Playbook</h2>
-      <p class="lead">This is the new core. You already have developer relationships and a target list of corner lots. The sprint converts both into <strong>written back-end listing commitments</strong> and a warm buyer bench &mdash; in days, not weeks &mdash; so when an owner says yes, you have buyers ready and the back-end commission already locked in paper.</p>
-
-      <div class="callout info">
-        <span class="label">Goal of the sprint</span>
-        Walk out of Day 5 with: (a) 3&ndash;5 signed <em>Future Listing Commitment</em> letters from developers covering your top 10&ndash;20 CSV lots, (b) a ranked buyer bench per sub-neighborhood, (c) a deal package you can send to a new developer in under 10 minutes.
-      </div>
-
-      <h3>Day 0 &mdash; Prep (half-day, before you talk to anyone)</h3>
-      <div class="day">
-        <h4>Build the inputs</h4>
-        <ul>
-          <li><span class="time">0.5h</span> Rank the CSV. Top 20 lots by: lot size &ge; 7,000 sq ft, upzoned (LR1/LR2/LR3 or equivalent), corner geometry confirmed, assessed &le; $600K, not in environmental critical area.</li>
-          <li><span class="time">1.5h</span> For each of the top 20, build a <strong>one-page deal sheet</strong> (template below) &mdash; address, PIN, lot size, zoning, comps, build scenario, owner-contact status.</li>
-          <li><span class="time">1h</span> Pull recent vacant-land + teardown sales within 0.5 mi of each lot from NWMLS / CoStar / King County Real Property Sales. Save as comps per lot.</li>
-          <li><span class="time">1h</span> Draft &amp; attorney-review the <strong>Future Listing Commitment</strong> letter template (see section below). One-time task.</li>
-          <li><span class="time">0.5h</span> Short-list 15&ndash;25 developers: prioritize those who closed infill lots in Seattle / Shoreline / Kenmore / Lake Forest Park in the last 12 months. (King County sales data + NWMLS.)</li>
-          <li><span class="time">0.5h</span> Build a shared Google Sheet tracker: rows = developers, columns = lots × status (sent / opened / interested / pass / committed).</li>
-        </ul>
-      </div>
-
-      <h3>Day 1 &mdash; Blast + triage</h3>
-      <div class="day">
-        <h4>Go wide, fast</h4>
-        <ul>
-          <li><span class="time">08:00</span> Send personalized emails to all 15&ndash;25 developers. Subject line: &ldquo;Off-market corner lots, Seattle/Shoreline &mdash; your buy box&rdquo;.</li>
-          <li><span class="time">08:30</span> Attach a redacted master PDF (no addresses visible without a return email) and the top 3 deal sheets un-redacted for your tightest relationships.</li>
-          <li><span class="time">10:00&ndash;13:00</span> Call the top 8 developers. Voicemail script prepared.</li>
-          <li><span class="time">14:00</span> Schedule 20-minute Zoom or in-person meetings for Day 2 and Day 3 with any developer who expresses interest.</li>
-          <li><span class="time">17:00</span> End-of-day standup with the team: update tracker, identify any lots that already have multiple developers interested (price-tension opportunity).</li>
-        </ul>
-      </div>
-
-      <h3>Day 2&ndash;3 &mdash; Meetings + commitment letters</h3>
-      <div class="day">
-        <h4>Convert interest into signatures</h4>
-        <ul>
-          <li>20-minute meetings. Agenda: (1) walk the specific lots they&rsquo;re interested in, (2) confirm buy box (lot size, price ceiling, zoning, timeline), (3) lay out commission terms on new construction, (4) ask for signed commitment letter <em>today</em>.</li>
-          <li>Commitment letter terms: <strong>2.5&ndash;3% per sold unit, exclusive 6-month listing commencing at Temporary Certificate of Occupancy</strong>, binding on any land they acquire via our introduction.</li>
-          <li>Developers who won&rsquo;t sign a commitment letter don&rsquo;t get the addresses. Period. This is the only enforcement mechanism you have and it works.</li>
-          <li>Field trip option: drive 2&ndash;3 of the most interested developers past the top lots on the afternoon of Day 2 or 3. A physical walk-by converts faster than a pdf.</li>
-          <li>For any developer committing to multiple lots, offer a modest bulk discount on the listing commission (e.g., 2.5% instead of 3%) in exchange for first-look rights on every deal that week.</li>
-        </ul>
-      </div>
-
-      <h3>Day 4 &mdash; Match + approach owners</h3>
-      <div class="day">
-        <h4>Now the owners get the call</h4>
-        <ul>
-          <li>Match each top-20 lot to the 1&ndash;2 developers who committed and fit best.</li>
-          <li>For lots with 2+ developer commitments: prime candidates for a private bidding process. Tell the owner up-front, in the listing conversation, that you already have multiple interested buyers.</li>
-          <li>Send the Path A postcard to the remaining owners who weren&rsquo;t matched yet &mdash; keeps the pipeline filling.</li>
-          <li>For matched lots, skip Path A and go straight to <strong>hand-delivered letter + follow-up phone call</strong>: &ldquo;I have a buyer for your lot. I&rsquo;d like 20 minutes of your time this week.&rdquo;</li>
-        </ul>
-      </div>
-
-      <h3>Day 5 &mdash; Listing agreements</h3>
-      <div class="day">
-        <h4>Sign up what you can</h4>
-        <ul>
-          <li>Sit-down meetings with responsive owners. Path B playbook applies &mdash; net sheet, comps, development scenario, pamphlet, written back-end disclosure.</li>
-          <li>Goal: 2&ndash;4 signed exclusive listing agreements by end of Day 5 from the top-matched lots.</li>
-          <li>For each signed listing: notify the committed developer the next morning. Private offer window of 5&ndash;7 days before MLS (if MLS at all).</li>
-        </ul>
-      </div>
-
-      <h3>One-page deal-sheet template (use per lot)</h3>
-      <div class="sample">[Firm Logo]                                    OFF-MARKET LOT OPPORTUNITY
-
-ADDRESS:        [1234 NE 165th St, Shoreline, WA 98155]
-PARCEL (PIN):   [0164000381]
-LOT SIZE:       [9,240 sq ft]            FRONTAGE:   [94 ft / 98 ft corner]
-ZONING:         [LR2 &mdash; multi-family townhome permitted]
-TAX ASSESSED:   [$542,000]              ASSESSED IMPROVEMENT: [$180K / house]
-
-COMPARABLE LAND SALES (last 12 mo, within 0.5 mi):
-  &middot; [addr]   [date]   [$/sf]   [$ total]
-  &middot; [addr]   [date]   [$/sf]   [$ total]
-  &middot; [addr]   [date]   [$/sf]   [$ total]
-
-DEVELOPMENT SCENARIO (under current zoning):
-  &middot; Up to [4] attached townhomes, ~[1,800&ndash;2,200] sf each
-  &middot; Projected retail: [$850&ndash;$925K] per unit
-  &middot; Gross potential retail: [$3.5M&ndash;$3.7M]
-
-OWNER STATUS: [Absentee / Owner-occupant, [X] years held]
-                Contacted: [Yes/No]   Verbal interest: [Yes/No]
-
-OUR COMPENSATION (paid by you, the developer):
-  &middot; Exclusive listing on all new-construction units
-  &middot; [2.5 or 3]% per sold unit, 6-month exclusive term starting at TCO
-  &middot; Signed Future Listing Commitment required prior to our owner introduction
-
-CONTACT: [Broker name] &middot; [Firm] &middot; WA License #[#] &middot; [phone] &middot; [email]</div>
-
-      <h3>Sample developer email (Day 1 blast)</h3>
-      <div class="sample">Subject: Off-market corner lots &mdash; Seattle/Shoreline &mdash; your buy box
-
-Hi [Name],
-
-We&rsquo;ve identified 18 off-market corner lots in Shoreline, N Seattle, and LFP that fit a typical infill townhome buy box:
-  &middot; 7,000&ndash;12,000 sq ft
-  &middot; LR1/LR2 zoning or equivalent upzone
-  &middot; Assessed values under $600K (significant dirt-vs-improvement gap)
-
-Our team is working the seller side. No buyer-broker commission on the land &mdash; in exchange we&rsquo;re asking for the exclusive listing on the developed units (2.5&ndash;3% per unit, 6-mo at TCO).
-
-Attached is the full deal sheet for our top 3 lots and a redacted master list of the other 15. We&rsquo;re working on a tight window this week and want to lock in commitments before we approach the owners.
-
-Can we meet for 20 minutes Wednesday or Thursday?
-
-[Name], Managing Broker, [Firm] &middot; WA License #[#]
-[phone] &middot; [email]</div>
-
-      <h3>Developer outreach tracker &mdash; minimum columns</h3>
+      <h3>Economics</h3>
       <table class="matrix">
         <thead>
-          <tr><th>Developer</th><th>Contact / last activity</th><th>Buy box</th><th>Lot interest</th><th>Status</th><th>Commitment signed?</th></tr>
+          <tr><th>Event</th><th>Our role</th><th class="num">Typical commission</th></tr>
         </thead>
         <tbody>
-          <tr>
-            <td>Blue Fern Dev.</td>
-            <td>[email date]</td>
-            <td>7&ndash;12K sf, &le;$650K, LR2+</td>
-            <td>Lot 3, Lot 7, Lot 14</td>
-            <td>Meeting set Day 2</td>
-            <td>No</td>
-          </tr>
-          <tr>
-            <td>Isola Homes</td>
-            <td>[email date]</td>
-            <td>8K+ sf, &le;$700K</td>
-            <td>Lot 1, Lot 3</td>
-            <td>Committed</td>
-            <td>Yes &mdash; Day 2</td>
-          </tr>
-          <tr>
-            <td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td>
-          </tr>
+          <tr><td>Land sale to builder</td><td>Listing broker for seller</td><td class="num">2.5&ndash;3.0% listing side</td></tr>
+          <tr><td>New construction list #1</td><td>Listing broker for builder</td><td class="num">2.5&ndash;3.0% listing side</td></tr>
+          <tr><td>New construction list #2 (if multi-unit)</td><td>Listing broker for builder</td><td class="num">2.5&ndash;3.0% listing side</td></tr>
         </tbody>
       </table>
 
+      <h3>Documents required</h3>
+      <ul class="docs">
+        <li><strong>WA NWMLS Exclusive Listing Agreement</strong> &mdash; between Haynes Team and lot owner, with land-sale addendum.</li>
+        <li><strong>Builder Master Brokerage Agreement</strong> &mdash; signed with each network builder before any sprint; binds them to the vertical listing.</li>
+        <li><strong>Agency Law Disclosure (Form 41A)</strong> &mdash; delivered to owner at first substantive contact.</li>
+        <li><strong>Seller&rsquo;s Disclosure (Form 17)</strong> &mdash; standard WA.</li>
+        <li><strong>Written recommendation</strong> that the seller retain an attorney to review the listing terms (CYA, and it&rsquo;s the right thing).</li>
+      </ul>
+
+      <h3>Risks &amp; guardrails</h3>
       <div class="callout warn">
-        <span class="label">Two sprint-specific risks to manage</span>
-        <ul style="margin:6px 0 0;">
-          <li><strong>Leaking addresses before commitments.</strong> If a developer gets the address and backs out of signing, they can still approach the owner directly. Mitigations: redacted master list first, written NDA with all developers who want more than one lot, and only share un-redacted details after the commitment letter is signed.</li>
-          <li><strong>Over-promising to developers.</strong> Don&rsquo;t say a lot is &ldquo;locked up&rdquo; until there&rsquo;s an exclusive listing agreement signed by the owner. Describe the pipeline honestly: &ldquo;warm owner / cold owner / no contact yet.&rdquo;</li>
-        </ul>
+        <span class="label">Builder defection risk</span>
+        Builder could sell the lot and refuse to honor the listing commitment. Mitigation: liquidated-damages clause in the master agreement equal to estimated commission on vertical product. Only work with builders who have multiple projects we could lose access to.
       </div>
-    </section>
-
-    <!-- COMMITMENT LETTER -->
-    <section class="card" id="commitment">
-      <h2><span class="num">02</span>Future Listing Commitment Letter</h2>
-      <p class="lead">This is the document that keeps the developer honest after close. It&rsquo;s a short, standalone letter executed before you introduce the property &mdash; not buried in a purchase contract. One page, signed by the developer&rsquo;s principal, witnessed.</p>
-
-      <div class="sample">FUTURE LISTING COMMITMENT &mdash; [PROPERTY / LOT REFERENCE]
-
-This Commitment is made [DATE] between:
-  BROKER:      [Firm Name], [Designated Broker], WA License #[#]
-               Address, phone, email
-  DEVELOPER:   [Legal entity name], by [Principal Name], Title
-               Address, phone, email
-
-1. INTRODUCTION. Broker has identified and is prepared to introduce Developer
-   to the following real property (the "Property") on which Developer may, at
-   its sole discretion, make an offer to purchase:
-
-      Address:     [Street, City, WA ZIP]
-      Parcel (PIN):[##########]
-
-2. LISTING COMMITMENT. In consideration of Broker's introduction of the Property
-   and of Broker's services in facilitating access to the seller, Developer
-   agrees that if Developer (directly or via any affiliate, parent, subsidiary,
-   nominee, or assignee) acquires the Property within twelve (12) months of the
-   date of this letter, Developer will grant Broker the EXCLUSIVE RIGHT TO
-   MARKET AND SELL each residential unit subsequently constructed on the
-   Property, on the following terms:
-
-      a. COMMISSION:   [2.5% or 3.0%] of the gross sale price of each unit,
-                       paid at closing of each unit, from Developer&rsquo;s proceeds.
-      b. LISTING TERM: Six (6) months per unit, beginning on the earlier of
-                       Temporary Certificate of Occupancy or the date each
-                       unit is first offered for sale.
-      c. FORM:         Customary NWMLS Exclusive Right to Sell listing
-                       agreement, executed by Developer within ten (10)
-                       business days of TCO or first marketing date.
-      d. PROTECTION:   If Developer terminates or withholds the listing and
-                       lists through another broker, or sells the unit off-market,
-                       Developer owes Broker the full commission set forth
-                       above as liquidated damages on each such unit.
-
-3. NO PURCHASE OBLIGATION. This Commitment does not obligate Developer to
-   purchase the Property or make any offer. Developer's decision to pursue
-   the Property is at its sole discretion.
-
-4. BROKER INDEPENDENCE. Broker represents the seller of the Property, not
-   Developer. Developer acknowledges receipt of the "Real Estate Brokerage
-   in Washington" pamphlet. This Commitment does not create an agency
-   relationship between Broker and Developer on the land purchase.
-
-5. CONFIDENTIALITY. Developer agrees to keep all non-public information about
-   the Property and the seller confidential, and not to contact the seller
-   directly other than through Broker, for twelve (12) months from the date
-   of this letter.
-
-6. GOVERNING LAW. Washington State. Prevailing party is entitled to fees.
-
-AGREED:
-
-__________________________          __________________________
-[Designated Broker]                 [Developer Principal]
-[Firm Name]                         [Developer Entity]
-Date:                               Date:</div>
-
-      <div class="callout ok">
-        <span class="label">Why each paragraph is there</span>
-        <ul style="margin:6px 0 0;">
-          <li>&sect; 2(d) &ldquo;protection clause&rdquo; closes the end-run where a developer quietly uses another broker after closing. Without it, your commitment is unenforceable in practice.</li>
-          <li>&sect; 3 keeps the letter non-binding on the land purchase itself &mdash; makes it palatable to any developer.</li>
-          <li>&sect; 5 is your moat. If the developer backs out and tries to approach the owner directly, this clause converts the behavior into a lawsuit.</li>
-          <li>&sect; 2(b) term starts at TCO, not signing. Crucial because builds take 12&ndash;24 months and most listing agreements have stale-date problems if you start the clock too early.</li>
-        </ul>
+      <div class="callout info">
+        <span class="label">Seller conflict risk</span>
+        We&rsquo;re the listing broker &mdash; we owe the owner fiduciary duty. If a builder in our network isn&rsquo;t the best offer, we must still present everything. Don&rsquo;t soft-sell competing offers.
       </div>
-    </section>
+    </div>
 
-    <!-- MATRIX -->
-    <section class="card" id="matrix">
-      <h2><span class="num">03</span>Comparison Matrix</h2>
-      <p class="lead">All paths now assume we&rsquo;re the owner&rsquo;s broker, not a principal buyer. Rankings reflect that.</p>
-      <table class="matrix">
-        <thead>
-          <tr>
-            <th>Path</th>
-            <th>Cost / touch</th>
-            <th>Response</th>
-            <th>Time to listing</th>
-            <th>Owner clarity</th>
-            <th>Our liability</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>A &mdash; Owner postcard</strong></td>
-            <td>$0.55&ndash;$0.90</td>
-            <td>1&ndash;3%</td>
-            <td>2&ndash;4 wk</td>
-            <td><span class="pill low">High</span></td>
-            <td><span class="pill low">Low</span></td>
-          </tr>
-          <tr>
-            <td><strong>B &mdash; Listing consultation</strong></td>
-            <td>Labor</td>
-            <td>40&ndash;60% (of warm)</td>
-            <td>3&ndash;10 d</td>
-            <td><span class="pill low">High</span> (pamphlet + net sheet)</td>
-            <td><span class="pill low">Low</span></td>
-          </tr>
-          <tr>
-            <td>C1 Door-knock</td>
-            <td>Labor</td>
-            <td>3&ndash;8%</td>
-            <td>2&ndash;4 wk</td>
-            <td><span class="pill med">Script-dependent</span></td>
-            <td><span class="pill med">Moderate</span></td>
-          </tr>
-          <tr>
-            <td>C2 Hand-written letter</td>
-            <td>$1.50&ndash;$3</td>
-            <td>2&ndash;5%</td>
-            <td>3&ndash;6 wk</td>
-            <td><span class="pill low">High</span></td>
-            <td><span class="pill low">Low</span></td>
-          </tr>
-          <tr>
-            <td>C3 Geo-targeted social</td>
-            <td>$150&ndash;$400/day</td>
-            <td>Varies</td>
-            <td>Variable</td>
-            <td><span class="pill low">High</span></td>
-            <td><span class="pill low">Low</span></td>
-          </tr>
-          <tr>
-            <td>C5 Net-sheet direct mail</td>
-            <td>$2&ndash;$4</td>
-            <td>3&ndash;5%</td>
-            <td>2&ndash;4 wk</td>
-            <td><span class="pill low">Very high</span></td>
-            <td><span class="pill low">Low</span></td>
-          </tr>
-          <tr>
-            <td>Developer sprint</td>
-            <td>Labor + $0</td>
-            <td>Not owner-facing</td>
-            <td>3&ndash;5 d</td>
-            <td>N/A</td>
-            <td><span class="pill low">Low</span> (with NDA + commitment)</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
+    <!-- PANEL 2: BUILDER REP -->
+    <div class="tab-panel" id="panel-2" role="tabpanel">
+      <div class="panel-head">
+        <h2>Option 2 &mdash; Represent the Builder</h2>
+        <p class="lead">We work for the builder. Buyer-side agency on the land, listing-side on the vertical. Seller is unrepresented but knows exactly who we work for.</p>
+      </div>
 
-    <!-- CLARITY -->
-    <section class="card" id="clarity">
-      <h2><span class="num">04</span>Seller Clarity &amp; Agency Rules</h2>
-      <p class="lead">Because we&rsquo;re licensed, the clarity bar is actually stricter than a wholesaler&rsquo;s &mdash; we have fiduciary duties. Every owner interaction needs these in place.</p>
-
-      <h3>Every owner, every time</h3>
-      <ol>
-        <li><strong>Agency pamphlet</strong> (&ldquo;Real Estate Brokerage in Washington&rdquo;) delivered and acknowledged &mdash; before any substantive conversation about price, value, or whether they should sell.</li>
-        <li><strong>Written listing agreement</strong> before marketing or contacting any developer about the specific lot.</li>
-        <li><strong>Written back-end disclosure</strong> inside the listing agreement: we may earn a separate commission from the developer on the new-construction listings, paid by the developer.</li>
-        <li><strong>Net sheet</strong> showing both the traditional home-sale path and the land-sale path. Signed by the owner acknowledging receipt.</li>
-        <li><strong>No verbal promises about price.</strong> Give a range, in writing, supported by comps. &ldquo;I think I can get you $X&rdquo; verbally &rarr; breach of fiduciary duty when we close at $X&minus;10%.</li>
+      <h3>How it works</h3>
+      <ol class="steps">
+        <li><strong>Sign builders first.</strong> Buyer Agency Agreement with 3&ndash;5 infill builders in our network. Each also signs a Master Brokerage Agreement granting exclusive listing rights on any vertical product built on a lot we source.</li>
+        <li><strong>Outreach the owner as builder&rsquo;s agent.</strong> Letter or door contact clearly identifies: &ldquo;I&rsquo;m a licensed broker representing [Builder]. They&rsquo;d like to make you an offer on your lot.&rdquo;</li>
+        <li><strong>Disclose agency at first contact.</strong> Form 41A delivered. Owner knows we are <em>not</em> representing them. Recommend in writing that they retain their own broker or attorney.</li>
+        <li><strong>Builder makes the offer directly.</strong> Standard PSA between builder and seller &mdash; no assignment, no principal shuffle. We handle the paperwork as buyer&rsquo;s agent.</li>
+        <li><strong>Close the land sale.</strong> We collect buyer-side commission at closing, paid by builder (or by seller via a negotiated buyer-agent compensation offer).</li>
+        <li><strong>Build period: 12&ndash;24 months.</strong> We&rsquo;re already embedded with the builder &mdash; stay close, pre-market.</li>
+        <li><strong>List the new homes.</strong> Exclusive listing per the master agreement. Collect listing commission on each unit.</li>
       </ol>
 
-      <h3>Drop-in disclosure paragraph for the listing agreement</h3>
-      <div class="sample">ADDITIONAL BROKER COMPENSATION DISCLOSURE
+      <h3>Economics</h3>
+      <table class="matrix">
+        <thead>
+          <tr><th>Event</th><th>Our role</th><th class="num">Typical commission</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Land sale to builder</td><td>Buyer&rsquo;s broker for builder</td><td class="num">2.0&ndash;2.5% buyer side</td></tr>
+          <tr><td>New construction list #1</td><td>Listing broker for builder</td><td class="num">2.5&ndash;3.0% listing side</td></tr>
+          <tr><td>New construction list #2 (if multi-unit)</td><td>Listing broker for builder</td><td class="num">2.5&ndash;3.0% listing side</td></tr>
+        </tbody>
+      </table>
 
-Seller acknowledges and agrees that Broker may, separately and in addition to
-the commission set forth in this Listing Agreement, enter into a listing
-agreement with the ultimate buyer of the Property (expected to be a residential
-developer or builder) for the sale of new-construction residential units
-subsequently built on the Property. Any such additional compensation will be
-paid by the developer, not by Seller, and will not reduce the proceeds of this
-sale to Seller. Seller consents to this arrangement and acknowledges that
-Broker has disclosed it in writing prior to Seller signing this Listing
-Agreement.
+      <h3>Documents required</h3>
+      <ul class="docs">
+        <li><strong>WA Buyer Agency Agreement</strong> &mdash; between Haynes Team and each network builder.</li>
+        <li><strong>Builder Master Brokerage Agreement</strong> &mdash; vertical listing rights, signed before any outreach.</li>
+        <li><strong>Agency Law Disclosure (Form 41A)</strong> &mdash; delivered to seller at first substantive contact. Clearly states we represent the builder.</li>
+        <li><strong>Written recommendation</strong> that the seller retain their own broker or attorney before signing anything.</li>
+        <li><strong>Standard PSA</strong> between builder and seller (not us, not assignable).</li>
+      </ul>
 
-Seller initials: ______   Date: ______</div>
-
-      <div class="callout ok">
-        <span class="label">Why this disclosure is self-protecting</span>
-        Without it, the owner can later argue we steered the lot toward a specific developer to secure our back-end commission, instead of maximizing their price. With it signed, that argument collapses &mdash; they knew, in writing, before they hired us.
+      <h3>Risks &amp; guardrails</h3>
+      <div class="callout warn">
+        <span class="label">Optics risk</span>
+        A licensed broker approaching an owner about their property creates an information asymmetry. Mitigation: always-on, in-writing disclosure that we represent the builder, and a written recommendation that the owner retain their own representation.
       </div>
-    </section>
-
-    <!-- LIABILITY -->
-    <section class="card" id="liability">
-      <h2><span class="num">05</span>Liability Guardrails</h2>
-      <p class="lead">Licensed-broker risks are different from wholesaler risks. The big three here are fiduciary breach, RCW 18.86 procedural failures, and misrepresentation to either side.</p>
-
-      <div class="grid-2">
-        <div>
-          <h3 style="color: var(--ok);">Always do</h3>
-          <ul>
-            <li>Deliver the <strong>agency pamphlet</strong> on first substantive contact. Document delivery.</li>
-            <li>Sign a <strong>written listing agreement</strong> before any developer knows the address.</li>
-            <li>Include the <strong>back-end compensation disclosure</strong> paragraph in every listing agreement.</li>
-            <li>Sign a <strong>Future Listing Commitment letter</strong> with every developer <em>before</em> sharing an address.</li>
-            <li>Require <strong>NDAs</strong> with developers receiving more than one lot&rsquo;s un-redacted details.</li>
-            <li>Keep <strong>written comps</strong> backing every price range you state to an owner &mdash; saves you on every breach claim.</li>
-            <li>Route all earnest money and proceeds through a <strong>neutral title/escrow</strong> company. Never touch client funds.</li>
-            <li>Log every contact in the firm&rsquo;s CRM &mdash; with timestamp, pamphlet-delivered-yes/no, and consent status.</li>
-            <li>Keep designated-broker oversight on every listing agreement and commitment letter.</li>
-          </ul>
-        </div>
-        <div>
-          <h3 style="color: var(--risk);">Never do</h3>
-          <ul>
-            <li>Never share a specific address with a developer before they&rsquo;ve signed a <strong>commitment letter</strong>.</li>
-            <li>Never promise a <strong>specific price</strong> to the owner verbally. Range + comps only, in writing.</li>
-            <li>Never take a <strong>listing without delivering the pamphlet</strong> first. One procedural misstep can void the agreement.</li>
-            <li>Never enter <strong>dual agency on the land sale</strong> without the explicit written consent rider.</li>
-            <li>Never market a lot <strong>publicly</strong> before the listing agreement is fully executed.</li>
-            <li>Never tell a developer a lot is &ldquo;locked&rdquo; before you have a signed exclusive listing.</li>
-            <li>Never pressure owners in the &ldquo;distressed&rdquo; category (tax lien, pre-foreclosure) without separately complying with RCW 61.34.</li>
-            <li>Never suggest you are the developer&rsquo;s broker on the purchase if you&rsquo;re not. Referral &ne; representation.</li>
-          </ul>
-        </div>
+      <div class="callout risk">
+        <span class="label">Undue influence claim</span>
+        If an owner later feels the price was too low, our license and the builder relationship are the target. Mitigation: provide owner with recent public comp data at first meeting; document in file.
       </div>
-
       <div class="callout info">
-        <span class="label">Recommended stack</span>
-        Designated broker review of all templates &rarr; E&amp;O policy in force &rarr; firm attorney engagement (one-time template fee) &rarr; title/escrow relationship &rarr; CRM with audit trail &rarr; developer NDA on file for every active contact.
+        <span class="label">Single-offer dynamic</span>
+        Unlike Option 1, you&rsquo;re presenting one builder&rsquo;s offer, not a competitive bid. Be honest with the owner that they could list on the open market and potentially see more offers.
       </div>
-    </section>
+    </div>
 
-    <!-- RECOMMENDED -->
-    <section class="card" id="recommended">
-      <h2><span class="num">06</span>Recommended Sequence</h2>
-      <p class="lead">Given the new model, developer-first is the right sequence. Locking the back-end commission is what makes the economics work &mdash; and lining up committed buyers makes the owner pitch materially stronger.</p>
+    <!-- PANEL 3: OPTION AGREEMENTS -->
+    <div class="tab-panel" id="panel-3" role="tabpanel">
+      <div class="panel-head">
+        <h2>Option 3 &mdash; Developer Option Agreements</h2>
+        <p class="lead">Instead of a standard PSA, the builder pays the seller a non-refundable option fee for a 30&ndash;90 day feasibility window. Exercise or walk; seller keeps the fee regardless.</p>
+      </div>
 
-      <h3>Step 1 &mdash; Run the Developer Sprint this week</h3>
-      <ul>
-        <li>Days 0&ndash;3 of the <a href="#sprint">sprint</a>. Walk out with 3&ndash;5 signed Future Listing Commitment letters on your top 10&ndash;20 lots.</li>
-        <li>This is the single most leveraged thing on the page. Without it, Path A/B drive listings that yield only the front-end commission.</li>
+      <h3>How it works</h3>
+      <ol class="steps">
+        <li><strong>Sign builders first.</strong> Buyer Agency Agreement + Master Brokerage Agreement with each network builder &mdash; same as Option 2.</li>
+        <li><strong>Owner outreach as builder&rsquo;s agent.</strong> Same disclosure pattern as Option 2. Lead with the option structure: &ldquo;Our builder will pay you $5,000 now for 60 days to do their due diligence. If they exercise, you get full purchase price. If they walk, you keep the fee.&rdquo;</li>
+        <li><strong>Execute the option agreement.</strong> Non-refundable fee ($2&ndash;10K typical), 30&ndash;90 day feasibility window, strike price locked. Recorded option memorandum on title.</li>
+        <li><strong>Feasibility period.</strong> Builder runs title, soils, survey, zoning confirmation, preliminary site plan. We coordinate and document.</li>
+        <li><strong>Exercise or walk.</strong> On exercise: builder proceeds to close at the locked strike price. On walk: seller keeps the fee; we move on. (Option fee can optionally credit toward purchase price if desired.)</li>
+        <li><strong>Close the land sale on exercise.</strong> We collect buyer-side commission at closing.</li>
+        <li><strong>Build period: 12&ndash;24 months.</strong> Same as other paths.</li>
+        <li><strong>List the new homes.</strong> Exclusive listing per master agreement.</li>
+      </ol>
+
+      <h3>Economics</h3>
+      <table class="matrix">
+        <thead>
+          <tr><th>Event</th><th>Our role</th><th class="num">Typical dollars</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Option signing (to seller)</td><td>Buyer&rsquo;s broker for builder</td><td class="num">$2K&ndash;$10K option fee (to owner, not us)</td></tr>
+          <tr><td>Exercise &amp; land close</td><td>Buyer&rsquo;s broker for builder</td><td class="num">2.0&ndash;2.5% buyer side</td></tr>
+          <tr><td>New construction list #1</td><td>Listing broker for builder</td><td class="num">2.5&ndash;3.0% listing side</td></tr>
+          <tr><td>New construction list #2 (if multi-unit)</td><td>Listing broker for builder</td><td class="num">2.5&ndash;3.0% listing side</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Documents required</h3>
+      <ul class="docs">
+        <li><strong>WA Buyer Agency Agreement</strong> + <strong>Master Brokerage Agreement</strong> with each network builder.</li>
+        <li><strong>Option to Purchase Agreement</strong> &mdash; between builder and seller. Attorney-drafted; this is NOT a standard NWMLS form. Specifies fee, feasibility period, strike price, exercise mechanics.</li>
+        <li><strong>Memorandum of Option</strong> &mdash; recorded against title to protect the builder&rsquo;s position.</li>
+        <li><strong>Agency Law Disclosure (Form 41A)</strong> and written recommendation the owner retain their own broker or attorney.</li>
+        <li><strong>Feasibility contingency checklist</strong> &mdash; title, soils, zoning, survey, utilities.</li>
       </ul>
 
-      <h3>Step 2 &mdash; Direct outreach on matched lots (Days 4&ndash;14)</h3>
-      <ul>
-        <li>For each lot with a developer commitment, skip the generic postcard.</li>
-        <li>Hand-deliver or certified-mail a personalized letter: net sheet, comps, and a line you can actually say: &ldquo;We have a buyer for your lot.&rdquo;</li>
-        <li>Target 2&ndash;4 signed listing agreements in weeks 2&ndash;3.</li>
-      </ul>
-
-      <h3>Step 3 &mdash; Path A postcard to the rest (parallel)</h3>
-      <ul>
-        <li>Postcard the remaining corner-lot owners at volume (rest of CSV, ~2,000 pieces).</li>
-        <li>Second touch 3 weeks later.</li>
-        <li>Feed inbound leads into Path B consultations; new committed lots get pulled back into the Sprint workflow for developer match.</li>
-      </ul>
-
-      <h3>Step 4 &mdash; Permanent developer program</h3>
-      <ul>
-        <li>Turn the Sprint into a standing program: every new lot listed goes out to the committed developer list within 24 hours, under confidentiality.</li>
-        <li>Quarterly &ldquo;lot drop&rdquo; with your developer network &mdash; becomes a channel in itself.</li>
-        <li>Add new developers to the program only after they sign the Future Listing Commitment template for a specific lot.</li>
-      </ul>
-
+      <h3>Risks &amp; guardrails</h3>
       <div class="callout ok">
-        <span class="label">Why developer-first beats owner-first</span>
-        With written commitments in hand, you walk into every owner meeting with &ldquo;I have buyers ready.&rdquo; That converts listings at roughly double the rate of a cold valuation pitch, and guarantees the back-end revenue before you spend a penny on postcards.
+        <span class="label">Why this is defensible</span>
+        Seller receives real cash upfront regardless of outcome. That single fact eliminates the &ldquo;predatory wholesaler&rdquo; framing that an assignable PSA creates. The owner is never tied up for nothing.
       </div>
-    </section>
+      <div class="callout warn">
+        <span class="label">Builder capital commitment</span>
+        Builder must put real money at risk with no guarantee of exercise. Only network builders who understand infill economics will bite. Screen accordingly.
+      </div>
+      <div class="callout info">
+        <span class="label">Attorney-drafted document</span>
+        The option agreement is not a standard form. Budget $500&ndash;$1,500 for attorney drafting per deal (or reusable template). Do not attempt to draft this yourselves.
+      </div>
+    </div>
+  </div>
 
-    <!-- CHECKLIST -->
-    <section class="card" id="checklist">
-      <h2><span class="num">07</span>Pre-Launch Checklist</h2>
-      <p class="lead">Finish every item before the first developer email goes out.</p>
+  <!-- CONSIDERED & REJECTED -->
+  <section class="card" style="margin-top: 22px; border-left: 5px solid var(--risk);">
+    <h2 style="color: var(--risk);">Considered &amp; Not Pursued &mdash; Assignable PSA</h2>
+    <p class="lead">We evaluated signing the owner onto an assignable purchase and sale agreement ourselves (wholesaler-style) and then assigning to a builder for a fee. We are not pursuing this path.</p>
+    <p>Even with full guardrails &mdash; designated broker approval, written disclosure of principal role, separate assignment fee disclosure, reasonable earnest money, no opaque entity names, E&amp;O notified &mdash; the fact pattern is one a DOL investigator or plaintiff&rsquo;s attorney can credibly frame as predatory. The three paths above deliver the same economics without that exposure.</p>
+    <div class="callout risk">
+      <span class="label">Why we&rsquo;re passing</span>
+      Assignment-for-profit by a licensee creates a permanent question about whether the seller was fairly represented. The Option 3 structure delivers the same feasibility window to builders with seller-positive optics.
+    </div>
+  </section>
 
-      <h3>Firm / legal</h3>
-      <ul class="checklist">
-        <li>Designated broker has reviewed and signed off on the Exclusive Listing Agreement template with back-end disclosure rider</li>
-        <li>Firm attorney has reviewed the Future Listing Commitment letter template</li>
-        <li>E&amp;O policy in force, coverage adequate for the sprint volume</li>
-        <li>Developer NDA template approved</li>
-        <li>Agency pamphlet copies ready for digital delivery (with read-receipt) and physical delivery</li>
-        <li>CRM set up with audit fields: pamphlet-delivered, listing-signed, commitment-signed</li>
-        <li>Title / escrow relationship confirmed for the expected deal volume</li>
-      </ul>
-
-      <h3>Data &amp; packaging</h3>
-      <ul class="checklist">
-        <li>Top 20 target lots ranked from the CSV</li>
-        <li>Deal-sheet PDF built per lot</li>
-        <li>Comparable land sales compiled per lot</li>
-        <li>Development scenarios drafted per lot (zoning + unit count + rough retail)</li>
-        <li>Redacted master-list PDF produced (for Day 1 email to non-primary developers)</li>
-        <li>Google Sheet tracker ready (developers &times; lots &times; status)</li>
-      </ul>
-
-      <h3>Marketing assets</h3>
-      <ul class="checklist">
-        <li>Postcard art approved with compliance strip naming the firm and license</li>
-        <li>Landing page live with agency pamphlet linked</li>
-        <li>CallRail / dedicated number routed and recorded per campaign tranche</li>
-        <li>Email templates (developer blast, owner follow-up) finalized</li>
-        <li>Net-sheet template populated per lot</li>
-      </ul>
-
-      <h3>Sprint readiness</h3>
-      <ul class="checklist">
-        <li>Developer short list of 15&ndash;25 names confirmed &mdash; with recent infill activity verified</li>
-        <li>Day 2&ndash;3 meeting calendar blocks held</li>
-        <li>Future Listing Commitment letter pre-populated with the firm&rsquo;s details; blanks for developer + property</li>
-        <li>Field-trip route planned for walk-by tour option</li>
-        <li>After-sprint follow-up cadence scheduled (weekly sync with committed developers)</li>
-      </ul>
-    </section>
-
-    <p class="footer-note">
-      Operational playbook, not legal advice. Have your designated broker and firm attorney review every template before first use. Updated 2026-04-21.
-    </p>
-
-  </main>
+  <div class="footer-note">Haynes Team &middot; Licensed Washington Brokers &middot; Reference playbook &mdash; not legal advice. Confirm all forms and disclosures with your designated broker and firm&rsquo;s legal counsel before use.</div>
 </div>
+
+<script>
+  function showTab(id) {
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.target === id);
+    });
+    document.querySelectorAll('.tab-panel').forEach(p => {
+      p.classList.toggle('active', p.id === id);
+    });
+    const wrap = document.getElementById('plans');
+    if (wrap && window.scrollY > wrap.offsetTop) {
+      wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => showTab(btn.dataset.target));
+  });
+</script>
 
 </body>
 </html>
