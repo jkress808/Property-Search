@@ -18,7 +18,7 @@ Always commit and push all changes to git after every update. Do not wait for th
 | `corner_lot_finder.html` | Standalone corner lot finder for Chris Haynes PCP dataset (uses same GIS endpoints as `index.html` but scoped to a single CSV) |
 | `owner_lookup.html` | PIN matcher for King County bulk data CSVs (Parcel + Real Property Sales + Real Property Account). Uses streaming file reader for multi-GB Sales file |
 | `corner_lot_targets.html` | Static corner lot target list for developer acquisition |
-| `corner_lot_outreach_plan.html` | Business playbook (non-technical) for licensed-broker corner-lot acquisition and developer sprint. Reference document, not an app |
+| `corner-lot-outreach/corner_lot_outreach_plan.html` | Business playbook (non-technical) for licensed-broker corner-lot acquisition and developer sprint. Reference document, not an app. Lives in its own `corner-lot-outreach/` folder for project assets |
 | `agent-website/index.html` | Real estate agent marketing site template (standalone, based on Lella Norberg design) — unrelated to the analysis tools |
 
 All HTML files open directly via `file://` &mdash; no server, no build, no package manager. Leaflet is the only external dependency and loads from CDN.
@@ -60,7 +60,7 @@ Different model than `index.html`: instead of the live GIS API, this tool joins 
 - **Three required uploads** (any order): Parcel CSV, Real Property Sales CSV, Real Property Account CSV. Each maps to a distinct slot in the UI (`loadParcels()`, `loadSales()`, `loadAcct()`).
 - **Sales file is multi-GB.** `loadSales()` uses `file.stream().getReader()` + chunked line parsing rather than `FileReader.readAsText()` — loading the whole string would OOM. Maintains a `leftover` buffer across chunks so rows aren't split at chunk boundaries. Most recent sale per PIN wins.
 - **Join key is 10-digit zero-padded PIN.** `normPin()` handles both string PINs and concatenated Major/Minor integer fields (Sales data uses Major+Minor; Parcel data uses a single PIN field).
-- **Output** is a joined table (filterable by absentee-owner flag, exportable to CSV) &mdash; this is how you produce the taxpayer-mailing-address list referenced by `corner_lot_outreach_plan.html`.
+- **Output** is a joined table (filterable by absentee-owner flag, exportable to CSV) &mdash; this is how you produce the taxpayer-mailing-address list referenced by `corner-lot-outreach/corner_lot_outreach_plan.html`.
 
 ## King County GIS API Notes
 
