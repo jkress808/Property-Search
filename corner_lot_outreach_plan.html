@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Corner Lot Owner Outreach Plan — Seattle Area</title>
+<style>
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --ink: #1c2a35;
+    --ink-2: #43515e;
+    --muted: #6b7a86;
+    --line: #e2e0d6;
+    --accent: #1f5a46;
+    --accent-soft: #e8f1ec;
+    --warn: #8a4a00;
+    --warn-soft: #fdefd9;
+    --risk: #8a1d1d;
+    --risk-soft: #fbe6e6;
+    --ok: #145230;
+    --ok-soft: #e2f0e5;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.55;
+    font-size: 15.5px;
+  }
+  header.hero {
+    background: linear-gradient(135deg, #12312a 0%, #1f5a46 70%, #2a7a5d 100%);
+    color: #fff;
+    padding: 54px 28px 60px;
+    border-bottom: 4px solid #0c241d;
+  }
+  header.hero .inner {
+    max-width: 1120px;
+    margin: 0 auto;
+  }
+  header.hero h1 {
+    margin: 0 0 10px;
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  header.hero p.sub {
+    margin: 0;
+    max-width: 740px;
+    color: #d6e9df;
+    font-size: 16px;
+  }
+  .tagrow {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .tag {
+    font-size: 12px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: #eaf3ee;
+    padding: 4px 10px;
+    border-radius: 99px;
+    letter-spacing: 0.02em;
+  }
+  .layout {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 24px 28px 80px;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 32px;
+  }
+  nav.side {
+    position: sticky;
+    top: 20px;
+    align-self: start;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 12px;
+    font-size: 14px;
+  }
+  nav.side h4 {
+    margin: 0 0 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    padding: 0 6px;
+  }
+  nav.side a {
+    display: block;
+    padding: 7px 10px;
+    color: var(--ink-2);
+    text-decoration: none;
+    border-radius: 6px;
+    border-left: 3px solid transparent;
+  }
+  nav.side a:hover { background: var(--accent-soft); color: var(--accent); border-left-color: var(--accent); }
+  main { min-width: 0; }
+  section.card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 28px 30px;
+    margin-bottom: 22px;
+    scroll-margin-top: 14px;
+  }
+  section.card h2 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  section.card h2 .num {
+    display: inline-block;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 6px;
+    padding: 2px 9px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-right: 10px;
+    vertical-align: middle;
+    font-family: ui-monospace, monospace;
+  }
+  section.card .lead {
+    color: var(--muted);
+    margin: 0 0 18px;
+    font-size: 14.5px;
+  }
+  h3 {
+    font-size: 16px;
+    margin: 22px 0 8px;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  ul, ol { padding-left: 22px; margin: 8px 0 14px; }
+  li { margin-bottom: 6px; }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .stat {
+    background: var(--accent-soft);
+    border-left: 4px solid var(--accent);
+    padding: 12px 14px;
+    border-radius: 6px;
+  }
+  .stat .k {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+  .stat .v {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-top: 2px;
+  }
+  .callout {
+    margin: 14px 0;
+    padding: 14px 16px;
+    border-radius: 8px;
+    border: 1px solid;
+    font-size: 14px;
+  }
+  .callout.warn { background: var(--warn-soft); border-color: #e5c48a; color: #5a3300; }
+  .callout.risk { background: var(--risk-soft); border-color: #e8acac; color: #6b1616; }
+  .callout.ok { background: var(--ok-soft); border-color: #a7cfb4; color: #0c3e22; }
+  .callout .label {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 11px;
+    display: block;
+    margin-bottom: 4px;
+  }
+  table.matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin: 10px 0;
+  }
+  table.matrix th, table.matrix td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  table.matrix th {
+    background: #f1efe6;
+    font-weight: 600;
+    color: var(--ink-2);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  table.matrix tr:last-child td { border-bottom: none; }
+  .pill {
+    display: inline-block;
+    font-size: 11.5px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-weight: 600;
+  }
+  .pill.low { background: var(--ok-soft); color: var(--ok); }
+  .pill.med { background: var(--warn-soft); color: var(--warn); }
+  .pill.high { background: var(--risk-soft); color: var(--risk); }
+  .checklist {
+    list-style: none;
+    padding-left: 0;
+  }
+  .checklist li {
+    padding: 7px 0 7px 28px;
+    position: relative;
+    border-bottom: 1px dashed var(--line);
+  }
+  .checklist li:before {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 12px;
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid var(--accent);
+    border-radius: 3px;
+  }
+  .sample {
+    background: #f9f7ef;
+    border: 1px dashed #c9c2a0;
+    border-radius: 8px;
+    padding: 16px 18px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 14.5px;
+    color: #2d2d2d;
+    white-space: pre-wrap;
+    margin: 10px 0;
+  }
+  code.k {
+    background: #efece1;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+    color: #3a3a3a;
+  }
+  .footer-note {
+    color: var(--muted);
+    font-size: 12.5px;
+    text-align: center;
+    padding: 18px 20px 4px;
+  }
+  @media (max-width: 880px) {
+    .layout { grid-template-columns: 1fr; padding: 18px; }
+    nav.side { position: static; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    header.hero { padding: 36px 20px 40px; }
+    section.card { padding: 22px 20px; }
+  }
+  @media print {
+    header.hero { background: #1f5a46 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    nav.side { display: none; }
+    .layout { grid-template-columns: 1fr; padding: 0 20px; }
+    section.card { box-shadow: none; page-break-inside: avoid; border: 1px solid #ccc; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="inner">
+    <div style="font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:#b8d6c7; margin-bottom:8px;">Haynes Team — Acquisitions Strategy</div>
+    <h1>Corner Lot Owner Outreach Plan</h1>
+    <p class="sub">Execution playbook for converting corner-lot owners (assessed &le; $600K) into signed, assignable contracts that can be resold to developers &mdash; with liability guardrails and seller-clarity rules at every step.</p>
+    <div class="tagrow">
+      <span class="tag">Target: Seattle / Shoreline corner lots</span>
+      <span class="tag">Goal: Assignable PSA &rarr; developer</span>
+      <span class="tag">Constraints: WA state law, seller clarity, team liability</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="side">
+    <h4>Sections</h4>
+    <a href="#overview">Overview</a>
+    <a href="#legal">Legal Framework (WA)</a>
+    <a href="#plan-postcard">Path A &mdash; Postcard</a>
+    <a href="#plan-contract">Path B &mdash; Mailed Contract</a>
+    <a href="#alternatives">Other Options</a>
+    <a href="#matrix">Comparison Matrix</a>
+    <a href="#clarity">Seller Clarity Rules</a>
+    <a href="#liability">Liability Guardrails</a>
+    <a href="#recommended">Recommended Path</a>
+    <a href="#checklist">Launch Checklist</a>
+  </nav>
+
+  <main>
+
+    <!-- OVERVIEW -->
+    <section class="card" id="overview">
+      <h2><span class="num">00</span>Overview</h2>
+      <p class="lead">You have a targeted list of corner-lot owners with assessed value at or below $600K. The play is to control the property at a wholesale price and assign it to a developer for a fee. The two core paths you've already considered (postcard vs. mailed contract) live on opposite ends of a risk/response curve.</p>
+
+      <div class="grid-3">
+        <div class="stat"><div class="k">Path A</div><div class="v">Postcard</div><div style="color:var(--muted); font-size:12px; margin-top:4px;">Cheap, low liability, slow funnel</div></div>
+        <div class="stat"><div class="k">Path B</div><div class="v">Mailed Contract</div><div style="color:var(--muted); font-size:12px; margin-top:4px;">Higher conversion, higher liability</div></div>
+        <div class="stat"><div class="k">Path C+</div><div class="v">Hybrid / Alternative</div><div style="color:var(--muted); font-size:12px; margin-top:4px;">Broker-partnered, bird-dog, options</div></div>
+      </div>
+
+      <h3>Why assessed value &le; $600K matters for this list</h3>
+      <ul>
+        <li>Low assessed value + corner lot geometry = teardown/density play for a developer (townhomes, DADU + ADU, lot split).</li>
+        <li>Assessed value is a proxy for improvement value only; the <em>dirt</em> is the asset. Your pitch to the owner is about the land, not the house.</li>
+        <li>Your spread = (developer&rsquo;s buy price) &minus; (seller&rsquo;s contract price) &minus; (marketing + earnest money + title).</li>
+      </ul>
+    </section>
+
+    <!-- LEGAL -->
+    <section class="card" id="legal">
+      <h2><span class="num">01</span>Legal Framework (Washington State)</h2>
+      <p class="lead">Wholesaling in Washington is legal but narrow. The two things that repeatedly get real-estate investors in trouble here are (a) acting as an unlicensed broker and (b) misrepresenting to a homeowner. Everything below is plain-English; have a WA real-estate attorney bless anything you actually mail.</p>
+
+      <div class="callout warn">
+        <span class="label">Licensing line &mdash; RCW 18.85</span>
+        Marketing a property <em>you do not own or control by contract</em> can be construed as acting as a broker and requires a license. The cleanest posture: you are marketing <strong>your equitable interest in a signed contract</strong>, not the property itself. You only market <em>after</em> the seller has signed.
+      </div>
+
+      <div class="callout warn">
+        <span class="label">Wholesaler disclosure trend</span>
+        Several states (including recent WA legislative activity around residential wholesaling) require a wholesaler to <strong>disclose in writing to the seller</strong> that: (i) you intend to assign the contract, (ii) you are not the end buyer, and (iii) the seller has the right to cancel within a stated window. Build this disclosure into your PSA whether or not a given bill is in force &mdash; it costs you nothing and kills the &ldquo;you tricked me&rdquo; lawsuit.
+      </div>
+
+      <div class="callout risk">
+        <span class="label">Equity Skimming Act &mdash; RCW 61.34</span>
+        Applies when you deal with a distressed homeowner (default, pre-foreclosure). Penalties include treble damages. If any property on your list is in default, follow the <strong>Distressed Property Law (RCW 61.34)</strong> script specifically &mdash; not your general postcard.
+      </div>
+
+      <div class="callout risk">
+        <span class="label">Consumer Protection Act &mdash; RCW 19.86</span>
+        Any unfair or deceptive practice in commerce can trigger attorney&rsquo;s fees + treble damages. Translation: do not imply the property is worth less than it is, do not pressure-close, do not hide the assignment.
+      </div>
+
+      <h3>The clean posture (use this language with your attorney)</h3>
+      <ul>
+        <li>&ldquo;I am a principal buyer. I buy properties as-is for cash. I may resell or assign my contract to another buyer at or before closing.&rdquo;</li>
+        <li>Never: &ldquo;I represent a developer.&rdquo; That is brokerage language and triggers RCW 18.85.</li>
+        <li>Always deliver the final disclosure about assignment in <strong>writing, before signing</strong>, with a short cancellation window (3&ndash;5 business days).</li>
+      </ul>
+    </section>
+
+    <!-- PATH A - POSTCARD -->
+    <section class="card" id="plan-postcard">
+      <h2><span class="num">A</span>Path A &mdash; Postcard Campaign</h2>
+      <p class="lead">Lowest cost, lowest legal exposure, lowest conversion. Good for volume and building a &ldquo;warm&rdquo; pipeline. A postcard is marketing speech, not a contract &mdash; so the liability bar is low as long as the copy is truthful and doesn&rsquo;t misrepresent you.</p>
+
+      <div class="grid-3">
+        <div class="stat"><div class="k">Cost / piece</div><div class="v">$0.55&ndash;$0.90</div></div>
+        <div class="stat"><div class="k">Typical response</div><div class="v">0.5%&ndash;2%</div></div>
+        <div class="stat"><div class="k">First-deal window</div><div class="v">4&ndash;8 weeks</div></div>
+      </div>
+
+      <h3>Execution steps</h3>
+      <ol>
+        <li><strong>Clean the list.</strong> From your corner-lot CSV, pull each owner&rsquo;s <em>mailing</em> address (not just property address &mdash; many owners are landlords). King County Assessor&rsquo;s Real Property Account data (the <code class="k">Real Property Account.zip</code> file in this repo) has the taxpayer mailing address.</li>
+        <li><strong>Skip trace for absentee owners.</strong> Anyone whose taxpayer mailing address &ne; property address is absentee and typically a higher converter. Services: BatchSkipTracing, PropStream, REISkip (~$0.10&ndash;$0.25/hit for phone+mail append).</li>
+        <li><strong>Draft copy</strong> with three non-negotiable elements: (1) stated identity (your name or LLC), (2) stated intent (&ldquo;I want to buy your property&rdquo;), (3) contact method + opt-out.</li>
+        <li><strong>Print and mail.</strong> Vistaprint / Click2Mail / PostcardMania handle design, print, USPS presort. 6&times;9 or 6&times;11 jumbo has the best open rate for real estate.</li>
+        <li><strong>Track.</strong> Use a dedicated Google Voice or CallRail number, a unique landing page URL (e.g., a subdomain), and a unique email. This tells you which mailing triggered which lead.</li>
+        <li><strong>Screen leads.</strong> 3-question triage: motivation, timeline, price expectation. Kill anything that wants retail.</li>
+        <li><strong>Lock with a PSA.</strong> Once the lead is real, you move off the postcard track and onto <a href="#plan-contract">Path B</a> &mdash; the postcard&rsquo;s only job is to generate a phone call.</li>
+      </ol>
+
+      <h3>Sample postcard copy (front)</h3>
+      <div class="sample">We buy homes in [CITY] for cash, as-is.
+
+Hi [FIRST NAME or &ldquo;Neighbor&rdquo;],
+
+We&rsquo;re local buyers interested in the property at [PROPERTY ADDRESS]. No repairs, no cleanout, no agent commission &mdash; we handle everything.
+
+If you&rsquo;ve ever considered selling, we&rsquo;d like to make you a no-obligation cash offer.
+
+Call or text: (206) XXX-XXXX
+[your-landing-page.com]
+
+&mdash; [Your Name / LLC]
+[Address, City, WA]</div>
+
+      <h3>Sample postcard copy (back &mdash; compliance strip)</h3>
+      <div class="sample">This is a marketing solicitation from [LLC], a principal buyer of real estate. We are not a licensed real estate broker and do not represent you. We may purchase and resell or assign our contract. To opt out of future mailings, call (206) XXX-XXXX or write to [LLC address].</div>
+
+      <div class="callout ok">
+        <span class="label">Why the compliance strip matters</span>
+        It is the single cheapest liability reduction you will ever buy. It defeats &ldquo;I thought you were my agent,&rdquo; &ldquo;I thought you were a broker representing a buyer,&rdquo; and &ldquo;I didn&rsquo;t know you were going to resell.&rdquo; Include it on every piece.
+      </div>
+
+      <h3>Liability notes for postcards</h3>
+      <ul>
+        <li><strong>Low-risk channel.</strong> Postcards are marketing, not contracts. No one is bound by a postcard.</li>
+        <li><strong>Don&rsquo;t state a price.</strong> A price on a postcard can be construed as an offer and later weaponized (&ldquo;your postcard said $400K and now you&rsquo;re offering $350K&rdquo;).</li>
+        <li><strong>Don&rsquo;t imply distress.</strong> &ldquo;We know you&rsquo;re behind on taxes&rdquo; triggers RCW 61.34 analysis.</li>
+        <li><strong>Don&rsquo;t use stock photos of the actual house.</strong> Some carriers treat that as deceptive.</li>
+        <li><strong>Honor opt-outs.</strong> Keep a suppression list. Scrubbing is 60 seconds and kills 90% of angry-owner risk.</li>
+      </ul>
+    </section>
+
+    <!-- PATH B - MAILED CONTRACT -->
+    <section class="card" id="plan-contract">
+      <h2><span class="num">B</span>Path B &mdash; Mailed Contract (Blind Offer)</h2>
+      <p class="lead">Aggressive. Higher-quality leads and shorter time-to-close, but the exposure is real: you are mailing a signable document. If the owner signs it and mails it back, you have a binding contract (or at least the appearance of one) &mdash; which means you can also be sued on it.</p>
+
+      <div class="grid-3">
+        <div class="stat"><div class="k">Cost / piece</div><div class="v">$2.50&ndash;$5.00</div></div>
+        <div class="stat"><div class="k">Typical response</div><div class="v">1%&ndash;3% (higher intent)</div></div>
+        <div class="stat"><div class="k">First-deal window</div><div class="v">30&ndash;60 days</div></div>
+      </div>
+
+      <h3>What&rsquo;s in the mailed packet</h3>
+      <ol>
+        <li><strong>Cover letter.</strong> One page. Plain English. Explains who you are, why you&rsquo;re writing, and exactly what&rsquo;s in the envelope.</li>
+        <li><strong>Pre-filled Purchase &amp; Sale Agreement (PSA)</strong> with these mandatory clauses:
+          <ul>
+            <li>Parties (you / your LLC as buyer, owner as seller)</li>
+            <li>Property description (legal + parcel #)</li>
+            <li>Purchase price (be specific &mdash; don&rsquo;t &ldquo;TBD&rdquo;)</li>
+            <li>Earnest money amount + escrow holder (use a real title company, not your bank account)</li>
+            <li><strong>Assignment clause</strong>: &ldquo;Buyer may assign this agreement in whole or in part to any person or entity, and upon such assignment Buyer shall be released from further obligations.&rdquo;</li>
+            <li><strong>Inspection / feasibility contingency</strong>: 14&ndash;21 days. This is your escape hatch if you can&rsquo;t find a developer assignee.</li>
+            <li>Closing date: 30&ndash;45 days from mutual acceptance.</li>
+            <li>As-is, no repairs, no seller financing.</li>
+            <li><strong>Wholesaler / assignment disclosure</strong> (the plain-English paragraph in the Clarity section below).</li>
+            <li><strong>Seller cancellation window</strong>: 3&ndash;5 business days after signing, for any reason.</li>
+          </ul>
+        </li>
+        <li><strong>Disclosure sheet</strong> (plain English, large type, seller signs and keeps a copy).</li>
+        <li><strong>Self-addressed stamped envelope</strong> back to you or directly to the title/escrow company.</li>
+        <li><strong>&ldquo;What happens next&rdquo; one-pager</strong> walking through the 30-day close timeline.</li>
+      </ol>
+
+      <h3>Execution steps</h3>
+      <ol>
+        <li><strong>Price each offer.</strong> Do not send the same number to every owner. Pull land comps. Offer ~55&ndash;70% of ARV-of-land (what a developer pays per lot, minus your fee, minus contingencies).</li>
+        <li><strong>Have a WA attorney draft the PSA once.</strong> One drafting fee; reuse forever. Washington NWMLS forms are not designed for assignment-style wholesale &mdash; don&rsquo;t use them off-the-shelf.</li>
+        <li><strong>Escrow first.</strong> Name the title/escrow company on the contract. This single detail signals legitimacy and also means signed contracts flow to a neutral third party, not your mailbox.</li>
+        <li><strong>Mail in tranches.</strong> 200&ndash;300 at a time so your phone can handle the inbound.</li>
+        <li><strong>Follow up by phone</strong> 5&ndash;7 days after mailing. The contract is an anchor; the phone call is what actually closes it.</li>
+        <li><strong>On signed return</strong>: open escrow, deposit EM, run title, begin marketing to developer list under a <em>separate</em> assignment agreement.</li>
+        <li><strong>Assign or terminate by feasibility deadline.</strong> If you can&rsquo;t find an assignee inside the inspection period, terminate cleanly and refund EM per contract.</li>
+      </ol>
+
+      <h3>Sample cover letter</h3>
+      <div class="sample">[Date]
+
+[Owner Name]
+[Mailing Address]
+
+RE: Cash Offer to Purchase &mdash; [Property Address], Parcel [PIN]
+
+Dear [Owner Name],
+
+My name is [Your Name]. I am a principal buyer of real estate in the Seattle area, buying through [LLC Name]. Enclosed is a written offer to purchase your property at [Property Address] for $[PRICE], cash, as-is, with a 30-day close through [Title Company].
+
+A few things I want to be direct about:
+  1. I am not a real estate agent and I do not represent you.
+  2. My contract includes an assignment clause. That means I may assign my right to buy the property to another buyer (often a developer) before closing. You would still sell to whoever actually closes escrow, at the price on this contract.
+  3. You have 3 business days after signing to cancel, in writing, for any reason.
+  4. If you want to run this by an attorney, a family member, or an agent before signing, please do. Take your time.
+
+If the terms work for you, sign and return the enclosed documents in the postage-paid envelope to [Title Company]. If not, throw it away &mdash; there&rsquo;s no obligation and I won&rsquo;t follow up unless you ask.
+
+Sincerely,
+[Your Name], Managing Member
+[LLC Name]
+[Phone] &middot; [Email]</div>
+
+      <div class="callout risk">
+        <span class="label">Liability &mdash; this path has real edges</span>
+        <ul style="margin:6px 0 0;">
+          <li><strong>Binding-offer risk.</strong> A signed-and-returned PSA can be enforceable against <em>you</em>, not just the seller. If you can&rsquo;t assign and can&rsquo;t close, the seller can sue for specific performance or damages. The inspection contingency is what saves you &mdash; write it carefully.</li>
+          <li><strong>Unauthorized practice risk.</strong> If your cover letter says you&rsquo;re bringing a buyer for them, you&rsquo;ve just acted as an unlicensed broker. Stay in first-person-principal voice the whole way through.</li>
+          <li><strong>Elder / vulnerable-person risk.</strong> A blind written offer to an 85-year-old can be framed as predatory. Consider excluding owners &gt; 75 or requiring a phone conversation before the contract is signed.</li>
+          <li><strong>Earnest money abuse risk.</strong> $10 EM looks like a sham. Use real EM ($500&ndash;$2,500) held by a neutral title company.</li>
+          <li><strong>Multi-owner risk.</strong> If the deed has two owners (spouses, siblings), both must sign. Sending a contract that only one signs and returns is a lawsuit waiting to happen.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ALTERNATIVES -->
+    <section class="card" id="alternatives">
+      <h2><span class="num">C</span>Other Options Worth Considering</h2>
+      <p class="lead">The postcard/contract binary isn&rsquo;t the only shape this can take. Several of these lower your liability further or let you skip the licensing question entirely by structurally changing your role.</p>
+
+      <h3>C1. Broker-partnered wholesale</h3>
+      <ul>
+        <li>Partner with a licensed WA real estate broker who signs as listing or dual-agent. You source the lead; the broker handles the paper and MLS compliance.</li>
+        <li>Your upside is smaller (you split the spread or pay a referral fee) but <em>almost all RCW 18.85 risk disappears</em>.</li>
+        <li>This is the single biggest liability reducer on this page. If you plan to do this at scale, build the broker partnership now.</li>
+      </ul>
+
+      <h3>C2. Bird-dog / direct referral to developer</h3>
+      <ul>
+        <li>You introduce the owner directly to a developer for a flat finder&rsquo;s fee paid by the developer (not the seller).</li>
+        <li>No contract in your name, no assignment, no earnest money, no licensing question when done per-deal and not as a business.</li>
+        <li>Caveat: if it becomes your full-time activity, WA can treat it as unlicensed brokerage. One-off referrals are fine; a pipeline of referrals is a gray area &mdash; have your attorney draft the referral agreement.</li>
+        <li><strong>Lowest liability, lowest per-deal upside.</strong> Great for your first 2&ndash;3 deals to build developer relationships.</li>
+      </ul>
+
+      <h3>C3. Option contract instead of PSA</h3>
+      <ul>
+        <li>Instead of a Purchase &amp; Sale, sign an <em>option</em>: you pay $100&ndash;$500 for the <em>right</em> to buy at a set price inside 60&ndash;90 days.</li>
+        <li>Much cleaner to explain to the seller (&ldquo;I&rsquo;m paying you to hold the price&rdquo;) and gives you runway to shop to developers.</li>
+        <li>If you don&rsquo;t exercise, the seller keeps the option fee and walks. No breach-of-contract exposure.</li>
+        <li>Downside: some sellers balk because they feel tied up. Counter by offering a larger option fee ($1K+).</li>
+      </ul>
+
+      <h3>C4. Joint venture with a pre-committed developer</h3>
+      <ul>
+        <li>Line up the developer <em>first</em>. Sign a JV agreement: you source, they close, you split net profit.</li>
+        <li>You never hold title and never need to assign. The developer is the contract buyer from day one.</li>
+        <li>Eliminates the &ldquo;what if I can&rsquo;t find an assignee&rdquo; risk completely.</li>
+        <li>Trade-off: you share upside, and you&rsquo;re tied to one developer&rsquo;s buy box.</li>
+      </ul>
+
+      <h3>C5. Door-knocking / in-person</h3>
+      <ul>
+        <li>Highest conversion for absentee-owned corner lots in a walkable zone.</li>
+        <li>Pair a postcard campaign with door-knocking 10&ndash;14 days later for anyone who didn&rsquo;t call. Double touch &gt; single touch.</li>
+        <li>Liability is moderate &mdash; the risk is verbal misrepresentation. Use a scripted opener and leave a printed leave-behind that says the same thing.</li>
+        <li>Not scalable past ~50 doors/week without a paid field rep.</li>
+      </ul>
+
+      <h3>C6. Ringless voicemail / SMS</h3>
+      <ul>
+        <li>Cheap and fast, but WA follows federal TCPA + has its own RCW 80.36.400 on commercial solicitation. Consent rules are strict and damages are $500&ndash;$1,500 per violation.</li>
+        <li>Not recommended unless you run it through a vetted compliance platform and only to owners who have opted in to your list.</li>
+      </ul>
+
+      <h3>C7. List-and-buy via your own licensed agent</h3>
+      <ul>
+        <li>If the owner is interested but wants &ldquo;top dollar&rdquo; and won&rsquo;t take your direct offer, a licensed agent on your team can list the property on MLS and you (or a developer you&rsquo;ve pre-lined-up) buy it through normal channels.</li>
+        <li>Lower margin but legally spotless. Useful for the 10&ndash;20% of leads that won&rsquo;t take a below-market cash offer but are still motivated.</li>
+      </ul>
+    </section>
+
+    <!-- MATRIX -->
+    <section class="card" id="matrix">
+      <h2><span class="num">02</span>Comparison Matrix</h2>
+      <p class="lead">Same list, seven ways to work it. Pick by risk tolerance, capital, and how many licensed people you have on the team.</p>
+
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th>Path</th>
+            <th>Cost / touch</th>
+            <th>Response</th>
+            <th>Conversion quality</th>
+            <th>Time to close</th>
+            <th>Liability</th>
+            <th>Seller clarity</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>A &mdash; Postcard</strong></td>
+            <td>$0.55&ndash;$0.90</td>
+            <td>0.5&ndash;2%</td>
+            <td>Low</td>
+            <td>4&ndash;8 wk</td>
+            <td><span class="pill low">Low</span></td>
+            <td><span class="pill low">Good</span> if copy is clean</td>
+          </tr>
+          <tr>
+            <td><strong>B &mdash; Mailed PSA</strong></td>
+            <td>$2.50&ndash;$5.00</td>
+            <td>1&ndash;3%</td>
+            <td>High</td>
+            <td>30&ndash;60 d</td>
+            <td><span class="pill high">High</span></td>
+            <td><span class="pill med">OK</span> only with disclosure + cancel window</td>
+          </tr>
+          <tr>
+            <td>C1 Broker-partnered</td>
+            <td>Variable</td>
+            <td>Varies</td>
+            <td>High</td>
+            <td>30&ndash;60 d</td>
+            <td><span class="pill low">Low</span></td>
+            <td><span class="pill low">Excellent</span></td>
+          </tr>
+          <tr>
+            <td>C2 Bird-dog referral</td>
+            <td>~$0 + phone</td>
+            <td>High (once lead)</td>
+            <td>High</td>
+            <td>Developer&rsquo;s pace</td>
+            <td><span class="pill low">Very low</span></td>
+            <td><span class="pill low">Excellent</span></td>
+          </tr>
+          <tr>
+            <td>C3 Option contract</td>
+            <td>$1K&ndash;$3K (option fee)</td>
+            <td>Moderate</td>
+            <td>High</td>
+            <td>60&ndash;90 d</td>
+            <td><span class="pill med">Moderate</span></td>
+            <td><span class="pill low">Good</span></td>
+          </tr>
+          <tr>
+            <td>C4 Developer JV</td>
+            <td>Time only</td>
+            <td>N/A</td>
+            <td>Very high</td>
+            <td>Developer pace</td>
+            <td><span class="pill low">Very low</span></td>
+            <td><span class="pill low">Excellent</span></td>
+          </tr>
+          <tr>
+            <td>C5 Door-knock</td>
+            <td>Labor</td>
+            <td>3&ndash;8%</td>
+            <td>High</td>
+            <td>30&ndash;60 d</td>
+            <td><span class="pill med">Moderate</span></td>
+            <td><span class="pill med">Depends on script</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SELLER CLARITY -->
+    <section class="card" id="clarity">
+      <h2><span class="num">03</span>Seller Clarity Rules</h2>
+      <p class="lead">Every doubt an owner has about what just happened to them becomes a phone call to their attorney. The goal of this section is to make &ldquo;I didn&rsquo;t understand what I signed&rdquo; unavailable as a defense.</p>
+
+      <h3>The five things the seller must understand in writing</h3>
+      <ol>
+        <li><strong>Who you are.</strong> Legal name of buyer entity, natural person signing on behalf of it, and contact info.</li>
+        <li><strong>That you are the buyer, not their agent.</strong> You do not represent them. You are adverse to them in the sense any buyer is.</li>
+        <li><strong>That you may assign the contract to another buyer.</strong> And that the economic effect is: someone else may actually close. The seller gets paid either way, at the price on the contract.</li>
+        <li><strong>The price, the earnest money, and who holds it.</strong> No hand-wavy numbers.</li>
+        <li><strong>That they can cancel.</strong> Inside a stated window, in writing, for any reason, no fee.</li>
+      </ol>
+
+      <h3>Plain-English disclosure paragraph (include in every PSA packet)</h3>
+      <div class="sample">PLAIN-LANGUAGE DISCLOSURE
+
+1. The buyer in this contract is [LLC Name]. [LLC Name] is owned by [Name(s)]. We are real estate investors. We are not a licensed real estate broker and we do not represent you in this transaction.
+
+2. This contract contains an assignment clause. This means we have the right to transfer our right to buy your property to another person or company, usually a developer or builder, before closing. The price you receive will not change. The person who closes and pays you may be someone other than us.
+
+3. The earnest money on this contract is $[AMOUNT]. It will be held by [Title/Escrow Company] at [Address, Phone]. You can call them to confirm.
+
+4. You have the right to cancel this contract for any reason within 5 business days after signing it, by sending us written notice at [Email / Address]. If you cancel in that window, the contract is void and you owe us nothing.
+
+5. You are allowed &mdash; and encouraged &mdash; to have this contract reviewed by an attorney, an accountant, a real estate agent, or a trusted family member before you sign. We will wait.
+
+I understand the above.
+
+_________________________   _________________________
+Seller signature / date       Seller signature / date</div>
+
+      <div class="callout ok">
+        <span class="label">Why this specific structure</span>
+        This disclosure tracks the pattern used by states that have already enacted wholesaler-transparency statutes (VA, IL, OK) and is defensible under WA&rsquo;s Consumer Protection Act. A plaintiff&rsquo;s attorney needs a &ldquo;deceptive act&rdquo; to bring a claim; signing this paragraph is an affirmative record that no deception occurred.
+      </div>
+    </section>
+
+    <!-- LIABILITY -->
+    <section class="card" id="liability">
+      <h2><span class="num">04</span>Liability Guardrails</h2>
+      <p class="lead">Concrete things to do, and concrete things never to do, to keep your exposure bounded.</p>
+
+      <div class="grid-2">
+        <div>
+          <h3 style="color: var(--ok);">Always do</h3>
+          <ul>
+            <li>Transact through an <strong>LLC</strong>, not personally. Keep it in good standing with the WA Secretary of State.</li>
+            <li>Carry <strong>general liability + E&amp;O</strong> on the LLC if you can get it at this volume.</li>
+            <li>Use a <strong>neutral title/escrow company</strong> for every earnest money deposit.</li>
+            <li>Include a <strong>written assignment disclosure</strong> in every PSA.</li>
+            <li>Give a <strong>3&ndash;5 day seller cancellation window</strong> in writing.</li>
+            <li>Keep a <strong>suppression / do-not-contact list</strong> and scrub every mailing.</li>
+            <li>Keep <strong>copies of every piece of mail</strong> you send, with date and list used. Cheap insurance.</li>
+            <li>Have a <strong>WA real estate attorney on retainer</strong> (flat monthly, ~$500&ndash;$1,500). One saved claim pays for a year.</li>
+            <li>Run <strong>title early</strong>, not at close. Broken chain of title is the #1 reason a wholesale deal dies.</li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="color: var(--risk);">Never do</h3>
+          <ul>
+            <li>Never say you <strong>&ldquo;represent a buyer&rdquo;</strong> or a developer. That is brokerage language.</li>
+            <li>Never <strong>market the property publicly</strong> before you have a signed contract. You don&rsquo;t own it &mdash; marketing it is brokering it.</li>
+            <li>Never use <strong>sham earnest money</strong> ($1, $10). Doesn&rsquo;t look like a real contract; courts notice.</li>
+            <li>Never target <strong>distressed / pre-foreclosure</strong> owners on your general list. Separate pipeline, separate script, RCW 61.34 compliance.</li>
+            <li>Never send a contract to an <strong>obviously incapacitated</strong> owner (e.g., guardianship on file). Pull that name from the list.</li>
+            <li>Never <strong>inflate your marketing</strong> of the deal to your developer list beyond what the contract allows &mdash; no &ldquo;no-contingency, guaranteed close&rdquo; if your PSA has a feasibility out.</li>
+            <li>Never <strong>amend the contract after signing</strong> without the seller&rsquo;s signature on the amendment. Forgery allegations end careers.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <span class="label">Recommended insurance / structural stack</span>
+        LLC (WA formation) &rarr; operating agreement that permits assignment &rarr; E&amp;O + general liability ($1M/$2M) &rarr; title/escrow relationship with a local company (CW Title, Chicago Title, First American) &rarr; attorney on retainer &rarr; CRM + mailing suppression list.
+      </div>
+    </section>
+
+    <!-- RECOMMENDED -->
+    <section class="card" id="recommended">
+      <h2><span class="num">05</span>Recommended Path</h2>
+      <p class="lead">Given your stated constraints (team liability + seller clarity), here&rsquo;s the sequencing we&rsquo;d actually run.</p>
+
+      <h3>Step 1 &mdash; Line up the back end first (1&ndash;2 weeks)</h3>
+      <ul>
+        <li>Build a <strong>developer buyer list</strong> of 8&ndash;15 active Seattle/Shoreline infill developers. Know each one&rsquo;s buy box: min/max lot size, price range, zoning preference.</li>
+        <li>Sign a short <strong>JV or buyer-intent letter</strong> with 2&ndash;3 of them. Not exclusive &mdash; just a &ldquo;we&rsquo;ll close if the deal fits&rdquo; handshake on paper.</li>
+        <li>Open a <strong>title/escrow relationship</strong> now, before you mail anything.</li>
+        <li>Have a <strong>WA RE attorney</strong> draft your PSA, assignment agreement, and disclosure paragraph. One-time cost.</li>
+      </ul>
+
+      <h3>Step 2 &mdash; Start with Path A at volume (weeks 2&ndash;4)</h3>
+      <ul>
+        <li>Mail a <strong>postcard to the full corner-lot list</strong>. Cost: likely under $1,500 for a 2,000-name list.</li>
+        <li>Second touch 3 weeks later to non-responders.</li>
+        <li>Every inbound lead gets a phone screen, and promising ones move to Step 3.</li>
+      </ul>
+
+      <h3>Step 3 &mdash; Use Path B surgically on warm leads</h3>
+      <ul>
+        <li>Do <strong>not</strong> blanket-mail the PSA. Only send the contract to owners who have talked to you and verbally agreed on a price.</li>
+        <li>This is a meaningful liability reduction: the contract no longer arrives cold. You&rsquo;ve already confirmed identity, capacity, and price.</li>
+        <li>Every PSA goes out with the plain-English disclosure + 5-day cancellation paragraph.</li>
+      </ul>
+
+      <h3>Step 4 &mdash; Reserve Path C options for specific leads</h3>
+      <ul>
+        <li>Absentee owners who can&rsquo;t decide &rarr; <strong>option contract</strong> (C3).</li>
+        <li>Owners who want retail pricing &rarr; <strong>list via partner broker</strong> (C1 / C7).</li>
+        <li>Slam-dunk lots where a developer is already eager &rarr; <strong>bird-dog referral</strong> (C2) or <strong>JV</strong> (C4), skip the contract entirely.</li>
+      </ul>
+
+      <div class="callout ok">
+        <span class="label">Why this sequence beats postcard-only or contract-only</span>
+        Postcard-only is slow and non-binding. Contract-only is legally loud and mails a signable document to strangers. The hybrid &mdash; postcard to open the door, PSA only after a phone screen &mdash; gets you Path B&rsquo;s close rate with something close to Path A&rsquo;s liability footprint.
+      </div>
+    </section>
+
+    <!-- CHECKLIST -->
+    <section class="card" id="checklist">
+      <h2><span class="num">06</span>Pre-Launch Checklist</h2>
+      <p class="lead">Do not mail a single piece until every item below is checked.</p>
+
+      <ul class="checklist">
+        <li>LLC formed in WA and in good standing</li>
+        <li>Operating agreement permits assignment of real estate contracts</li>
+        <li>EIN obtained; LLC bank account open</li>
+        <li>WA real estate attorney engaged; PSA + disclosure + assignment agreement drafted</li>
+        <li>Title / escrow company relationship opened</li>
+        <li>Dedicated phone number (CallRail / Google Voice) + landing page live</li>
+        <li>Dedicated email address for this campaign</li>
+        <li>CRM set up to track mailings, inbound calls, suppression list</li>
+        <li>Developer buyer list compiled with buy-box criteria per developer</li>
+        <li>2&ndash;3 soft handshake JV / buyer-intent letters in place</li>
+        <li>Corner-lot CSV cleaned; taxpayer mailing address appended; absentee flag set</li>
+        <li>Skip-trace run on absentee owners</li>
+        <li>Elderly / vulnerable / guardianship entries flagged and reviewed</li>
+        <li>Distressed-property entries (tax delinquency, pre-foreclosure) moved to a separate pipeline</li>
+        <li>Postcard design + compliance strip approved by attorney</li>
+        <li>Suppression list file created (for opt-outs and DNC)</li>
+        <li>PSA packet (cover letter + PSA + disclosure + SASE) reviewed end-to-end</li>
+        <li>Script for inbound phone screen written and rehearsed</li>
+        <li>Script for Path B phone follow-up written and rehearsed</li>
+        <li>Insurance (E&amp;O + GL) quoted and bound if possible</li>
+      </ul>
+    </section>
+
+    <p class="footer-note">
+      This plan is an operational playbook, not legal advice. Have a Washington-licensed real-estate attorney review every mailed piece and every template before the first drop. Laws change; this document was generated 2026-04-21.
+    </p>
+
+  </main>
+</div>
+
+</body>
+</html>
