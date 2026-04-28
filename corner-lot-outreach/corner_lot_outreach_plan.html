@@ -24,6 +24,8 @@
     --blue-soft: #e3ecf5;
     --purple: #4a2a6b;
     --purple-soft: #ece3f5;
+    --teal: #1c5260;
+    --teal-soft: #dae9ec;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -107,7 +109,7 @@
   /* Option overview cards */
   .options-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 14px;
     margin-top: 8px;
   }
@@ -123,6 +125,7 @@
   .opt-card.opt-1 { border-top: 5px solid var(--accent); }
   .opt-card.opt-2 { border-top: 5px solid var(--blue); }
   .opt-card.opt-3 { border-top: 5px solid var(--purple); }
+  .opt-card.opt-5 { border-top: 5px solid var(--teal); }
   .opt-card.opt-4 { border-top: 5px solid var(--risk); }
   .opt-card .opt-num {
     font-family: ui-monospace, monospace;
@@ -181,6 +184,7 @@
   .opt-card.opt-1 .cta a { background: var(--accent); }
   .opt-card.opt-2 .cta a { background: var(--blue); }
   .opt-card.opt-3 .cta a { background: var(--purple); }
+  .opt-card.opt-5 .cta a { background: var(--teal); }
   .opt-card.opt-4 .cta a { background: var(--risk); }
   .opt-card .cta a:hover { opacity: 0.9; }
 
@@ -230,6 +234,8 @@
   .tab-btn[data-target="panel-2"].active .tnum { color: var(--blue); }
   .tab-btn[data-target="panel-3"].active { border-bottom-color: var(--purple); }
   .tab-btn[data-target="panel-3"].active .tnum { color: var(--purple); }
+  .tab-btn[data-target="panel-5"].active { border-bottom-color: var(--teal); }
+  .tab-btn[data-target="panel-5"].active .tnum { color: var(--teal); }
   .tab-btn[data-target="panel-4"].active { border-bottom-color: var(--risk); }
   .tab-btn[data-target="panel-4"].active .tnum { color: var(--risk); }
 
@@ -299,6 +305,7 @@
   }
   #panel-2 ol.steps > li:before { background: var(--blue-soft); color: var(--blue); }
   #panel-3 ol.steps > li:before { background: var(--purple-soft); color: var(--purple); }
+  #panel-5 ol.steps > li:before { background: var(--teal-soft); color: var(--teal); }
   #panel-4 ol.steps > li:before { background: var(--risk-soft); color: var(--risk); }
 
   /* Econ table */
@@ -354,11 +361,11 @@
     margin-top: 10px;
   }
 
-  @media (max-width: 1100px) {
-    .options-grid { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 1200px) {
+    .options-grid { grid-template-columns: repeat(3, 1fr); }
   }
   @media (max-width: 900px) {
-    .options-grid { grid-template-columns: 1fr; }
+    .options-grid { grid-template-columns: repeat(2, 1fr); }
     .tabs-nav { flex-direction: column; }
     .tab-btn { border-right: none; border-bottom: 1px solid var(--line); }
     .tab-btn.active { border-bottom-width: 3px; }
@@ -366,6 +373,9 @@
     header.hero { padding: 36px 20px 40px; }
     section.card, .tab-panel { padding: 22px 20px; }
     .container { padding: 20px 18px 60px; }
+  }
+  @media (max-width: 600px) {
+    .options-grid { grid-template-columns: 1fr; }
   }
   @media print {
     header.hero { background: #1f5a46 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -380,7 +390,7 @@
   <div class="inner">
     <div style="font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:#b8d6c7; margin-bottom:8px;">Haynes Team &middot; Licensed WA Brokers</div>
     <h1>Corner Lot Listing Playbook</h1>
-    <p class="sub">Four paths for us, as licensed brokers, to become the listing agent on every new-construction home built on a corner lot we source. Three clean, one high-risk. Pick the path, execute the plan.</p>
+    <p class="sub">Five paths for us, as licensed brokers, to become the listing agent on every new-construction home built on a corner lot we source. Four clean, one high-risk. Pick the path, execute the plan.</p>
     <div class="tagrow">
       <span class="tag">Licensed WA brokers &mdash; not principal buyers</span>
       <span class="tag">Two commissions per deal: land + vertical</span>
@@ -393,8 +403,8 @@
 
   <!-- OPTIONS OVERVIEW -->
   <section class="card">
-    <h2>The Four Paths</h2>
-    <p class="lead">Each path ends the same way &mdash; we list the new homes. They differ in who we represent, who holds the contract with the owner, and how we get paid on the land sale. Options 1&ndash;3 are the clean paths. Path D (assignable PSA) is the high-risk path &mdash; only pursued with full guardrails.</p>
+    <h2>The Five Paths</h2>
+    <p class="lead">Each path ends the same way &mdash; we list the new homes. They differ in who we represent, who holds the contract with the owner, and how we get paid on the land sale. Options 1&ndash;4 are the clean paths. Path D (assignable PSA) is the high-risk path &mdash; only pursued with full guardrails.</p>
 
     <div class="options-grid">
 
@@ -494,6 +504,38 @@
         <div class="cta"><a href="#panel-3" onclick="showTab('panel-3')">See full plan &rarr;</a></div>
       </div>
 
+      <!-- OPTION 4 -->
+      <div class="opt-card opt-5">
+        <div class="opt-num">Option 4</div>
+        <h3 class="opt-title">Letter of Intent (LOI) Matchmaking</h3>
+        <p class="opt-sub">Three-party LOI between owner, builder, and us as broker of record. Gives builder a defensible exclusivity window without the option fee from Option 3. Most terms non-binding; exclusivity and good-faith negotiation are binding.</p>
+        <div class="opt-meta">
+          <strong>Agency:</strong> Buyer broker for builder<br>
+          <strong>Land commission:</strong> Buyer side<br>
+          <strong>Vertical commission:</strong> Listing on new builds
+        </div>
+        <div class="prosCons">
+          <div class="pros">
+            <h4>Pros</h4>
+            <ul>
+              <li>No principal exposure &mdash; purely a broker role</li>
+              <li>Lighter ask than Option 3 &mdash; no option fee required</li>
+              <li>Defensible exclusivity window for the builder</li>
+              <li>Sits cleanly between Options 2 and 3 in builder commitment</li>
+            </ul>
+          </div>
+          <div class="cons">
+            <h4>Cons</h4>
+            <ul>
+              <li>Not recordable &mdash; exclusivity is contract-only, not on title</li>
+              <li>Weaker than Option 3 for builder &mdash; owner has no skin in game</li>
+              <li>Attorney-drafted document &mdash; not a standard NWMLS form</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cta"><a href="#panel-5" onclick="showTab('panel-5')">See full plan &rarr;</a></div>
+      </div>
+
       <!-- PATH D -->
       <div class="opt-card opt-4">
         <div class="opt-num">Path D &middot; High Risk</div>
@@ -542,6 +584,10 @@
       <button class="tab-btn" data-target="panel-3" onclick="showTab('panel-3')">
         <span class="tnum">Option 3</span>
         Developer Option Agreements
+      </button>
+      <button class="tab-btn" data-target="panel-5" onclick="showTab('panel-5')">
+        <span class="tnum">Option 4</span>
+        Letter of Intent
       </button>
       <button class="tab-btn" data-target="panel-4" onclick="showTab('panel-4')">
         <span class="tnum">Path D &middot; High Risk</span>
@@ -708,6 +754,64 @@
       <div class="callout info">
         <span class="label">Attorney-drafted document</span>
         The option agreement is not a standard form. Budget $500&ndash;$1,500 for attorney drafting per deal (or reusable template). Do not attempt to draft this yourselves.
+      </div>
+    </div>
+
+    <!-- PANEL 5: LOI MATCHMAKING -->
+    <div class="tab-panel" id="panel-5" role="tabpanel">
+      <div class="panel-head">
+        <h2>Option 4 &mdash; Letter of Intent (LOI) Matchmaking</h2>
+        <p class="lead">A lightweight matchmaking instrument that sits between Option 2 and Option 3. We sign a three-party LOI between owner, builder, and ourselves as broker of record. The LOI gives the builder a defensible exclusivity window without requiring the option fee from Option 3, while keeping us purely in a broker role with no principal exposure. Most terms are non-binding; exclusivity and good-faith negotiation are binding.</p>
+      </div>
+
+      <h3>How it works</h3>
+      <ol class="steps">
+        <li><strong>Builder masters in place first.</strong> Buyer Agency + Master Brokerage Agreement with each network builder.</li>
+        <li><strong>Owner outreach as builder&rsquo;s agent.</strong> Form 41A delivered at first contact. Written recommendation that owner retain their own broker or attorney.</li>
+        <li><strong>Three-party LOI executed</strong> &mdash; owner, builder, Haynes Team. Specifies target price, feasibility window (30&ndash;60 days), binding exclusivity, target close.</li>
+        <li><strong>Feasibility period.</strong> Builder runs title, soils, zoning, preliminary site plan. We coordinate.</li>
+        <li><strong>Definitive PSA signed at end of LOI window.</strong> Standard NWMLS form between builder and seller. No assignment language.</li>
+        <li><strong>Close the land sale.</strong> Buyer-side commission collected.</li>
+        <li><strong>Build period: 12&ndash;24 months.</strong> Stay close.</li>
+        <li><strong>List the new homes</strong> per master agreement.</li>
+      </ol>
+
+      <h3>Economics</h3>
+      <table class="matrix">
+        <thead>
+          <tr><th>Event</th><th>Our role</th><th class="num">Typical commission</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Land sale to builder</td><td>Buyer&rsquo;s broker for builder</td><td class="num">2.0&ndash;2.5% buyer side</td></tr>
+          <tr><td>New construction list #1</td><td>Listing broker for builder</td><td class="num">2.5&ndash;3.0% listing side</td></tr>
+          <tr><td>New construction list #2 (if multi-unit)</td><td>Listing broker for builder</td><td class="num">2.5&ndash;3.0% listing side</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Documents required</h3>
+      <ul class="docs">
+        <li><strong>WA Buyer Agency Agreement</strong> + <strong>Master Brokerage Agreement</strong> with each network builder.</li>
+        <li><strong>Three-party Letter of Intent</strong> &mdash; attorney-drafted. Specifies binding vs. non-binding sections, exclusivity period, feasibility window, target purchase price.</li>
+        <li><strong>Agency Law Disclosure (Form 41A)</strong> and written recommendation that owner retain their own broker or attorney.</li>
+        <li><strong>Standard NWMLS PSA</strong> between builder and seller at end of LOI window (not assignable, we don&rsquo;t sign as principal).</li>
+      </ul>
+
+      <h3>Risks &amp; guardrails</h3>
+      <div class="callout warn">
+        <span class="label">Binding exclusivity is non-negotiable</span>
+        Without a binding exclusivity clause, the owner can shop the LOI to bid the price up while the builder is paying for soils reports. The exclusivity, confidentiality, and good-faith negotiation provisions must be binding even though the price/closing terms aren&rsquo;t.
+      </div>
+      <div class="callout info">
+        <span class="label">No recordable instrument</span>
+        Unlike Option 3&rsquo;s recorded memorandum of option, an LOI doesn&rsquo;t sit on title. Exclusivity is enforced via contract claim, not title position. Acceptable, but builder needs to know.
+      </div>
+      <div class="callout info">
+        <span class="label">Weaker than Option 3 for the builder</span>
+        Owner has no skin in the game &mdash; no option fee paid. Builder gets a window but the owner can credibly threaten to walk. Use when builder doesn&rsquo;t want option-fee capital exposure.
+      </div>
+      <div class="callout info">
+        <span class="label">Attorney-drafted document</span>
+        Not a standard NWMLS form. Budget $500&ndash;$1,500 for a reusable WA template; per-deal review minimal once template is set.
       </div>
     </div>
 
