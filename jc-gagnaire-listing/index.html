@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Property Listing — JC Gagnaire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root {
+    --bg: #faf8f5;
+    --ink: #1a1a1a;
+    --muted: #6b6b6b;
+    --line: #e6e2dc;
+    --accent: #8a7a5c;
+    --accent-dark: #6b5e44;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 500; letter-spacing: 0.01em; margin: 0; }
+  a { color: inherit; text-decoration: none; }
+  img { display: block; max-width: 100%; }
+
+  /* ---------- NAV ---------- */
+  nav.topnav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 40px;
+    background: transparent;
+    transition: background 0.3s ease, box-shadow 0.3s ease, padding 0.3s ease;
+  }
+  nav.topnav.scrolled {
+    background: rgba(250, 248, 245, 0.96);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 1px 0 var(--line);
+    padding: 12px 40px;
+  }
+  nav.topnav .brand {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.04em;
+    transition: color 0.3s ease;
+  }
+  nav.topnav.scrolled .brand { color: var(--ink); }
+  nav.topnav .links {
+    display: flex; gap: 28px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #fff;
+    transition: color 0.3s ease;
+  }
+  nav.topnav.scrolled .links { color: var(--ink); }
+  nav.topnav .links a { position: relative; padding: 4px 0; }
+  nav.topnav .links a::after {
+    content: ''; position: absolute; left: 0; bottom: 0;
+    width: 0; height: 1px; background: currentColor;
+    transition: width 0.25s ease;
+  }
+  nav.topnav .links a:hover::after { width: 100%; }
+  @media (max-width: 720px) {
+    nav.topnav { padding: 14px 20px; }
+    nav.topnav .links { gap: 14px; font-size: 11px; }
+    nav.topnav .brand { font-size: 18px; }
+  }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    position: relative;
+    height: 100vh; min-height: 560px;
+    color: #fff;
+    overflow: hidden;
+  }
+  .hero .hero-img {
+    position: absolute; inset: 0;
+    background: #2a2a2a;
+    background-size: cover;
+    background-position: center;
+  }
+  .hero .hero-img.empty::before {
+    content: 'Click to add hero image';
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #888; font-size: 14px; letter-spacing: 0.15em; text-transform: uppercase;
+  }
+  .hero .hero-img { cursor: pointer; }
+  .hero .scrim {
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.05) 35%, rgba(0,0,0,0.55) 100%);
+    pointer-events: none;
+  }
+  .hero .hero-content {
+    position: absolute; left: 0; right: 0; bottom: 60px;
+    text-align: center; padding: 0 24px;
+    pointer-events: none;
+  }
+  .hero .hero-content > * { pointer-events: auto; }
+  .hero h1 {
+    font-size: clamp(36px, 6vw, 68px);
+    line-height: 1.05;
+    margin-bottom: 12px;
+    text-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+  .hero .city {
+    font-size: 14px;
+    text-transform: uppercase; letter-spacing: 0.3em;
+    opacity: 0.9;
+  }
+  .hero .price {
+    margin-top: 30px;
+    font-family: var(--serif);
+    font-size: clamp(24px, 3vw, 34px);
+    font-weight: 500;
+  }
+  .hero .scroll-hint {
+    position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    opacity: 0.7;
+  }
+
+  /* ---------- SECTIONS ---------- */
+  section.block {
+    padding: 90px 40px;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  section.block.full { max-width: none; padding-left: 0; padding-right: 0; }
+  .section-head {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .section-head .eyebrow {
+    font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.3em;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+  .section-head h2 {
+    font-size: clamp(30px, 4vw, 44px);
+  }
+  .section-head .lede {
+    max-width: 680px; margin: 18px auto 0;
+    color: var(--muted); font-size: 16px;
+  }
+  .divider {
+    width: 40px; height: 1px; background: var(--accent);
+    margin: 0 auto 18px;
+  }
+
+  /* ---------- QUICK STATS ---------- */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: #fff;
+  }
+  .stats .stat {
+    padding: 30px 20px;
+    text-align: center;
+    border-right: 1px solid var(--line);
+  }
+  .stats .stat:last-child { border-right: none; }
+  .stats .stat .num {
+    font-family: var(--serif);
+    font-size: 32px; font-weight: 500; line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stats .stat .lbl {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--muted);
+  }
+  @media (max-width: 720px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .stats .stat:nth-child(2) { border-right: none; }
+    .stats .stat:nth-child(1), .stats .stat:nth-child(2) { border-bottom: 1px solid var(--line); }
+  }
+
+  /* ---------- DESCRIPTION ---------- */
+  .description {
+    max-width: 760px; margin: 0 auto;
+    font-size: 17px; line-height: 1.75; color: #333;
+    text-align: center;
+  }
+  .description p { margin: 0 0 18px; }
+  .description p:last-child { margin-bottom: 0; }
+
+  /* ---------- GALLERY ---------- */
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  @media (max-width: 900px) { .gallery { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 540px) { .gallery { grid-template-columns: 1fr; } }
+  .gallery .featured {
+    grid-column: 1 / -1;
+    aspect-ratio: 16 / 9;
+  }
+  .photo-slot {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    background: #ece7df;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.4s ease;
+  }
+  .photo-slot.empty {
+    border: 1px dashed #c8c0b3;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .photo-slot.empty::before {
+    content: '+';
+    font-family: var(--serif);
+    font-size: 48px; font-weight: 300;
+    color: #b8ad99;
+    transition: color 0.2s, transform 0.2s;
+  }
+  .photo-slot.empty:hover::before { color: var(--accent); transform: scale(1.15); }
+  .photo-slot img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+  .photo-slot:hover img { transform: scale(1.04); }
+  .photo-slot .remove-btn {
+    position: absolute; top: 8px; right: 8px;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.55); color: #fff;
+    border: none; cursor: pointer;
+    font-size: 14px; line-height: 1;
+    display: none;
+    align-items: center; justify-content: center;
+  }
+  .photo-slot:not(.empty):hover .remove-btn { display: flex; }
+
+  .gallery-controls {
+    text-align: center;
+    margin-top: 30px;
+  }
+  .btn {
+    display: inline-block;
+    padding: 12px 32px;
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.2em;
+    border: 1px solid var(--ink); background: transparent; color: var(--ink);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    font-family: var(--sans);
+  }
+  .btn:hover { background: var(--ink); color: var(--bg); }
+  .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn.primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+
+  /* ---------- FLOOR PLANS ---------- */
+  .floorplans {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  @media (max-width: 800px) { .floorplans { grid-template-columns: 1fr; } }
+  .floorplans .photo-slot {
+    background: #fff;
+    aspect-ratio: 4 / 5;
+    border: 1px solid var(--line);
+  }
+  .floorplans .photo-slot img { object-fit: contain; padding: 16px; background: #fff; }
+  .floorplans .label {
+    position: absolute; bottom: 12px; left: 12px;
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--muted);
+    background: rgba(255,255,255,0.92); padding: 4px 10px;
+  }
+
+  /* ---------- 3D TOUR ---------- */
+  .tour-frame {
+    aspect-ratio: 16 / 9;
+    background: #1f1f1f;
+    border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    color: #888;
+    position: relative;
+    overflow: hidden;
+  }
+  .tour-frame iframe { width: 100%; height: 100%; border: 0; }
+  .tour-frame .placeholder {
+    text-align: center; padding: 40px;
+  }
+  .tour-frame .placeholder .icon {
+    font-family: var(--serif); font-size: 60px; opacity: 0.5; margin-bottom: 16px;
+  }
+  .tour-frame .placeholder p { margin: 6px 0; font-size: 14px; }
+  .tour-frame .placeholder small {
+    color: #666; font-size: 12px;
+  }
+
+  /* ---------- MAP ---------- */
+  #map {
+    height: 480px;
+    border: 1px solid var(--line);
+  }
+  .map-info {
+    text-align: center; margin-top: 24px;
+    color: var(--muted); font-size: 14px;
+  }
+
+  /* ---------- BROKER ---------- */
+  .broker-section {
+    background: #fff;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .broker-card {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 60px;
+    align-items: center;
+    max-width: 1080px; margin: 0 auto;
+  }
+  @media (max-width: 800px) {
+    .broker-card { grid-template-columns: 1fr; gap: 30px; text-align: center; }
+  }
+  .broker-photo {
+    aspect-ratio: 1; width: 100%;
+    border-radius: 50%;
+    background: #ece7df;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+  }
+  .broker-photo.empty {
+    border: 1px dashed #c8c0b3;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .broker-photo.empty::before {
+    content: 'Add photo';
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: #b8ad99;
+  }
+  .broker-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .broker-info h3 {
+    font-size: 38px;
+    margin-bottom: 6px;
+  }
+  .broker-info .title {
+    font-size: 13px;
+    text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: 24px;
+  }
+  .broker-info .bio {
+    color: #444; line-height: 1.7; margin-bottom: 24px; font-size: 15px;
+  }
+  .broker-info .contact-line {
+    display: flex; gap: 24px; flex-wrap: wrap; font-size: 14px;
+  }
+  @media (max-width: 800px) { .broker-info .contact-line { justify-content: center; } }
+  .broker-info .contact-line span { color: var(--muted); margin-right: 6px; }
+
+  /* ---------- CONTACT FORM ---------- */
+  .contact-form {
+    max-width: 620px; margin: 0 auto;
+    display: grid; gap: 14px;
+  }
+  .contact-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 540px) { .contact-form .row { grid-template-columns: 1fr; } }
+  .contact-form input, .contact-form textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    background: #fff;
+    font-family: inherit; font-size: 14px;
+    color: var(--ink);
+    border-radius: 0;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .contact-form input:focus, .contact-form textarea:focus { border-color: var(--accent); }
+  .contact-form textarea { min-height: 130px; resize: vertical; }
+  .contact-form button { justify-self: center; margin-top: 10px; }
+  .form-msg {
+    text-align: center;
+    color: var(--accent-dark);
+    font-size: 14px;
+    min-height: 20px;
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer {
+    background: var(--ink);
+    color: #c8c2b8;
+    text-align: center;
+    padding: 50px 24px;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+  }
+  footer .brand-foot {
+    font-family: var(--serif); font-size: 24px; color: #fff; margin-bottom: 8px;
+  }
+  footer .copy { opacity: 0.6; font-size: 12px; margin-top: 14px; }
+
+  /* ---------- EDITABLE FIELDS ---------- */
+  [contenteditable="true"] {
+    outline: none;
+    transition: background 0.15s;
+    padding: 0 4px; margin: 0 -4px;
+    border-radius: 2px;
+  }
+  [contenteditable="true"]:hover { background: rgba(138, 122, 92, 0.12); }
+  [contenteditable="true"]:focus { background: rgba(138, 122, 92, 0.18); }
+
+  /* ---------- LIGHTBOX ---------- */
+  .lightbox {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.94);
+    z-index: 1000;
+    display: none;
+    align-items: center; justify-content: center;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 92vw; max-height: 92vh; object-fit: contain; }
+  .lightbox .close, .lightbox .nav-btn {
+    position: absolute;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    width: 48px; height: 48px;
+    cursor: pointer;
+    font-size: 22px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .lightbox .close:hover, .lightbox .nav-btn:hover { background: rgba(255,255,255,0.25); }
+  .lightbox .close { top: 24px; right: 24px; border-radius: 50%; }
+  .lightbox .prev { left: 24px; top: 50%; transform: translateY(-50%); }
+  .lightbox .next { right: 24px; top: 50%; transform: translateY(-50%); }
+  .lightbox .counter {
+    position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+    color: #fff; font-size: 13px; letter-spacing: 0.2em;
+  }
+
+  /* ---------- HELPERS ---------- */
+  .edit-hint {
+    position: fixed; bottom: 20px; left: 20px;
+    background: var(--ink); color: #fff;
+    padding: 10px 16px;
+    font-size: 12px; letter-spacing: 0.05em;
+    z-index: 200;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+    max-width: 320px;
+    line-height: 1.5;
+  }
+  .edit-hint .x {
+    float: right; margin-left: 12px; cursor: pointer; opacity: 0.6;
+  }
+  .edit-hint .x:hover { opacity: 1; }
+</style>
+</head>
+<body>
+
+<nav class="topnav" id="topnav">
+  <div class="brand" data-edit="brand-text">JC Gagnaire</div>
+  <div class="links">
+    <a href="#images">Images</a>
+    <a href="#floorplans">Floor Plans</a>
+    <a href="#tour">3D Tour</a>
+    <a href="#map-section">Map</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-img empty" data-photo-key="hero" id="heroImg"></div>
+  <div class="scrim"></div>
+  <div class="hero-content">
+    <div class="city" contenteditable="true" data-edit="hero-city">Seattle, WA</div>
+    <h1 contenteditable="true" data-edit="hero-address">123 Example Street</h1>
+    <div class="price" contenteditable="true" data-edit="hero-price">$0,000,000</div>
+  </div>
+  <div class="scroll-hint">Scroll</div>
+</header>
+
+<!-- QUICK STATS -->
+<div class="stats">
+  <div class="stat"><div class="num" contenteditable="true" data-edit="beds">0</div><div class="lbl">Bedrooms</div></div>
+  <div class="stat"><div class="num" contenteditable="true" data-edit="baths">0</div><div class="lbl">Bathrooms</div></div>
+  <div class="stat"><div class="num" contenteditable="true" data-edit="sqft">0,000</div><div class="lbl">Sq Ft</div></div>
+  <div class="stat"><div class="num" contenteditable="true" data-edit="lot">0,000</div><div class="lbl">Lot Sq Ft</div></div>
+</div>
+
+<!-- DESCRIPTION -->
+<section class="block">
+  <div class="section-head">
+    <div class="divider"></div>
+    <div class="eyebrow">Property</div>
+    <h2 contenteditable="true" data-edit="desc-title">An Exceptional Home</h2>
+  </div>
+  <div class="description" contenteditable="true" data-edit="desc-body">
+    <p>Click to edit this description. Add details about the home — its setting, character, finishes, layout, and what makes it special. Keep paragraphs short and inviting.</p>
+    <p>Add a second paragraph if needed. You can also include lists of features, recent updates, or neighborhood highlights.</p>
+  </div>
+</section>
+
+<!-- IMAGE GALLERY -->
+<section class="block" id="images">
+  <div class="section-head">
+    <div class="divider"></div>
+    <div class="eyebrow">Gallery</div>
+    <h2>Images</h2>
+    <p class="lede">Click any tile to upload a photo. Photos save automatically in your browser.</p>
+  </div>
+  <div class="gallery" id="galleryGrid"></div>
+  <div class="gallery-controls">
+    <button class="btn" id="addMoreBtn">+ Add More Slots</button>
+  </div>
+</section>
+
+<!-- FLOOR PLANS -->
+<section class="block" id="floorplans">
+  <div class="section-head">
+    <div class="divider"></div>
+    <div class="eyebrow">Layout</div>
+    <h2>Floor Plans</h2>
+  </div>
+  <div class="floorplans" id="floorplanGrid"></div>
+</section>
+
+<!-- 3D TOUR -->
+<section class="block" id="tour">
+  <div class="section-head">
+    <div class="divider"></div>
+    <div class="eyebrow">Walkthrough</div>
+    <h2>3D Tour</h2>
+    <p class="lede">Paste a Matterport, YouTube, or other tour embed URL below.</p>
+  </div>
+  <div class="tour-frame" id="tourFrame">
+    <div class="placeholder">
+      <div class="icon">&#9711;</div>
+      <p><strong>No tour added yet</strong></p>
+      <small>Click here to paste an embed URL</small>
+    </div>
+  </div>
+</section>
+
+<!-- MAP -->
+<section class="block full" id="map-section">
+  <div class="section-head" style="padding: 0 24px;">
+    <div class="divider"></div>
+    <div class="eyebrow">Location</div>
+    <h2>Map</h2>
+  </div>
+  <div id="map"></div>
+  <div class="map-info" style="padding: 0 24px;">
+    Click anywhere on the map to set the property pin. Position saves automatically.
+  </div>
+</section>
+
+<!-- BROKER + CONTACT -->
+<section class="block broker-section" id="contact">
+  <div class="broker-card">
+    <div class="broker-photo empty" data-photo-key="broker" id="brokerPhoto"></div>
+    <div class="broker-info">
+      <h3>JC Gagnaire</h3>
+      <div class="title" contenteditable="true" data-edit="broker-title">Real Estate Broker</div>
+      <div class="bio" contenteditable="true" data-edit="broker-bio">
+        Click to edit JC's bio. Briefly describe experience, areas of expertise, and approach to working with clients.
+      </div>
+      <div class="contact-line">
+        <div><span>P</span><a href="#" contenteditable="true" data-edit="broker-phone">(000) 000-0000</a></div>
+        <div><span>E</span><a href="#" contenteditable="true" data-edit="broker-email">jc@example.com</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 70px;">
+    <div class="section-head">
+      <div class="divider"></div>
+      <div class="eyebrow">Inquire</div>
+      <h2>Request More Information</h2>
+    </div>
+    <form class="contact-form" id="contactForm">
+      <div class="row">
+        <input type="text" placeholder="Name" required />
+        <input type="email" placeholder="Email" required />
+      </div>
+      <input type="tel" placeholder="Phone" />
+      <textarea placeholder="Message" required></textarea>
+      <div class="form-msg" id="formMsg"></div>
+      <button type="submit" class="btn primary">Send Inquiry</button>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="brand-foot">JC Gagnaire</div>
+  <div>Real Estate Broker</div>
+  <div class="copy">&copy; <span id="year"></span> &middot; All rights reserved</div>
+</footer>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <button class="close" id="lbClose">&times;</button>
+  <button class="nav-btn prev" id="lbPrev">&#8249;</button>
+  <button class="nav-btn next" id="lbNext">&#8250;</button>
+  <img id="lbImg" alt="" />
+  <div class="counter" id="lbCounter"></div>
+</div>
+
+<!-- HIDDEN FILE INPUT -->
+<input type="file" id="fileInput" accept="image/*" style="display:none" />
+
+<!-- EDIT HINT -->
+<div class="edit-hint" id="editHint">
+  <span class="x" onclick="document.getElementById('editHint').remove()">&times;</span>
+  <strong>Tip:</strong> Click any photo slot to upload. Click any text to edit. Everything saves to your browser automatically.
+</div>
+
+<script>
+(function () {
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // ---------- IndexedDB photo store ----------
+  const DB_NAME = 'jc-listing-photos';
+  const STORE = 'photos';
+  const dbPromise = new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(STORE);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  async function dbSet(key, blob) {
+    const db = await dbPromise;
+    return new Promise((res, rej) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).put(blob, key);
+      tx.oncomplete = () => res();
+      tx.onerror = () => rej(tx.error);
+    });
+  }
+  async function dbGet(key) {
+    const db = await dbPromise;
+    return new Promise((res, rej) => {
+      const tx = db.transaction(STORE, 'readonly');
+      const r = tx.objectStore(STORE).get(key);
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+  }
+  async function dbDel(key) {
+    const db = await dbPromise;
+    return new Promise((res, rej) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).delete(key);
+      tx.oncomplete = () => res();
+      tx.onerror = () => rej(tx.error);
+    });
+  }
+  async function dbKeys() {
+    const db = await dbPromise;
+    return new Promise((res, rej) => {
+      const tx = db.transaction(STORE, 'readonly');
+      const r = tx.objectStore(STORE).getAllKeys();
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+  }
+
+  // ---------- Sticky nav ----------
+  const nav = document.getElementById('topnav');
+  function onScroll() {
+    if (window.scrollY > 60) nav.classList.add('scrolled');
+    else nav.classList.remove('scrolled');
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // ---------- Editable text persistence ----------
+  document.querySelectorAll('[contenteditable="true"], [data-edit]').forEach(el => {
+    const key = el.dataset.edit;
+    if (!key) return;
+    const saved = localStorage.getItem('edit:' + key);
+    if (saved !== null) el.innerHTML = saved;
+    if (el.getAttribute('contenteditable') === 'true') {
+      el.addEventListener('blur', () => localStorage.setItem('edit:' + key, el.innerHTML));
+    }
+  });
+
+  // ---------- Photo slot system ----------
+  const fileInput = document.getElementById('fileInput');
+  let pendingSlot = null;
+
+  fileInput.addEventListener('change', async () => {
+    const f = fileInput.files[0];
+    if (!f || !pendingSlot) return;
+    const key = pendingSlot.dataset.photoKey;
+    await dbSet(key, f);
+    paintSlot(pendingSlot, f);
+    fileInput.value = '';
+    pendingSlot = null;
+  });
+
+  function paintSlot(slot, blob) {
+    const url = URL.createObjectURL(blob);
+    if (slot.classList.contains('hero-img')) {
+      slot.style.backgroundImage = `url(${url})`;
+      slot.classList.remove('empty');
+      return;
+    }
+    let img = slot.querySelector('img');
+    if (!img) {
+      img = document.createElement('img');
+      slot.appendChild(img);
+    }
+    img.src = url;
+    slot.classList.remove('empty');
+    if (!slot.querySelector('.remove-btn') && !slot.classList.contains('broker-photo')) {
+      const rm = document.createElement('button');
+      rm.className = 'remove-btn';
+      rm.innerHTML = '&times;';
+      rm.title = 'Remove photo';
+      rm.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const key = slot.dataset.photoKey;
+        await dbDel(key);
+        clearSlot(slot);
+      });
+      slot.appendChild(rm);
+    }
+  }
+
+  function clearSlot(slot) {
+    if (slot.classList.contains('hero-img')) {
+      slot.style.backgroundImage = '';
+    } else {
+      const img = slot.querySelector('img');
+      if (img) img.remove();
+      const rm = slot.querySelector('.remove-btn');
+      if (rm) rm.remove();
+    }
+    slot.classList.add('empty');
+  }
+
+  function attachSlotHandler(slot) {
+    slot.addEventListener('click', (e) => {
+      if (e.target.closest('.remove-btn')) return;
+      // if filled, open lightbox
+      if (!slot.classList.contains('empty') && slot.querySelector('img')) {
+        openLightbox(slot);
+        return;
+      }
+      // hero & broker fill behavior on empty
+      pendingSlot = slot;
+      fileInput.click();
+    });
+  }
+
+  // ---------- Build galleries ----------
+  const GALLERY_INITIAL = 18;
+  const FLOORPLAN_COUNT = 3;
+  const galleryGrid = document.getElementById('galleryGrid');
+  const floorplanGrid = document.getElementById('floorplanGrid');
+
+  // featured slot
+  const featured = document.createElement('div');
+  featured.className = 'photo-slot empty featured';
+  featured.dataset.photoKey = 'gallery-0';
+  galleryGrid.appendChild(featured);
+  attachSlotHandler(featured);
+
+  for (let i = 1; i < GALLERY_INITIAL; i++) addGallerySlot(i);
+
+  function addGallerySlot(i) {
+    const slot = document.createElement('div');
+    slot.className = 'photo-slot empty';
+    slot.dataset.photoKey = 'gallery-' + i;
+    galleryGrid.appendChild(slot);
+    attachSlotHandler(slot);
+    return slot;
+  }
+
+  document.getElementById('addMoreBtn').addEventListener('click', () => {
+    const existing = galleryGrid.querySelectorAll('.photo-slot').length;
+    for (let i = 0; i < 6; i++) addGallerySlot(existing + i);
+  });
+
+  for (let i = 0; i < FLOORPLAN_COUNT; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'photo-slot empty';
+    slot.dataset.photoKey = 'floorplan-' + i;
+    const lbl = document.createElement('div');
+    lbl.className = 'label';
+    lbl.contentEditable = 'true';
+    const lblKey = 'fplabel-' + i;
+    lbl.dataset.edit = lblKey;
+    const savedLbl = localStorage.getItem('edit:' + lblKey);
+    lbl.textContent = savedLbl !== null ? savedLbl : (['Main Level', 'Upper Level', 'Lower Level'][i] || 'Level ' + (i + 1));
+    lbl.addEventListener('blur', () => localStorage.setItem('edit:' + lblKey, lbl.textContent));
+    lbl.addEventListener('click', e => e.stopPropagation());
+    slot.appendChild(lbl);
+    floorplanGrid.appendChild(slot);
+    attachSlotHandler(slot);
+  }
+
+  // hero & broker
+  attachSlotHandler(document.getElementById('heroImg'));
+  attachSlotHandler(document.getElementById('brokerPhoto'));
+
+  // ---------- Hydrate from IndexedDB ----------
+  (async function hydrate() {
+    const keys = await dbKeys();
+    for (const k of keys) {
+      const blob = await dbGet(k);
+      if (!blob) continue;
+      // make sure slot exists for gallery overflow
+      if (k.startsWith('gallery-')) {
+        const idx = parseInt(k.split('-')[1], 10);
+        while (galleryGrid.querySelectorAll('.photo-slot').length <= idx) {
+          addGallerySlot(galleryGrid.querySelectorAll('.photo-slot').length);
+        }
+      }
+      const slot = document.querySelector(`[data-photo-key="${k}"]`);
+      if (slot) paintSlot(slot, blob);
+    }
+  })();
+
+  // ---------- Lightbox ----------
+  const lb = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lbImg');
+  const lbCounter = document.getElementById('lbCounter');
+  let lbList = [], lbIndex = 0;
+
+  function openLightbox(slot) {
+    lbList = Array.from(document.querySelectorAll('.photo-slot:not(.empty)'))
+      .map(s => s.querySelector('img'))
+      .filter(Boolean);
+    lbIndex = lbList.findIndex(i => i === slot.querySelector('img'));
+    if (lbIndex < 0) lbIndex = 0;
+    showLb();
+    lb.classList.add('open');
+  }
+  function showLb() {
+    if (!lbList.length) return;
+    lbImg.src = lbList[lbIndex].src;
+    lbCounter.textContent = (lbIndex + 1) + ' / ' + lbList.length;
+  }
+  document.getElementById('lbClose').addEventListener('click', () => lb.classList.remove('open'));
+  document.getElementById('lbPrev').addEventListener('click', () => { lbIndex = (lbIndex - 1 + lbList.length) % lbList.length; showLb(); });
+  document.getElementById('lbNext').addEventListener('click', () => { lbIndex = (lbIndex + 1) % lbList.length; showLb(); });
+  lb.addEventListener('click', e => { if (e.target === lb) lb.classList.remove('open'); });
+  document.addEventListener('keydown', e => {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') lb.classList.remove('open');
+    if (e.key === 'ArrowLeft') document.getElementById('lbPrev').click();
+    if (e.key === 'ArrowRight') document.getElementById('lbNext').click();
+  });
+
+  // ---------- 3D Tour ----------
+  const tourFrame = document.getElementById('tourFrame');
+  function renderTour() {
+    const url = localStorage.getItem('tourUrl');
+    tourFrame.innerHTML = '';
+    if (url) {
+      const ifr = document.createElement('iframe');
+      ifr.src = url;
+      ifr.allow = 'fullscreen; xr-spatial-tracking';
+      ifr.allowFullscreen = true;
+      tourFrame.appendChild(ifr);
+    } else {
+      tourFrame.innerHTML = `
+        <div class="placeholder">
+          <div class="icon">&#9711;</div>
+          <p><strong>No tour added yet</strong></p>
+          <small>Click here to paste an embed URL</small>
+        </div>`;
+    }
+  }
+  tourFrame.addEventListener('click', () => {
+    const current = localStorage.getItem('tourUrl') || '';
+    const next = prompt('Paste 3D tour embed URL (Matterport, YouTube embed, etc.):', current);
+    if (next === null) return;
+    if (next.trim() === '') localStorage.removeItem('tourUrl');
+    else localStorage.setItem('tourUrl', next.trim());
+    renderTour();
+  });
+  renderTour();
+
+  // ---------- Map ----------
+  const DEFAULT_LAT = 47.7019, DEFAULT_LON = -122.3221;
+  const savedLat = parseFloat(localStorage.getItem('mapLat'));
+  const savedLon = parseFloat(localStorage.getItem('mapLon'));
+  const lat = isFinite(savedLat) ? savedLat : DEFAULT_LAT;
+  const lon = isFinite(savedLon) ? savedLon : DEFAULT_LON;
+  const map = L.map('map').setView([lat, lon], 15);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+  let marker = L.marker([lat, lon], { draggable: true }).addTo(map);
+  function persistMarker() {
+    const p = marker.getLatLng();
+    localStorage.setItem('mapLat', p.lat);
+    localStorage.setItem('mapLon', p.lng);
+  }
+  marker.on('dragend', persistMarker);
+  map.on('click', (e) => {
+    marker.setLatLng(e.latlng);
+    persistMarker();
+  });
+
+  // ---------- Contact form ----------
+  document.getElementById('contactForm').addEventListener('submit', e => {
+    e.preventDefault();
+    document.getElementById('formMsg').textContent = 'Thank you — your inquiry has been recorded.';
+    e.target.reset();
+  });
+})();
+</script>
+</body>
+</html>
