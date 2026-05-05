@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Johnny Kress &mdash; Everything Online</title>
+<style>
+  :root {
+    --bg: #0e0f12;
+    --panel: #15171c;
+    --panel-2: #1b1e25;
+    --ink: #e8eaee;
+    --mute: #9aa1ad;
+    --accent: #ffb84d;
+    --accent-2: #6cd3ff;
+    --line: #262932;
+    --good: #7ddc8b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.55; }
+  a { color: var(--accent-2); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header {
+    padding: 56px 24px 36px;
+    border-bottom: 1px solid var(--line);
+    background: radial-gradient(1200px 400px at 80% -100px, rgba(255,184,77,.18), transparent 60%),
+                radial-gradient(800px 300px at 10% -50px, rgba(108,211,255,.12), transparent 60%),
+                var(--panel);
+  }
+  header .wrap { max-width: 1100px; margin: 0 auto; }
+  .eyebrow { color: var(--accent); letter-spacing: .18em; text-transform: uppercase; font-size: 12px; font-weight: 600; }
+  h1 { font-size: clamp(40px, 7vw, 72px); margin: 6px 0 8px; letter-spacing: -.02em; line-height: 1.05; }
+  .lede { color: var(--mute); font-size: 18px; max-width: 720px; }
+  .pill-row { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill { background: var(--panel-2); border: 1px solid var(--line); color: var(--ink); padding: 6px 12px; border-radius: 999px; font-size: 13px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 24px 80px; }
+  section { margin-top: 40px; }
+  h2 { font-size: 22px; margin: 0 0 14px; letter-spacing: -.01em; }
+  h3 { font-size: 16px; margin: 0 0 8px; color: var(--ink); }
+  .muted { color: var(--mute); }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .card.tight { padding: 14px 16px; }
+  .kv { display: grid; grid-template-columns: 160px 1fr; gap: 8px 16px; font-size: 14px; }
+  .kv dt { color: var(--mute); }
+  .kv dd { margin: 0; }
+  ul.clean { list-style: none; padding: 0; margin: 0; }
+  ul.clean li { padding: 8px 0; border-bottom: 1px dashed var(--line); display: flex; justify-content: space-between; gap: 16px; }
+  ul.clean li:last-child { border-bottom: none; }
+  .year { color: var(--accent); font-variant-numeric: tabular-nums; font-weight: 600; min-width: 56px; }
+  .place { color: var(--ink); flex: 1; }
+  .where { color: var(--mute); }
+  .links a { display: block; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); margin-bottom: 8px; background: var(--panel-2); }
+  .links a:hover { border-color: var(--accent-2); text-decoration: none; }
+  .links small { display: block; color: var(--mute); font-size: 12px; margin-top: 2px; }
+  .footnote { color: var(--mute); font-size: 12px; margin-top: 8px; }
+  .disambig { background: rgba(255, 184, 77, .08); border: 1px solid rgba(255, 184, 77, .35); border-radius: 10px; padding: 14px 16px; color: var(--ink); font-size: 14px; }
+  .disambig strong { color: var(--accent); }
+  footer { color: var(--mute); font-size: 12px; padding: 24px; text-align: center; border-top: 1px solid var(--line); }
+  code { background: var(--panel-2); padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Open-source dossier</div>
+    <h1>Johnny Kress</h1>
+    <p class="lede">A consolidated profile assembled from publicly available sources &mdash; primarily covering Johnny Kress the kendama professional from Hale&lsquo;iwa, Hawai&lsquo;i. Other notable people sharing the name are listed at the bottom.</p>
+    <div class="pill-row">
+      <span class="pill">Hale&lsquo;iwa, HI</span>
+      <span class="pill">Born Feb 17, 2004</span>
+      <span class="pill">Sweets Kendamas Pro</span>
+      <span class="pill">Kendama since 2013</span>
+      <span class="pill">@jkress808 &middot; @j.kress</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section id="overview">
+    <h2>At a glance</h2>
+    <div class="card">
+      <dl class="kv">
+        <dt>Full name</dt><dd>Johnny Kress</dd>
+        <dt>Hometown</dt><dd>Hale&lsquo;iwa, Hawai&lsquo;i, USA (North Shore, O&lsquo;ahu)</dd>
+        <dt>Date of birth</dt><dd>February 17, 2004</dd>
+        <dt>Started kendama</dt><dd>October 2013</dd>
+        <dt>Status</dt><dd>Professional kendama player &mdash; Sweets Kendamas team member</dd>
+        <dt>Reported affiliation</dt><dd>University of Washington student-athlete (football) <span class="muted">&mdash; per Ken Docs profile</span></dd>
+        <dt>Signature style</dt><dd>Kenflips and fast hands</dd>
+        <dt>Sponsorship history</dt><dd>Pineapple Kendamas (2017) &rarr; Sweets Kendamas (2019&ndash;2025)</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section id="bio">
+    <h2>Background</h2>
+    <div class="card">
+      <p>Johnny Kress grew up on the North Shore of O&lsquo;ahu and picked up a kendama in October 2013 as a young kid in Hawai&lsquo;i. He linked up with Sweets Kendamas as a sponsored shredder while still a teenager and was officially named to the <em>Sweets Team</em> (the brand&rsquo;s pro roster) in 2019. According to Sweets&rsquo; product write-ups, the team has watched him &ldquo;progress in kendama and grow as a person since meeting him as a young shredder in Hawai&lsquo;i.&rdquo;</p>
+      <p>His competitive r&eacute;sum&eacute; spans nearly a decade of major events &mdash; from Kendama World Cup appearances in Japan to North American open contests &mdash; with multiple podium finishes online and in-person. He is best known publicly under the handles <strong>@jkress808</strong> (TikTok) and <strong>@j.kress</strong> (Instagram), where he posts trick edits, contest runs, and lifestyle clips.</p>
+    </div>
+  </section>
+
+  <section id="results">
+    <h2>Competitive results</h2>
+    <div class="card">
+      <ul class="clean">
+        <li><span class="year">2017</span><span class="place">24th place</span><span class="where">Kendama World Cup (Japan)</span></li>
+        <li><span class="year">2019</span><span class="place">2nd place &mdash; Freestyle</span><span class="where">Tacoma Takeover 5</span></li>
+        <li><span class="year">2019</span><span class="place">13th place</span><span class="where">Kendama World Cup</span></li>
+        <li><span class="year">2020</span><span class="place">3rd place</span><span class="where">Sweets Online Summer Series 3</span></li>
+        <li><span class="year">2021</span><span class="place">2nd place</span><span class="where">Sweets Online Pro Invitational 3</span></li>
+        <li><span class="year">2022</span><span class="place">2nd place</span><span class="where">Kendama World Cup Online Exhibition</span></li>
+        <li><span class="year">2022</span><span class="place">2nd place</span><span class="where">North American Kendama Open</span></li>
+        <li><span class="year">2023</span><span class="place">15th place</span><span class="where">Kendama World Cup</span></li>
+        <li><span class="year">2024</span><span class="place">3rd place</span><span class="where">Battle at the Border Open</span></li>
+      </ul>
+      <p class="footnote">Source: Ken Docs Player Collective profile.</p>
+    </div>
+  </section>
+
+  <section id="signature">
+    <h2>Signature kendamas</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Johnny Kress &mdash; Amped Pro Model</h3>
+        <p class="muted">Sweets Kendamas &middot; Pro signature</p>
+        <p>Maple <em>Amped</em>-shape ken with a balance bevel in the base cup, paired with a 62&nbsp;mm beech tama. Custom engravings: a Polynesian pattern on the sarado, linking rings on the bird, and a <strong>JK</strong> logo on the base. Ships with metal spinner bead, replacement string, and signature stickers.</p>
+        <ul class="clean">
+          <li><span>Sticky Clear (gloss, grippy)</span><span class="where">$44.99</span></li>
+          <li><span>Cushion Clear (matte, rubberized lock)</span><span class="where">$59.99</span></li>
+        </ul>
+        <p class="footnote">A portion of every sale goes directly to Johnny. Both finishes currently sold out at Sweets.</p>
+      </div>
+      <div class="card">
+        <h3>Johnny Kress Pro Model</h3>
+        <p class="muted">Earlier signature drop &middot; carried by Kendama Senses (and others) at retail</p>
+        <p>An earlier signature release commonly referred to in community videos as the <code>#JKRESSMOD</code>. Featured in unboxings and breakdowns by Sweets and players like Bryson Lee and Nick Gallagher.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="links">
+    <h2>Where to find him online</h2>
+    <div class="grid">
+      <div class="card links">
+        <h3>Social</h3>
+        <a href="https://www.tiktok.com/@jkress808" target="_blank" rel="noopener">TikTok &mdash; @jkress808<small>tiktok.com/@jkress808</small></a>
+        <a href="https://www.instagram.com/j.kress/?hl=en" target="_blank" rel="noopener">Instagram &mdash; @j.kress<small>instagram.com/j.kress</small></a>
+        <a href="https://www.instagram.com/j.kress/reel/C0e8ljEvuBR/" target="_blank" rel="noopener">Reel &mdash; &ldquo;Got 5&#xFE0F;&#x20E3; stilt barrel last week&rdquo;<small>instagram.com</small></a>
+      </div>
+      <div class="card links">
+        <h3>Sponsor &amp; pro pages</h3>
+        <a href="https://kendocs.com/pc/johnny-kress" target="_blank" rel="noopener">Ken Docs &mdash; Player Collective profile<small>kendocs.com/pc/johnny-kress</small></a>
+        <a href="https://sweetskendamas.com/pages/johnny-kress" target="_blank" rel="noopener">Sweets Kendamas &mdash; Player page<small>sweetskendamas.com/pages/johnny-kress</small></a>
+        <a href="https://sweetskendamas.com/products/johnny-kress-amped-pro-model" target="_blank" rel="noopener">Sweets &mdash; Amped Pro Model product page<small>sweetskendamas.com</small></a>
+        <a href="https://www.kendamasenses.com/products/johnny-kress-pro-model" target="_blank" rel="noopener">Kendama Senses &mdash; Pro Model<small>kendamasenses.com</small></a>
+        <a href="https://sweetskendamas.com/collections/signature-model-kendamas" target="_blank" rel="noopener">Sweets &mdash; Signature Model collection<small>sweetskendamas.com</small></a>
+      </div>
+      <div class="card links">
+        <h3>Video features</h3>
+        <a href="https://www.youtube.com/watch?v=XI4AwdeeLHU" target="_blank" rel="noopener">JOHNNY KRESS &mdash; Newest Sweets Kendamas Team Member<small>YouTube</small></a>
+        <a href="https://www.youtube.com/watch?v=_A4ZrA4A164" target="_blank" rel="noopener">JOHNNY KRESS KENDAMA PRO EDIT &mdash; #JKRESSMOD IS HERE<small>YouTube</small></a>
+        <a href="https://www.youtube.com/watch?v=tlrSQJOW_eA" target="_blank" rel="noopener">Bryson Lee vs Johnny Kress &mdash; GAME OF K.E.N<small>YouTube &middot; Sweets</small></a>
+        <a href="https://www.youtube.com/watch?v=Q9XbWOkGp9w" target="_blank" rel="noopener">Nick Gallagher vs Johnny Kress &mdash; GAME OF K.E.N<small>YouTube &middot; Sweets</small></a>
+        <a href="https://www.youtube.com/watch?v=geNxn6u0Gto" target="_blank" rel="noopener">Sweets breaking down the Johnny Kress PRO MOD<small>YouTube</small></a>
+      </div>
+    </div>
+  </section>
+
+  <section id="other">
+    <h2>Other people named Johnny Kress</h2>
+    <div class="disambig">
+      <strong>Disambiguation.</strong> The name &ldquo;Johnny Kress&rdquo; appears in a handful of unrelated public records. None of the people below are the kendama pro profiled above.
+    </div>
+    <div class="grid" style="margin-top:14px">
+      <div class="card">
+        <h3>John &ldquo;Johnny&rdquo; Kress &mdash; SUNY Cortland C-Club Hall of Fame (1981)</h3>
+        <p class="muted">College athletics</p>
+        <p>Inducted into the SUNY Cortland C-Club Hall of Fame; profiled at <a href="https://www.cortlandreddragons.com/honors/suny-cortland-c-club-hall-of-fame/john-johnny-kress/101" target="_blank" rel="noopener">cortlandreddragons.com</a>.</p>
+      </div>
+      <div class="card">
+        <h3>Johnny Kress (1949&ndash;2021) &mdash; Sacramento, CA</h3>
+        <p class="muted">Obituary</p>
+        <p>Memorial notice published in The Sacramento Bee via <a href="https://www.legacy.com/us/obituaries/sacbee/name/johnny-kress-obituary?id=34620289" target="_blank" rel="noopener">Legacy.com</a>.</p>
+      </div>
+      <div class="card">
+        <h3>Multiple John / Johnny Kress profiles on LinkedIn</h3>
+        <p class="muted">Professional networking</p>
+        <p>Public LinkedIn results include a John Kress at 4Pines Fund Services, a John Kress in the Atlanta metro area, a John Kress at Lyons Executive Staffing (Pittsburgh), and a John B. Kress at Boise Cascade.</p>
+      </div>
+      <div class="card">
+        <h3>W. John Kress</h3>
+        <p class="muted">Botanist &middot; Smithsonian</p>
+        <p>Distinct individual; a research botanist with a <a href="https://en.wikipedia.org/wiki/W._John_Kress" target="_blank" rel="noopener">Wikipedia entry</a> and writing at JSTOR Daily.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="sources">
+    <h2>All sources cited</h2>
+    <div class="card links">
+      <a href="https://kendocs.com/pc/johnny-kress" target="_blank" rel="noopener">kendocs.com &mdash; Player Collective: Johnny Kress<small>Bio, results, sponsorship timeline</small></a>
+      <a href="https://sweetskendamas.com/pages/johnny-kress" target="_blank" rel="noopener">sweetskendamas.com &mdash; Johnny Kress player page<small>Currently a placeholder &ldquo;under construction&rdquo;</small></a>
+      <a href="https://sweetskendamas.com/products/johnny-kress-amped-pro-model" target="_blank" rel="noopener">sweetskendamas.com &mdash; Amped Pro Model<small>Signature kendama details and bio</small></a>
+      <a href="https://www.kendamasenses.com/products/johnny-kress-pro-model" target="_blank" rel="noopener">kendamasenses.com &mdash; Johnny Kress Pro Model</a>
+      <a href="https://www.tiktok.com/@jkress808" target="_blank" rel="noopener">tiktok.com/@jkress808</a>
+      <a href="https://www.instagram.com/j.kress/?hl=en" target="_blank" rel="noopener">instagram.com/j.kress</a>
+      <a href="https://www.youtube.com/watch?v=XI4AwdeeLHU" target="_blank" rel="noopener">YouTube &mdash; Newest Sweets Team Member announcement</a>
+      <a href="https://www.youtube.com/watch?v=_A4ZrA4A164" target="_blank" rel="noopener">YouTube &mdash; #JKRESSMOD pro edit</a>
+      <a href="https://www.youtube.com/watch?v=tlrSQJOW_eA" target="_blank" rel="noopener">YouTube &mdash; Bryson Lee vs Johnny Kress (GAME OF K.E.N)</a>
+      <a href="https://www.youtube.com/watch?v=Q9XbWOkGp9w" target="_blank" rel="noopener">YouTube &mdash; Nick Gallagher vs Johnny Kress (GAME OF K.E.N)</a>
+      <a href="https://www.youtube.com/watch?v=geNxn6u0Gto" target="_blank" rel="noopener">YouTube &mdash; Sweets unboxing the Johnny Kress PRO MOD</a>
+      <a href="https://www.cortlandreddragons.com/honors/suny-cortland-c-club-hall-of-fame/john-johnny-kress/101" target="_blank" rel="noopener">cortlandreddragons.com &mdash; SUNY Cortland C-Club Hall of Fame</a>
+      <a href="https://www.legacy.com/us/obituaries/sacbee/name/johnny-kress-obituary?id=34620289" target="_blank" rel="noopener">legacy.com &mdash; Sacramento obituary (1949&ndash;2021)</a>
+      <a href="https://en.wikipedia.org/wiki/W._John_Kress" target="_blank" rel="noopener">en.wikipedia.org &mdash; W. John Kress</a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Compiled from publicly available web sources. No private records, scraped data, or non-public information.
+</footer>
+
+</body>
+</html>
