@@ -9,6 +9,53 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- ============================================================
+     LISTING DATA — EDIT THIS BLOCK FOR EACH NEW LISTING
+     ============================================================
+     - Update the fields below with this listing's info.
+     - Drop photos into the photos/ folder using these names:
+         photos/hero.jpg              (full-width banner image)
+         photos/01.jpg ... 50.jpg     (gallery, in order)
+         photos/floorplan-1.jpg       (main floor)
+         photos/floorplan-2.jpg       (upper floor, optional)
+         photos/floorplan-3.jpg       (lower floor, optional)
+         photos/broker.jpg            (broker headshot)
+     - .jpg / .jpeg / .png / .webp all work.
+     - The page auto-detects which photos exist; missing ones are skipped.
+     ============================================================ -->
+<script id="listing-data" type="application/json">
+{
+  "address": "123 Example Street",
+  "city": "Seattle, WA",
+  "price": "$0,000,000",
+  "stats": {
+    "beds": "0",
+    "baths": "0",
+    "sqft": "0,000",
+    "lot": "0,000"
+  },
+  "descTitle": "An Exceptional Home",
+  "description": [
+    "Add a paragraph describing this property — its setting, character, finishes, layout, and what makes it special.",
+    "Add a second paragraph if needed. You can also list features, recent updates, or neighborhood highlights here."
+  ],
+  "floorplanLabels": ["Main Level", "Upper Level", "Lower Level"],
+  "map": {
+    "lat": 47.6062,
+    "lon": -122.3321,
+    "zoom": 15
+  },
+  "broker": {
+    "name": "JC Gagnaire",
+    "title": "Real Estate Broker",
+    "bio": "Certified Residential Specialist (CRS), Certified Negotiation Expert (CNE), Seller Representative Specialist, Seniors Real Estate Specialist®, Pricing Strategy Advisor, Commercial Broker, Builder Solutions, Accredited Buyer Representative, e-PRO®, Real Estate Negotiation Expert, Graduate REALTOR® Institute, Ninja Certified.",
+    "phone": "206-769-5671",
+    "email": "jc@jcgagnaire.com"
+  }
+}
+</script>
+
 <style>
   :root {
     --bg: #faf8f5;
@@ -84,20 +131,13 @@
     height: 100vh; min-height: 560px;
     color: #fff;
     overflow: hidden;
+    background: #2a2a2a;
   }
   .hero .hero-img {
     position: absolute; inset: 0;
-    background: #2a2a2a;
     background-size: cover;
     background-position: center;
   }
-  .hero .hero-img.empty::before {
-    content: 'Click to add hero image';
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    color: #888; font-size: 14px; letter-spacing: 0.15em; text-transform: uppercase;
-  }
-  .hero .hero-img { cursor: pointer; }
   .hero .scrim {
     position: absolute; inset: 0;
     background: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.05) 35%, rgba(0,0,0,0.55) 100%);
@@ -106,9 +146,7 @@
   .hero .hero-content {
     position: absolute; left: 0; right: 0; bottom: 60px;
     text-align: center; padding: 0 24px;
-    pointer-events: none;
   }
-  .hero .hero-content > * { pointer-events: auto; }
   .hero h1 {
     font-size: clamp(36px, 6vw, 68px);
     line-height: 1.05;
@@ -208,64 +246,26 @@
   }
   @media (max-width: 900px) { .gallery { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 540px) { .gallery { grid-template-columns: 1fr; } }
-  .gallery .featured {
-    grid-column: 1 / -1;
-    aspect-ratio: 16 / 9;
-  }
+  .gallery .featured { grid-column: 1 / -1; aspect-ratio: 16 / 9; }
   .photo-slot {
     position: relative;
     aspect-ratio: 4 / 3;
     background: #ece7df;
     overflow: hidden;
     cursor: pointer;
-    transition: transform 0.4s ease;
   }
-  .photo-slot.empty {
-    border: 1px dashed #c8c0b3;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .photo-slot.empty::before {
-    content: '+';
-    font-family: var(--serif);
-    font-size: 48px; font-weight: 300;
-    color: #b8ad99;
-    transition: color 0.2s, transform 0.2s;
-  }
-  .photo-slot.empty:hover::before { color: var(--accent); transform: scale(1.15); }
   .photo-slot img {
     width: 100%; height: 100%;
     object-fit: cover;
     transition: transform 0.6s ease;
   }
   .photo-slot:hover img { transform: scale(1.04); }
-  .photo-slot .remove-btn {
-    position: absolute; top: 8px; right: 8px;
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    background: rgba(0,0,0,0.55); color: #fff;
-    border: none; cursor: pointer;
-    font-size: 14px; line-height: 1;
-    display: none;
-    align-items: center; justify-content: center;
+  .gallery-empty {
+    grid-column: 1 / -1;
+    text-align: center; color: var(--muted);
+    padding: 40px; border: 1px dashed var(--line);
+    font-size: 14px;
   }
-  .photo-slot:not(.empty):hover .remove-btn { display: flex; }
-
-  .gallery-controls {
-    text-align: center;
-    margin-top: 30px;
-  }
-  .btn {
-    display: inline-block;
-    padding: 12px 32px;
-    font-size: 12px; text-transform: uppercase; letter-spacing: 0.2em;
-    border: 1px solid var(--ink); background: transparent; color: var(--ink);
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-    font-family: var(--sans);
-  }
-  .btn:hover { background: var(--ink); color: var(--bg); }
-  .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .btn.primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
 
   /* ---------- FLOOR PLANS ---------- */
   .floorplans {
@@ -294,7 +294,6 @@
     border: 1px solid var(--line);
     display: flex; align-items: center; justify-content: center;
     color: #888;
-    position: relative;
     overflow: hidden;
   }
   .tour-frame iframe { width: 100%; height: 100%; border: 0; }
@@ -305,19 +304,9 @@
     font-family: var(--serif); font-size: 60px; opacity: 0.5; margin-bottom: 16px;
   }
   .tour-frame .placeholder p { margin: 6px 0; font-size: 14px; }
-  .tour-frame .placeholder small {
-    color: #666; font-size: 12px;
-  }
 
   /* ---------- MAP ---------- */
-  #map {
-    height: 480px;
-    border: 1px solid var(--line);
-  }
-  .map-info {
-    text-align: center; margin-top: 24px;
-    color: var(--muted); font-size: 14px;
-  }
+  #map { height: 480px; border: 1px solid var(--line); }
 
   /* ---------- BROKER ---------- */
   .broker-section {
@@ -340,23 +329,15 @@
     border-radius: 50%;
     background: #ece7df;
     overflow: hidden;
-    cursor: pointer;
     position: relative;
   }
-  .broker-photo.empty {
-    border: 1px dashed #c8c0b3;
+  .broker-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 18%; }
+  .broker-photo .initials {
+    position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-size: 96px; color: #b8ad99;
   }
-  .broker-photo.empty::before {
-    content: 'Add photo';
-    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
-    color: #b8ad99;
-  }
-  .broker-photo img { width: 100%; height: 100%; object-fit: cover; }
-  .broker-info h3 {
-    font-size: 38px;
-    margin-bottom: 6px;
-  }
+  .broker-info h3 { font-size: 38px; margin-bottom: 6px; }
   .broker-info .title {
     font-size: 13px;
     text-transform: uppercase; letter-spacing: 0.2em;
@@ -392,6 +373,18 @@
   }
   .contact-form input:focus, .contact-form textarea:focus { border-color: var(--accent); }
   .contact-form textarea { min-height: 130px; resize: vertical; }
+  .btn {
+    display: inline-block;
+    padding: 12px 32px;
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.2em;
+    border: 1px solid var(--ink); background: transparent; color: var(--ink);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    font-family: var(--sans);
+  }
+  .btn:hover { background: var(--ink); color: var(--bg); }
+  .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn.primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
   .contact-form button { justify-self: center; margin-top: 10px; }
   .form-msg {
     text-align: center;
@@ -413,16 +406,6 @@
     font-family: var(--serif); font-size: 24px; color: #fff; margin-bottom: 8px;
   }
   footer .copy { opacity: 0.6; font-size: 12px; margin-top: 14px; }
-
-  /* ---------- EDITABLE FIELDS ---------- */
-  [contenteditable="true"] {
-    outline: none;
-    transition: background 0.15s;
-    padding: 0 4px; margin: 0 -4px;
-    border-radius: 2px;
-  }
-  [contenteditable="true"]:hover { background: rgba(138, 122, 92, 0.12); }
-  [contenteditable="true"]:focus { background: rgba(138, 122, 92, 0.18); }
 
   /* ---------- LIGHTBOX ---------- */
   .lightbox {
@@ -454,85 +437,59 @@
     color: #fff; font-size: 13px; letter-spacing: 0.2em;
   }
 
-  /* ---------- HELPERS ---------- */
-  .edit-hint {
-    position: fixed; bottom: 20px; left: 20px;
-    background: var(--ink); color: #fff;
-    padding: 10px 16px;
-    font-size: 12px; letter-spacing: 0.05em;
-    z-index: 200;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.2);
-    max-width: 320px;
-    line-height: 1.5;
-  }
-  .edit-hint .x {
-    float: right; margin-left: 12px; cursor: pointer; opacity: 0.6;
-  }
-  .edit-hint .x:hover { opacity: 1; }
+  /* hide sections that have nothing to show */
+  .hidden { display: none !important; }
 </style>
 </head>
 <body>
 
 <nav class="topnav" id="topnav">
-  <div class="brand" data-edit="brand-text">JC Gagnaire</div>
+  <div class="brand" id="brandName">JC Gagnaire</div>
   <div class="links">
     <a href="#images">Images</a>
-    <a href="#floorplans">Floor Plans</a>
-    <a href="#tour">3D Tour</a>
+    <a href="#floorplansSection">Floor Plans</a>
     <a href="#map-section">Map</a>
     <a href="#contact">Contact</a>
   </div>
 </nav>
 
-<!-- HERO -->
 <header class="hero">
-  <div class="hero-img empty" data-photo-key="hero" id="heroImg"></div>
+  <div class="hero-img" id="heroImg"></div>
   <div class="scrim"></div>
   <div class="hero-content">
-    <div class="city" contenteditable="true" data-edit="hero-city">Seattle, WA</div>
-    <h1 contenteditable="true" data-edit="hero-address">123 Example Street</h1>
-    <div class="price" contenteditable="true" data-edit="hero-price">$0,000,000</div>
+    <div class="city" id="cityText"></div>
+    <h1 id="addressText"></h1>
+    <div class="price" id="priceText"></div>
   </div>
   <div class="scroll-hint">Scroll</div>
 </header>
 
-<!-- QUICK STATS -->
 <div class="stats">
-  <div class="stat"><div class="num" contenteditable="true" data-edit="beds">0</div><div class="lbl">Bedrooms</div></div>
-  <div class="stat"><div class="num" contenteditable="true" data-edit="baths">0</div><div class="lbl">Bathrooms</div></div>
-  <div class="stat"><div class="num" contenteditable="true" data-edit="sqft">0,000</div><div class="lbl">Sq Ft</div></div>
-  <div class="stat"><div class="num" contenteditable="true" data-edit="lot">0,000</div><div class="lbl">Lot Sq Ft</div></div>
+  <div class="stat"><div class="num" id="statBeds"></div><div class="lbl">Bedrooms</div></div>
+  <div class="stat"><div class="num" id="statBaths"></div><div class="lbl">Bathrooms</div></div>
+  <div class="stat"><div class="num" id="statSqft"></div><div class="lbl">Sq Ft</div></div>
+  <div class="stat"><div class="num" id="statLot"></div><div class="lbl">Lot Sq Ft</div></div>
 </div>
 
-<!-- DESCRIPTION -->
 <section class="block">
   <div class="section-head">
     <div class="divider"></div>
     <div class="eyebrow">Property</div>
-    <h2 contenteditable="true" data-edit="desc-title">An Exceptional Home</h2>
+    <h2 id="descTitle"></h2>
   </div>
-  <div class="description" contenteditable="true" data-edit="desc-body">
-    <p>Click to edit this description. Add details about the home — its setting, character, finishes, layout, and what makes it special. Keep paragraphs short and inviting.</p>
-    <p>Add a second paragraph if needed. You can also include lists of features, recent updates, or neighborhood highlights.</p>
-  </div>
+  <div class="description" id="descBody"></div>
 </section>
 
-<!-- IMAGE GALLERY -->
 <section class="block" id="images">
   <div class="section-head">
     <div class="divider"></div>
     <div class="eyebrow">Gallery</div>
     <h2>Images</h2>
-    <p class="lede">Click any tile to upload a photo. Photos save automatically in your browser.</p>
   </div>
   <div class="gallery" id="galleryGrid"></div>
-  <div class="gallery-controls">
-    <button class="btn" id="addMoreBtn">+ Add More Slots</button>
-  </div>
 </section>
 
-<!-- FLOOR PLANS -->
-<section class="block" id="floorplans">
+<section class="block" id="floorplansSection">
   <div class="section-head">
     <div class="divider"></div>
     <div class="eyebrow">Layout</div>
@@ -541,24 +498,6 @@
   <div class="floorplans" id="floorplanGrid"></div>
 </section>
 
-<!-- 3D TOUR -->
-<section class="block" id="tour">
-  <div class="section-head">
-    <div class="divider"></div>
-    <div class="eyebrow">Walkthrough</div>
-    <h2>3D Tour</h2>
-    <p class="lede">Paste a Matterport, YouTube, or other tour embed URL below.</p>
-  </div>
-  <div class="tour-frame" id="tourFrame">
-    <div class="placeholder">
-      <div class="icon">&#9711;</div>
-      <p><strong>No tour added yet</strong></p>
-      <small>Click here to paste an embed URL</small>
-    </div>
-  </div>
-</section>
-
-<!-- MAP -->
 <section class="block full" id="map-section">
   <div class="section-head" style="padding: 0 24px;">
     <div class="divider"></div>
@@ -566,24 +505,18 @@
     <h2>Map</h2>
   </div>
   <div id="map"></div>
-  <div class="map-info" style="padding: 0 24px;">
-    Click anywhere on the map to set the property pin. Position saves automatically.
-  </div>
 </section>
 
-<!-- BROKER + CONTACT -->
 <section class="block broker-section" id="contact">
   <div class="broker-card">
-    <div class="broker-photo empty" data-photo-key="broker" id="brokerPhoto"></div>
+    <div class="broker-photo" id="brokerPhoto"><div class="initials" id="brokerInitials"></div></div>
     <div class="broker-info">
-      <h3>JC Gagnaire</h3>
-      <div class="title" contenteditable="true" data-edit="broker-title">Real Estate Broker</div>
-      <div class="bio" contenteditable="true" data-edit="broker-bio">
-        Click to edit JC's bio. Briefly describe experience, areas of expertise, and approach to working with clients.
-      </div>
+      <h3 id="brokerName"></h3>
+      <div class="title" id="brokerTitle"></div>
+      <div class="bio" id="brokerBio"></div>
       <div class="contact-line">
-        <div><span>P</span><a href="#" contenteditable="true" data-edit="broker-phone">(000) 000-0000</a></div>
-        <div><span>E</span><a href="#" contenteditable="true" data-edit="broker-email">jc@example.com</a></div>
+        <div><span>P</span><a id="brokerPhone" href="#"></a></div>
+        <div><span>E</span><a id="brokerEmail" href="#"></a></div>
       </div>
     </div>
   </div>
@@ -596,11 +529,15 @@
     </div>
     <form class="contact-form" id="contactForm">
       <div class="row">
-        <input type="text" placeholder="Name" required />
-        <input type="email" placeholder="Email" required />
+        <input type="text" name="name" placeholder="Name" required />
+        <input type="email" name="email" placeholder="Email" required />
       </div>
-      <input type="tel" placeholder="Phone" />
-      <textarea placeholder="Message" required></textarea>
+      <input type="tel" name="phone" placeholder="Phone" />
+      <textarea name="message" placeholder="Message" required></textarea>
+      <input type="hidden" name="_subject" value="New listing inquiry" />
+      <input type="hidden" name="_template" value="table" />
+      <input type="hidden" name="_captcha" value="false" />
+      <input type="hidden" name="property_address" id="propertyAddressField" value="" />
       <div class="form-msg" id="formMsg"></div>
       <button type="submit" class="btn primary">Send Inquiry</button>
     </form>
@@ -608,12 +545,11 @@
 </section>
 
 <footer>
-  <div class="brand-foot">JC Gagnaire</div>
-  <div>Real Estate Broker</div>
+  <div class="brand-foot" id="footName">JC Gagnaire</div>
+  <div id="footTitle"></div>
   <div class="copy">&copy; <span id="year"></span> &middot; All rights reserved</div>
 </footer>
 
-<!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox">
   <button class="close" id="lbClose">&times;</button>
   <button class="nav-btn prev" id="lbPrev">&#8249;</button>
@@ -622,64 +558,157 @@
   <div class="counter" id="lbCounter"></div>
 </div>
 
-<!-- HIDDEN FILE INPUT -->
-<input type="file" id="fileInput" accept="image/*" style="display:none" />
-
-<!-- EDIT HINT -->
-<div class="edit-hint" id="editHint">
-  <span class="x" onclick="document.getElementById('editHint').remove()">&times;</span>
-  <strong>Tip:</strong> Click any photo slot to upload. Click any text to edit. Everything saves to your browser automatically.
-</div>
-
 <script>
 (function () {
+  const data = JSON.parse(document.getElementById('listing-data').textContent);
+  const PHOTO_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'JPG', 'JPEG', 'PNG'];
+  const GALLERY_MAX = 50;
+  const FLOORPLAN_MAX = 3;
+
   document.getElementById('year').textContent = new Date().getFullYear();
 
-  // ---------- IndexedDB photo store ----------
-  const DB_NAME = 'jc-listing-photos';
-  const STORE = 'photos';
-  const dbPromise = new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = () => req.result.createObjectStore(STORE);
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
+  // ---------- Populate text from data ----------
+  document.getElementById('cityText').textContent = data.city || '';
+  document.getElementById('addressText').textContent = data.address || '';
+  document.getElementById('priceText').textContent = data.price || '';
+  document.getElementById('statBeds').textContent = data.stats?.beds ?? '';
+  document.getElementById('statBaths').textContent = data.stats?.baths ?? '';
+  document.getElementById('statSqft').textContent = data.stats?.sqft ?? '';
+  document.getElementById('statLot').textContent = data.stats?.lot ?? '';
+  document.getElementById('descTitle').textContent = data.descTitle || '';
+  const descBody = document.getElementById('descBody');
+  (data.description || []).forEach(p => {
+    const el = document.createElement('p');
+    el.textContent = p;
+    descBody.appendChild(el);
   });
-  async function dbSet(key, blob) {
-    const db = await dbPromise;
-    return new Promise((res, rej) => {
-      const tx = db.transaction(STORE, 'readwrite');
-      tx.objectStore(STORE).put(blob, key);
-      tx.oncomplete = () => res();
-      tx.onerror = () => rej(tx.error);
+
+  // Broker
+  const b = data.broker || {};
+  document.getElementById('brandName').textContent = b.name || 'Broker';
+  document.getElementById('footName').textContent = b.name || '';
+  document.getElementById('footTitle').textContent = b.title || '';
+  document.getElementById('brokerName').textContent = b.name || '';
+  document.getElementById('brokerTitle').textContent = b.title || '';
+  document.getElementById('brokerBio').textContent = b.bio || '';
+  const phoneEl = document.getElementById('brokerPhone');
+  phoneEl.textContent = b.phone || '';
+  phoneEl.href = b.phone ? 'tel:' + b.phone.replace(/[^0-9+]/g, '') : '#';
+  const emailEl = document.getElementById('brokerEmail');
+  emailEl.textContent = b.email || '';
+  emailEl.href = b.email ? 'mailto:' + b.email : '#';
+  // initials fallback
+  const initials = (b.name || '').split(/\s+/).map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+  document.getElementById('brokerInitials').textContent = initials;
+
+  // Property address into hidden form field
+  document.getElementById('propertyAddressField').value =
+    [data.address, data.city].filter(Boolean).join(', ');
+
+  // Page title
+  if (data.address) document.title = data.address + ' — ' + (b.name || 'Listing');
+
+  // ---------- Photo loader ----------
+  function tryLoad(base) {
+    return new Promise(resolve => {
+      let i = 0;
+      function next() {
+        if (i >= PHOTO_EXTS.length) return resolve(null);
+        const url = `${base}.${PHOTO_EXTS[i++]}`;
+        const test = new Image();
+        test.onload = () => resolve(url);
+        test.onerror = next;
+        test.src = url;
+      }
+      next();
     });
   }
-  async function dbGet(key) {
-    const db = await dbPromise;
-    return new Promise((res, rej) => {
-      const tx = db.transaction(STORE, 'readonly');
-      const r = tx.objectStore(STORE).get(key);
-      r.onsuccess = () => res(r.result);
-      r.onerror = () => rej(r.error);
-    });
+
+  // Hero
+  tryLoad('photos/hero').then(url => {
+    if (url) document.getElementById('heroImg').style.backgroundImage = `url("${url}")`;
+  });
+
+  // Broker headshot
+  tryLoad('photos/broker').then(url => {
+    if (!url) return;
+    const wrap = document.getElementById('brokerPhoto');
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = b.name || '';
+    wrap.appendChild(img);
+    document.getElementById('brokerInitials').remove();
+  });
+
+  // Gallery — try 01..50 in parallel, render in numerical order
+  const galleryGrid = document.getElementById('galleryGrid');
+  const galleryAttempts = [];
+  for (let i = 1; i <= GALLERY_MAX; i++) {
+    const num = String(i).padStart(2, '0');
+    galleryAttempts.push(tryLoad(`photos/${num}`).then(url => ({ i, url })));
   }
-  async function dbDel(key) {
-    const db = await dbPromise;
-    return new Promise((res, rej) => {
-      const tx = db.transaction(STORE, 'readwrite');
-      tx.objectStore(STORE).delete(key);
-      tx.oncomplete = () => res();
-      tx.onerror = () => rej(tx.error);
+  Promise.all(galleryAttempts).then(results => {
+    const found = results.filter(r => r.url).sort((a, b) => a.i - b.i);
+    if (found.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'gallery-empty';
+      empty.textContent = 'Photos coming soon.';
+      galleryGrid.appendChild(empty);
+      return;
+    }
+    found.forEach((r, idx) => {
+      const slot = document.createElement('div');
+      slot.className = 'photo-slot' + (idx === 0 ? ' featured' : '');
+      const img = document.createElement('img');
+      img.src = r.url;
+      img.alt = `Photo ${r.i}`;
+      img.loading = 'lazy';
+      slot.appendChild(img);
+      slot.addEventListener('click', () => openLightbox(idx));
+      galleryGrid.appendChild(slot);
     });
+  });
+
+  // Floor plans
+  const floorplanGrid = document.getElementById('floorplanGrid');
+  const fpLabels = data.floorplanLabels || [];
+  const fpAttempts = [];
+  for (let i = 1; i <= FLOORPLAN_MAX; i++) {
+    fpAttempts.push(tryLoad(`photos/floorplan-${i}`).then(url => ({ i, url })));
   }
-  async function dbKeys() {
-    const db = await dbPromise;
-    return new Promise((res, rej) => {
-      const tx = db.transaction(STORE, 'readonly');
-      const r = tx.objectStore(STORE).getAllKeys();
-      r.onsuccess = () => res(r.result);
-      r.onerror = () => rej(r.error);
+  Promise.all(fpAttempts).then(results => {
+    const found = results.filter(r => r.url).sort((a, b) => a.i - b.i);
+    if (found.length === 0) {
+      document.getElementById('floorplansSection').classList.add('hidden');
+      return;
+    }
+    found.forEach(r => {
+      const slot = document.createElement('div');
+      slot.className = 'photo-slot';
+      const img = document.createElement('img');
+      img.src = r.url;
+      img.alt = fpLabels[r.i - 1] || `Floor plan ${r.i}`;
+      img.loading = 'lazy';
+      slot.appendChild(img);
+      const lbl = document.createElement('div');
+      lbl.className = 'label';
+      lbl.textContent = fpLabels[r.i - 1] || `Floor ${r.i}`;
+      slot.appendChild(lbl);
+      slot.addEventListener('click', () => openLightboxByUrl(r.url));
+      floorplanGrid.appendChild(slot);
     });
-  }
+  });
+
+  // ---------- Map ----------
+  const m = data.map || {};
+  const lat = isFinite(m.lat) ? m.lat : 47.6062;
+  const lon = isFinite(m.lon) ? m.lon : -122.3321;
+  const zoom = isFinite(m.zoom) ? m.zoom : 15;
+  const map = L.map('map').setView([lat, lon], zoom);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+  L.marker([lat, lon]).addTo(map);
 
   // ---------- Sticky nav ----------
   const nav = document.getElementById('topnav');
@@ -690,167 +719,24 @@
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
-  // ---------- Editable text persistence ----------
-  document.querySelectorAll('[contenteditable="true"], [data-edit]').forEach(el => {
-    const key = el.dataset.edit;
-    if (!key) return;
-    const saved = localStorage.getItem('edit:' + key);
-    if (saved !== null) el.innerHTML = saved;
-    if (el.getAttribute('contenteditable') === 'true') {
-      el.addEventListener('blur', () => localStorage.setItem('edit:' + key, el.innerHTML));
-    }
-  });
-
-  // ---------- Photo slot system ----------
-  const fileInput = document.getElementById('fileInput');
-  let pendingSlot = null;
-
-  fileInput.addEventListener('change', async () => {
-    const f = fileInput.files[0];
-    if (!f || !pendingSlot) return;
-    const key = pendingSlot.dataset.photoKey;
-    await dbSet(key, f);
-    paintSlot(pendingSlot, f);
-    fileInput.value = '';
-    pendingSlot = null;
-  });
-
-  function paintSlot(slot, blob) {
-    const url = URL.createObjectURL(blob);
-    if (slot.classList.contains('hero-img')) {
-      slot.style.backgroundImage = `url(${url})`;
-      slot.classList.remove('empty');
-      return;
-    }
-    let img = slot.querySelector('img');
-    if (!img) {
-      img = document.createElement('img');
-      slot.appendChild(img);
-    }
-    img.src = url;
-    slot.classList.remove('empty');
-    if (!slot.querySelector('.remove-btn') && !slot.classList.contains('broker-photo')) {
-      const rm = document.createElement('button');
-      rm.className = 'remove-btn';
-      rm.innerHTML = '&times;';
-      rm.title = 'Remove photo';
-      rm.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        const key = slot.dataset.photoKey;
-        await dbDel(key);
-        clearSlot(slot);
-      });
-      slot.appendChild(rm);
-    }
-  }
-
-  function clearSlot(slot) {
-    if (slot.classList.contains('hero-img')) {
-      slot.style.backgroundImage = '';
-    } else {
-      const img = slot.querySelector('img');
-      if (img) img.remove();
-      const rm = slot.querySelector('.remove-btn');
-      if (rm) rm.remove();
-    }
-    slot.classList.add('empty');
-  }
-
-  function attachSlotHandler(slot) {
-    slot.addEventListener('click', (e) => {
-      if (e.target.closest('.remove-btn')) return;
-      // if filled, open lightbox
-      if (!slot.classList.contains('empty') && slot.querySelector('img')) {
-        openLightbox(slot);
-        return;
-      }
-      // hero & broker fill behavior on empty
-      pendingSlot = slot;
-      fileInput.click();
-    });
-  }
-
-  // ---------- Build galleries ----------
-  const GALLERY_INITIAL = 18;
-  const FLOORPLAN_COUNT = 3;
-  const galleryGrid = document.getElementById('galleryGrid');
-  const floorplanGrid = document.getElementById('floorplanGrid');
-
-  // featured slot
-  const featured = document.createElement('div');
-  featured.className = 'photo-slot empty featured';
-  featured.dataset.photoKey = 'gallery-0';
-  galleryGrid.appendChild(featured);
-  attachSlotHandler(featured);
-
-  for (let i = 1; i < GALLERY_INITIAL; i++) addGallerySlot(i);
-
-  function addGallerySlot(i) {
-    const slot = document.createElement('div');
-    slot.className = 'photo-slot empty';
-    slot.dataset.photoKey = 'gallery-' + i;
-    galleryGrid.appendChild(slot);
-    attachSlotHandler(slot);
-    return slot;
-  }
-
-  document.getElementById('addMoreBtn').addEventListener('click', () => {
-    const existing = galleryGrid.querySelectorAll('.photo-slot').length;
-    for (let i = 0; i < 6; i++) addGallerySlot(existing + i);
-  });
-
-  for (let i = 0; i < FLOORPLAN_COUNT; i++) {
-    const slot = document.createElement('div');
-    slot.className = 'photo-slot empty';
-    slot.dataset.photoKey = 'floorplan-' + i;
-    const lbl = document.createElement('div');
-    lbl.className = 'label';
-    lbl.contentEditable = 'true';
-    const lblKey = 'fplabel-' + i;
-    lbl.dataset.edit = lblKey;
-    const savedLbl = localStorage.getItem('edit:' + lblKey);
-    lbl.textContent = savedLbl !== null ? savedLbl : (['Main Level', 'Upper Level', 'Lower Level'][i] || 'Level ' + (i + 1));
-    lbl.addEventListener('blur', () => localStorage.setItem('edit:' + lblKey, lbl.textContent));
-    lbl.addEventListener('click', e => e.stopPropagation());
-    slot.appendChild(lbl);
-    floorplanGrid.appendChild(slot);
-    attachSlotHandler(slot);
-  }
-
-  // hero & broker
-  attachSlotHandler(document.getElementById('heroImg'));
-  attachSlotHandler(document.getElementById('brokerPhoto'));
-
-  // ---------- Hydrate from IndexedDB ----------
-  (async function hydrate() {
-    const keys = await dbKeys();
-    for (const k of keys) {
-      const blob = await dbGet(k);
-      if (!blob) continue;
-      // make sure slot exists for gallery overflow
-      if (k.startsWith('gallery-')) {
-        const idx = parseInt(k.split('-')[1], 10);
-        while (galleryGrid.querySelectorAll('.photo-slot').length <= idx) {
-          addGallerySlot(galleryGrid.querySelectorAll('.photo-slot').length);
-        }
-      }
-      const slot = document.querySelector(`[data-photo-key="${k}"]`);
-      if (slot) paintSlot(slot, blob);
-    }
-  })();
-
   // ---------- Lightbox ----------
   const lb = document.getElementById('lightbox');
   const lbImg = document.getElementById('lbImg');
   const lbCounter = document.getElementById('lbCounter');
   let lbList = [], lbIndex = 0;
 
-  function openLightbox(slot) {
-    lbList = Array.from(document.querySelectorAll('.photo-slot:not(.empty)'))
-      .map(s => s.querySelector('img'))
-      .filter(Boolean);
-    lbIndex = lbList.findIndex(i => i === slot.querySelector('img'));
-    if (lbIndex < 0) lbIndex = 0;
+  function rebuildLbList() {
+    lbList = Array.from(galleryGrid.querySelectorAll('img'));
+  }
+  function openLightbox(i) {
+    rebuildLbList();
+    lbIndex = i;
+    showLb();
+    lb.classList.add('open');
+  }
+  function openLightboxByUrl(url) {
+    lbList = [{ src: url }];
+    lbIndex = 0;
     showLb();
     lb.classList.add('open');
   }
@@ -870,63 +756,37 @@
     if (e.key === 'ArrowRight') document.getElementById('lbNext').click();
   });
 
-  // ---------- 3D Tour ----------
-  const tourFrame = document.getElementById('tourFrame');
-  function renderTour() {
-    const url = localStorage.getItem('tourUrl');
-    tourFrame.innerHTML = '';
-    if (url) {
-      const ifr = document.createElement('iframe');
-      ifr.src = url;
-      ifr.allow = 'fullscreen; xr-spatial-tracking';
-      ifr.allowFullscreen = true;
-      tourFrame.appendChild(ifr);
-    } else {
-      tourFrame.innerHTML = `
-        <div class="placeholder">
-          <div class="icon">&#9711;</div>
-          <p><strong>No tour added yet</strong></p>
-          <small>Click here to paste an embed URL</small>
-        </div>`;
-    }
-  }
-  tourFrame.addEventListener('click', () => {
-    const current = localStorage.getItem('tourUrl') || '';
-    const next = prompt('Paste 3D tour embed URL (Matterport, YouTube embed, etc.):', current);
-    if (next === null) return;
-    if (next.trim() === '') localStorage.removeItem('tourUrl');
-    else localStorage.setItem('tourUrl', next.trim());
-    renderTour();
-  });
-  renderTour();
-
-  // ---------- Map ----------
-  const DEFAULT_LAT = 47.7019, DEFAULT_LON = -122.3221;
-  const savedLat = parseFloat(localStorage.getItem('mapLat'));
-  const savedLon = parseFloat(localStorage.getItem('mapLon'));
-  const lat = isFinite(savedLat) ? savedLat : DEFAULT_LAT;
-  const lon = isFinite(savedLon) ? savedLon : DEFAULT_LON;
-  const map = L.map('map').setView([lat, lon], 15);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(map);
-  let marker = L.marker([lat, lon], { draggable: true }).addTo(map);
-  function persistMarker() {
-    const p = marker.getLatLng();
-    localStorage.setItem('mapLat', p.lat);
-    localStorage.setItem('mapLon', p.lng);
-  }
-  marker.on('dragend', persistMarker);
-  map.on('click', (e) => {
-    marker.setLatLng(e.latlng);
-    persistMarker();
-  });
-
   // ---------- Contact form ----------
-  document.getElementById('contactForm').addEventListener('submit', e => {
+  document.getElementById('contactForm').addEventListener('submit', async e => {
     e.preventDefault();
-    document.getElementById('formMsg').textContent = 'Thank you — your inquiry has been recorded.';
-    e.target.reset();
+    const form = e.target;
+    const msg = document.getElementById('formMsg');
+    const inbox = (data.broker && data.broker.email) || 'jc@jcgagnaire.com';
+    msg.style.color = '';
+    msg.textContent = 'Sending...';
+
+    const subj = form.querySelector('input[name="_subject"]');
+    const fullAddr = [data.address, data.city].filter(Boolean).join(', ');
+    if (fullAddr) subj.value = 'Listing Inquiry — ' + fullAddr;
+
+    try {
+      const resp = await fetch('https://formsubmit.co/ajax/' + encodeURIComponent(inbox), {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.fromEntries(new FormData(form)))
+      });
+      const j = await resp.json().catch(() => ({}));
+      if (resp.ok && (j.success === true || j.success === 'true')) {
+        msg.textContent = 'Thank you — your inquiry has been sent.';
+        form.reset();
+      } else {
+        msg.style.color = '#a33';
+        msg.textContent = 'Could not send. Please email ' + inbox + ' directly.';
+      }
+    } catch (err) {
+      msg.style.color = '#a33';
+      msg.textContent = 'Network error. Please email ' + inbox + ' directly.';
+    }
   });
 })();
 </script>
