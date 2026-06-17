@@ -413,24 +413,51 @@ def export_outputs(df: pd.DataFrame, summary: pd.DataFrame) -> None:
 # Orchestration
 # ---------------------------------------------------------------------------
 
+JOINED_CACHE = DATA_DIR / "kc_market_joined.csv"
+
+
+def load_joined_cache() -> pd.DataFrame | None:
+    """Use the joined cache (built from bulk extracts) if it's fresh (<7 days).
+
+    The bulk-extract path carries current 2026 sales; the live GIS Sales layer
+    lags by months. When the cache exists we prefer it so all scripts run on the
+    same fresh data. Falls back to the live GIS pull when no fresh cache exists.
+    """
+    if not JOINED_CACHE.exists():
+        return None
+    age_h = (time.time() - JOINED_CACHE.stat().st_mtime) / 3600
+    if age_h >= 168:
+        return None
+    print(f"[data] Using joined cache {JOINED_CACHE.name} (age {age_h:.1f}h)")
+    df = pd.read_csv(JOINED_CACHE, dtype={"PIN": str, "zip5": str})
+    df["SaleDate"] = pd.to_datetime(df["SaleDate"], errors="coerce")
+    df["LOTSQFT"] = pd.to_numeric(df["LOTSQFT"], errors="coerce")
+    df["price_per_lot_sqft"] = pd.to_numeric(df["price_per_lot_sqft"], errors="coerce")
+    print(f"       {len(df):,} rows loaded from cache")
+    return df
+
+
 def main() -> int:
     print("=" * 70)
-    print("King County current-market analysis (live GIS)")
+    print("King County current-market analysis")
     print("=" * 70)
 
-    try:
-        sales = fetch_recent_sales()
-    except Exception as exc:
-        print(f"[1/5] FAILED: {exc}")
-        traceback.print_exc()
-        return 1
+    df = load_joined_cache()
+    if df is None:
+        print("[data] No fresh cache — pulling live from King County GIS")
+        try:
+            sales = fetch_recent_sales()
+        except Exception as exc:
+            print(f"[1/5] FAILED: {exc}")
+            traceback.print_exc()
+            return 1
 
-    try:
-        df = clean_and_join(sales)
-    except Exception as exc:
-        print(f"[2/5] FAILED: {exc}")
-        traceback.print_exc()
-        return 2
+        try:
+            df = clean_and_join(sales)
+        except Exception as exc:
+            print(f"[2/5] FAILED: {exc}")
+            traceback.print_exc()
+            return 2
 
     try:
         summary = summarize_by_zip(df)

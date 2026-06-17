@@ -3,3 +3,8 @@
 *.xlsx
 *.xls
 memory/
+
+# Large local data: King County bulk extracts, geojson, regenerable caches
+*.zip
+*.geojson
+Median Zip code project/data/
