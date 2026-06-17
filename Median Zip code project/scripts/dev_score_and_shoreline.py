@@ -1,10 +1,14 @@
 """
 Two analyses on top of the live King County GIS market data:
 
-    A. Developer Opportunity Score by ZIP — composite z-score combining
-       end-value (median sale price), land cost (median $/lot-sqft, inverted),
-       lot size (median LOTSQFT), and teardown supply (% single-family
-       residences from PREUSE_DESC). Higher = better dev play.
+    A. Developer Opportunity Score by ZIP — zoning-aware composite z-score
+       combining end-value (median sale price), developable lot size (median
+       LOTSQFT after rural parcels are gated out), land cost (median $/lot-sqft,
+       inverted), teardown supply (% single-family from PREUSE_DESC), and zoning
+       developability (share of land in zones that permit added density, with
+       WA HB 1110 middle-housing credited for city single-family). Rural /
+       large-acre-minimum ZIPs are excluded — you cannot run a density play
+       there. Higher = better dev play. See classify_zoning() for the crosswalk.
 
     B. Shoreline / north-Seattle deep dive — filtered to the ZIPs the user
        transacts in (98155, 98133, 98177, 98125, 98103, 98115, 98117) with
@@ -29,6 +33,7 @@ Outputs (PNG/CSV):
 from __future__ import annotations
 
 import math
+import re
 import sys
 import time
 import traceback
@@ -201,20 +206,142 @@ def is_single_family(pre: str | float) -> bool:
     return False
 
 
+# Points / Eastside luxury cities where an "R<n>" code means minimum LOT SIZE
+# (thousands of sqft), i.e. LOW density — not n-units-per-acre.
+LUX_LOWDENSITY = {
+    "MEDINA", "CLYDE HILL", "HUNTS POINT", "YARROW POINT",
+    "BEAUX ARTS VILLAGE", "MERCER ISLAND",
+}
+
+
+def classify_zoning(zoning: str, juris: str = "") -> tuple[str, float]:
+    """Map a King County jurisdiction zoning code to a developability tier and a
+    0–1 weight (share of redevelopment potential).
+
+    Tiers:
+      rural        0.0  — RA/AG/forest: large-acre minimums, cannot densify
+      sfr_low      ~0.2 — large-min-lot / luxury SFR, or unincorporated SFR
+                          (WA HB 1110 middle-housing does NOT apply in
+                          unincorporated King County)
+      sfr_mid      ~0.6 — city single-family: under HB 1110 (2025–26) most now
+                          allow 2–4 units (6 near frequent transit)
+      multifamily  1.0  — lowrise/midrise/highrise or high units-per-acre, plus
+                          commercial / mixed-use that permits housing
+    """
+    if not isinstance(zoning, str) or not zoning.strip():
+        return "unknown", 0.3
+    j = (juris or "").upper().strip()
+    city = j not in ("KING COUNTY", "")          # incorporated => HB 1110 applies
+    base = re.sub(r"\(.*?\)", "", zoning.upper()).replace(" ", "").strip()
+
+    # rural / agricultural / forest -> not densifiable
+    if re.match(r"^(RA|AG|A-?\d|F\b|UR)", base):
+        return "rural", 0.0
+
+    # explicit multifamily / midrise / highrise / mixed / commercial-with-housing
+    if base.startswith(("LR", "MR", "HR", "SM", "NC", "MU", "RM", "MF",
+                        "DMR", "DMC", "CB", "PSM")) or re.match(r"^C-?\d", base):
+        return "multifamily", 1.0
+
+    # "SR-n" suburban residential (Bellevue etc.) — n = units/acre
+    m_sr = re.match(r"^SR-?(\d+(?:\.\d+)?)$", base)
+    if m_sr:
+        n = float(m_sr.group(1))
+        if n >= 12:
+            return "multifamily", 1.0
+        return ("sfr_mid", 0.5) if (city and n >= 4) else ("sfr_low", 0.3)
+
+    # numeric "R-n" / "Rn" codes
+    m = re.match(r"^R-?(\d+(?:\.\d+)?)", base)
+    if m:
+        if j in LUX_LOWDENSITY:                  # number = min lot ksqft (low density)
+            return "sfr_low", 0.15
+        if "." in m.group(1):                    # decimal R = min-lot ksqft (low density)
+            return "sfr_low", 0.2
+        n = float(m.group(1))
+        if n >= 12:                              # >=12 units/acre = multifamily
+            return "multifamily", 1.0
+        return ("sfr_mid", 0.6) if city else ("sfr_low", 0.3)  # 1–11 u/ac SFR
+
+    # neighborhood-residential / residential-small-lot text codes
+    if base.startswith(("NR", "RSL", "RSA", "RSX", "RS", "SRL")):
+        return "sfr_mid", 0.6
+    if base.startswith(("SF", "LDR", "RL", "RD")):
+        return ("sfr_mid", 0.55) if city else ("sfr_low", 0.3)
+
+    return "sfr_low", 0.3
+
+
 def compute_dev_score(df: pd.DataFrame) -> pd.DataFrame:
-    """Composite z-score per ZIP for developer/teardown plays.
+    """Zoning-aware composite z-score per ZIP for developer/teardown plays.
 
     Components (each z-scored, higher = better for the dev thesis):
-      + median sale price       (end-value upside)
-      + median lot sqft         (developable land)
-      - median $/lot-sqft       (land cost; negate so cheaper land helps)
-      + pct single-family       (teardown supply)
+      + median sale price          (end-value upside)
+      + median developable lot     (land you can split — rural parcels excluded)
+      - median $/lot-sqft          (land cost; negate so cheaper land helps)
+      + pct single-family          (teardown supply)
+      + zoning developability      (share of land zoned for added density)
 
-    Equal-weight sum gives an interpretable 4-component composite.
+    Zoning gate: parcels in rural/ag zones are dropped before aggregation, and
+    any ZIP that is majority-rural is excluded entirely — you cannot run a
+    density play where the minimum lot size is measured in acres.
     """
+    if "ZONING" not in df.columns:
+        print("  [warn] cache has no ZONING column — run build_joined_from_extracts.py; "
+              "falling back to the legacy non-zoning score")
+        return _compute_dev_score_legacy(df)
+
     df = df.copy()
     df["is_sfr"] = df["PREUSE_DESC"].apply(is_single_family)
+    tiers = df.apply(lambda r: classify_zoning(r["ZONING"], r.get("JURIS", "")),
+                     axis=1)
+    df["z_tier"] = [t[0] for t in tiers]
+    df["z_weight"] = [t[1] for t in tiers]
+    df["is_rural"] = df["z_tier"] == "rural"
 
+    # ZIP-level rural share (computed on ALL sales, before gating) for exclusion
+    rural_share = df.groupby("zip5")["is_rural"].mean()
+
+    # Gate rural parcels, then aggregate on developable land only
+    dev = df[~df["is_rural"]].copy()
+    grouped = dev.groupby("zip5").agg(
+        median_price=("SalePrice", "median"),
+        median_lot_sqft=("LOTSQFT", "median"),
+        median_ppsf=("price_per_lot_sqft", "median"),
+        pct_sfr=("is_sfr", "mean"),
+        zone_dev=("z_weight", "mean"),
+        sales_count=("SalePrice", "size"),
+    ).reset_index()
+    grouped["rural_share"] = grouped["zip5"].map(rural_share).fillna(0.0)
+
+    # Filters: enough developable sales, and not a majority-rural ZIP
+    grouped = grouped[
+        (grouped["sales_count"] >= MIN_SALES_FOR_SCORE)
+        & (grouped["rural_share"] < 0.5)
+    ].copy()
+    grouped = grouped.dropna(subset=["median_ppsf"])
+
+    def z(s: pd.Series) -> pd.Series:
+        return (s - s.mean()) / s.std(ddof=0)
+
+    grouped["z_price"] = z(grouped["median_price"])
+    grouped["z_lot"] = z(grouped["median_lot_sqft"])
+    grouped["z_ppsf_inv"] = -z(grouped["median_ppsf"])   # cheaper land = better
+    grouped["z_sfr"] = z(grouped["pct_sfr"])
+    grouped["z_zone"] = z(grouped["zone_dev"])           # zoned for density = better
+
+    grouped["dev_score"] = (
+        grouped["z_price"] + grouped["z_lot"] + grouped["z_ppsf_inv"]
+        + grouped["z_sfr"] + grouped["z_zone"]
+    )
+    grouped = grouped.sort_values("dev_score", ascending=False).reset_index(drop=True)
+    return grouped
+
+
+def _compute_dev_score_legacy(df: pd.DataFrame) -> pd.DataFrame:
+    """Original 4-factor score (no zoning) — fallback when ZONING is absent."""
+    df = df.copy()
+    df["is_sfr"] = df["PREUSE_DESC"].apply(is_single_family)
     grouped = df.groupby("zip5").agg(
         median_price=("SalePrice", "median"),
         median_lot_sqft=("LOTSQFT", "median"),
@@ -222,8 +349,6 @@ def compute_dev_score(df: pd.DataFrame) -> pd.DataFrame:
         pct_sfr=("is_sfr", "mean"),
         sales_count=("SalePrice", "size"),
     ).reset_index()
-
-    # Require enough sales to make medians meaningful
     grouped = grouped[grouped["sales_count"] >= MIN_SALES_FOR_SCORE].copy()
     grouped = grouped.dropna(subset=["median_ppsf"])
 
@@ -232,14 +357,12 @@ def compute_dev_score(df: pd.DataFrame) -> pd.DataFrame:
 
     grouped["z_price"] = z(grouped["median_price"])
     grouped["z_lot"] = z(grouped["median_lot_sqft"])
-    grouped["z_ppsf_inv"] = -z(grouped["median_ppsf"])  # cheaper land = better
+    grouped["z_ppsf_inv"] = -z(grouped["median_ppsf"])
     grouped["z_sfr"] = z(grouped["pct_sfr"])
-
     grouped["dev_score"] = (
         grouped["z_price"] + grouped["z_lot"] + grouped["z_ppsf_inv"] + grouped["z_sfr"]
     )
-    grouped = grouped.sort_values("dev_score", ascending=False).reset_index(drop=True)
-    return grouped
+    return grouped.sort_values("dev_score", ascending=False).reset_index(drop=True)
 
 
 def render_dev_score(score_df: pd.DataFrame) -> None:
@@ -261,7 +384,7 @@ def render_dev_score(score_df: pd.DataFrame) -> None:
         ax.text(bar.get_width() + span * 0.012, bar.get_y() + bar.get_height() / 2,
                 f"{s:.2f}", va="center", ha="left", fontsize=9.5, color=cs.MUTED)
 
-    ax.set_xlabel("Composite developer score  (z-sum across 4 factors)")
+    ax.set_xlabel("Composite developer score  (z-sum across 5 factors)")
     ax.set_ylabel("")
     ax.set_xlim(0, max(scores) * 1.12)
     cs.grid_x_only(ax)
@@ -274,12 +397,12 @@ def render_dev_score(score_df: pd.DataFrame) -> None:
 
     cs.title_block(
         fig,
-        "Developer Opportunity Score — Top 20 ZIPs",
-        "Higher = more upside: high end-value + big lots + cheap land + more "
-        "single-family teardown supply",
+        "Developer Opportunity Score — Top 20 ZIPs (zoning-aware)",
+        "Upside where you can actually build: rural / large-acre-minimum zones "
+        "excluded; credits density-permitting zoning",
     )
-    cs.footer(fig, "Score = z(median price) + z(median lot) − z($/lot-sqft) + "
-                   "z(%SFR)   ·   orange = your focus ZIPs")
+    cs.footer(fig, "z(price) + z(developable lot) − z($/lot-sqft) + z(%SFR) + "
+                   "z(zoned-for-density)  ·  rural ZIPs gated  ·  orange = focus ZIPs")
     fig.subplots_adjust(top=0.86, left=0.08, right=0.96, bottom=0.12)
     out = OUTPUTS_DIR / "05_dev_score_top20.png"
     fig.savefig(out)
@@ -555,10 +678,11 @@ def main() -> int:
         score.to_csv(score_path, index=False)
         print(f"  Wrote {score_path.name} ({len(score)} ZIPs ranked)")
         print("\n  Top 15 ZIPs by dev score:")
-        print(score.head(15)[
-            ["zip5", "dev_score", "median_price", "median_ppsf",
-             "median_lot_sqft", "pct_sfr", "sales_count"]
-        ].to_string(index=False))
+        cols = ["zip5", "dev_score", "median_price", "median_ppsf",
+                "median_lot_sqft", "pct_sfr", "sales_count"]
+        if "zone_dev" in score.columns:
+            cols.insert(6, "zone_dev")
+        print(score.head(15)[cols].to_string(index=False))
         render_dev_score(score)
     except Exception as exc:
         print(f"  FAILED: {exc}")

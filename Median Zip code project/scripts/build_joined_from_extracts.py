@@ -98,17 +98,25 @@ def pin(major: str, minor: str) -> str:
     return f"{major.strip().zfill(6)}{minor.strip().zfill(4)}"
 
 
-def load_residential_pins() -> set[str]:
-    """Set of PINs whose parcel PropType == 'R' (residential land universe)."""
-    pins: set[str] = set()
+def load_residential_pins() -> dict[str, tuple[str, str]]:
+    """PIN -> (CurrentZoning, DistrictName/jurisdiction) for PropType=='R' parcels.
+
+    Zoning + jurisdiction come from the bulk Parcel extract (the live GIS query
+    does not expose zoning). Jurisdiction is needed to disambiguate R-codes that
+    mean different things by city (e.g. Shoreline R-6 = 6 units/acre vs Medina
+    R16 = 16,000 sqft minimum lot)."""
+    out: dict[str, tuple[str, str]] = {}
     total = 0
     with PARCEL_CSV.open(encoding=ENC, newline="") as f:
         for row in csv.DictReader(f):
             total += 1
             if row["PropType"].strip() == "R":
-                pins.add(pin(row["Major"], row["Minor"]))
-    print(f"[parcel] {len(pins):,} residential PINs (of {total:,} total)")
-    return pins
+                out[pin(row["Major"], row["Minor"])] = (
+                    row["CurrentZoning"].strip(),
+                    row["DistrictName"].strip(),
+                )
+    print(f"[parcel] {len(out):,} residential PINs (of {total:,} total)")
+    return out
 
 
 def load_assessed_values() -> dict[str, float]:
@@ -180,7 +188,8 @@ def build() -> int:
                 drop_reason += 1
                 continue
             p = pin(row["Major"], row["Minor"])
-            if p not in resid_pins:
+            zoning_juris = resid_pins.get(p)
+            if zoning_juris is None:
                 drop_resid += 1
                 continue
             total_av = assessed.get(p, 0.0)
@@ -198,6 +207,8 @@ def build() -> int:
                 "SalePrice": price,
                 "Principal_Use": "RESIDENTIAL",
                 "Property_Type": row.get("PropertyType", "").strip(),
+                "ZONING": zoning_juris[0],
+                "JURIS": zoning_juris[1],
             })
             kept += 1
     print(f"[sales] scanned {seen:,} rows -> {kept:,} residential arms-length sales")
@@ -240,7 +251,8 @@ def build() -> int:
 
     cols = ["PIN", "SaleDate", "SalePrice", "Principal_Use", "Property_Type",
             "address", "ZIP5", "LOTSQFT", "PREUSE_DESC", "PROPTYPE",
-            "CTYNAME", "POSTALCTYNAME", "ADDR_FULL", "zip5", "price_per_lot_sqft"]
+            "CTYNAME", "POSTALCTYNAME", "ADDR_FULL", "ZONING", "JURIS",
+            "zip5", "price_per_lot_sqft"]
     df = df[cols]
     df.to_csv(OUT, index=False)
     print(f"[out] wrote {len(df):,} rows -> {OUT}")
