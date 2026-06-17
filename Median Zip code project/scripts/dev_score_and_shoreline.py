@@ -243,25 +243,22 @@ def classify_zoning(zoning: str, juris: str = "") -> tuple[str, float]:
                         "DMR", "DMC", "CB", "PSM")) or re.match(r"^C-?\d", base):
         return "multifamily", 1.0
 
-    # "SR-n" suburban residential (Bellevue etc.) — n = units/acre
-    m_sr = re.match(r"^SR-?(\d+(?:\.\d+)?)$", base)
-    if m_sr:
-        n = float(m_sr.group(1))
-        if n >= 12:
-            return "multifamily", 1.0
-        return ("sfr_mid", 0.5) if (city and n >= 4) else ("sfr_low", 0.3)
+    # luxury Points / Mercer Island: R<n> / SR<n> encode a minimum LOT SIZE,
+    # i.e. very low density (Medina R16 = 16,000 sqft min, SR30 = 30,000)
+    if j in LUX_LOWDENSITY:
+        return "sfr_low", 0.15
 
-    # numeric "R-n" / "Rn" codes
-    m = re.match(r"^R-?(\d+(?:\.\d+)?)", base)
+    # numeric "R-n" / "SR-n" codes — disambiguate units/acre vs minimum-lot-size.
+    # Min-lot codes look like R-5400 / R-7200 (>=100 sqft) or R-7.2 / R-9.6
+    # (decimal ksqft); genuine units/acre are small integers R-1 .. R-48.
+    m = re.match(r"^(?:SR|R)-?(\d+(?:\.\d+)?)", base)
     if m:
-        if j in LUX_LOWDENSITY:                  # number = min lot ksqft (low density)
-            return "sfr_low", 0.15
-        if "." in m.group(1):                    # decimal R = min-lot ksqft (low density)
-            return "sfr_low", 0.2
-        n = float(m.group(1))
-        if n >= 12:                              # >=12 units/acre = multifamily
+        raw = m.group(1)
+        n = float(raw)
+        is_min_lot = ("." in raw) or (n >= 100)
+        if not is_min_lot and n >= 12:           # >=12 units/acre = multifamily
             return "multifamily", 1.0
-        return ("sfr_mid", 0.6) if city else ("sfr_low", 0.3)  # 1–11 u/ac SFR
+        return ("sfr_mid", 0.6) if city else ("sfr_low", 0.3)  # SFR density
 
     # neighborhood-residential / residential-small-lot text codes
     if base.startswith(("NR", "RSL", "RSA", "RSX", "RS", "SRL")):
