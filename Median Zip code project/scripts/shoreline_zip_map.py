@@ -26,7 +26,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import requests
-from matplotlib.collections import PatchCollection
+
+import chart_style as cs
 
 # ---------------------------------------------------------------------------
 # Paths & config
@@ -148,7 +149,26 @@ def ring_in_bounds(ring: list[tuple[float, float]], bounds: tuple) -> bool:
 # Map rendering
 # ---------------------------------------------------------------------------
 
+def _largest_rings(candidates: list[tuple[str, list]]) -> dict[str, list]:
+    """One representative (largest-area) ring per ZIP, for label placement."""
+    by_area: dict[str, float] = {}
+    largest: dict[str, list] = {}
+    for zip5, ring in candidates:
+        a = 0.0
+        for i in range(len(ring) - 1):
+            x0, y0 = ring[i]
+            x1, y1 = ring[i + 1]
+            a += x0 * y1 - x1 * y0
+        a = abs(a) * 0.5
+        if a > by_area.get(zip5, 0):
+            by_area[zip5] = a
+            largest[zip5] = ring
+    return largest
+
+
 def render_map(market_df: pd.DataFrame, geojson: dict) -> None:
+    cs.apply()
+
     # Aggregate market data
     by_zip = (
         market_df.dropna(subset=["price_per_lot_sqft"])
@@ -180,120 +200,144 @@ def render_map(market_df: pd.DataFrame, geojson: dict) -> None:
     # mass of the colormap sits where the residential ZIPs live.
     vals = by_zip["median_ppsf"].dropna()
     vmin, vmax = float(np.percentile(vals, 5)), float(np.percentile(vals, 95))
-    cmap = plt.get_cmap("viridis")
+    cmap = cs.VALUE_CMAP
     norm = plt.Normalize(vmin=vmin, vmax=vmax)
 
-    fig, ax = plt.subplots(figsize=(12, 13))
+    date_min = pd.to_datetime(market_df["SaleDate"]).min().date()
+    date_max = pd.to_datetime(market_df["SaleDate"]).max().date()
+
+    fig = plt.figure(figsize=(14.5, 11))
+    gs = fig.add_gridspec(1, 2, width_ratios=[1, 0.30], wspace=0.02,
+                          left=0.015, right=0.985, top=0.86, bottom=0.04)
+    ax = fig.add_subplot(gs[0, 0])
+    panel = fig.add_subplot(gs[0, 1])
+    panel.axis("off")
+
     ax.set_xlim(MAP_BOUNDS[0], MAP_BOUNDS[1])
     ax.set_ylim(MAP_BOUNDS[2], MAP_BOUNDS[3])
-    # Approximate equal-aspect for this latitude
     ax.set_aspect(1.0 / np.cos(np.radians(47.7)))
-    ax.set_facecolor("#e8edf0")
+    # Water shows through the gaps between land ZIP polygons (Puget Sound,
+    # Lake Washington, Lake Union) — a soft blue background reads as water.
+    ax.set_facecolor(cs.WATER)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    for s in ax.spines.values():
+        s.set_visible(True)
+        s.set_edgecolor(cs.SPINE)
+        s.set_linewidth(1.2)
+    ax.grid(False)
 
-    drawn_zips: set[str] = set()
-    for zip5, ring in candidates:
+    # Draw no-data ZIPs first (land base), then data ZIPs, then focus outlines
+    ordered = sorted(
+        candidates,
+        key=lambda c: (
+            c[0] in WORKING_ZIPS,                       # focus drawn last
+            pd.notna(by_zip["median_ppsf"].get(c[0])),  # data over no-data
+        ),
+    )
+    for zip5, ring in ordered:
         is_working = zip5 in WORKING_ZIPS
         ppsf = by_zip["median_ppsf"].get(zip5)
+        has_data = pd.notna(ppsf)
+        face = cmap(norm(ppsf)) if has_data else cs.LAND_NODATA
+        ax.add_patch(mpatches.Polygon(
+            ring, closed=True, facecolor=face,
+            edgecolor=(cs.INK if is_working else "white"),
+            linewidth=(2.6 if is_working else 0.7),
+            zorder=(5 if is_working else (3 if has_data else 2)),
+        ))
 
-        if pd.notna(ppsf):
-            color = cmap(norm(ppsf))
-        else:
-            color = "#cccccc"
-
-        edge = "black" if is_working else "#555555"
-        lw = 2.2 if is_working else 0.6
-
-        poly = mpatches.Polygon(
-            ring,
-            closed=True,
-            facecolor=color,
-            edgecolor=edge,
-            linewidth=lw,
-            alpha=0.92 if pd.notna(ppsf) else 0.55,
-        )
-        ax.add_patch(poly)
-        drawn_zips.add(zip5)
-
-    # Label each ZIP at its centroid (one label per ZIP, biggest polygon)
-    zip_to_largest: dict[str, list[tuple[float, float]]] = {}
-    zip_to_area: dict[str, float] = {}
-    for zip5, ring in candidates:
-        # Approx area via shoelace
-        a = 0.0
-        for i in range(len(ring) - 1):
-            x0, y0 = ring[i]
-            x1, y1 = ring[i + 1]
-            a += x0 * y1 - x1 * y0
-        a = abs(a) * 0.5
-        if a > zip_to_area.get(zip5, 0):
-            zip_to_area[zip5] = a
-            zip_to_largest[zip5] = ring
-
-    for zip5, ring in zip_to_largest.items():
+    # Labels — one per ZIP at its largest polygon's centroid
+    largest = _largest_rings(candidates)
+    mid = (vmin + vmax) / 2
+    for zip5, ring in largest.items():
         cx, cy = ring_centroid(ring)
         is_working = zip5 in WORKING_ZIPS
         ppsf = by_zip["median_ppsf"].get(zip5)
-        label = f"{zip5}\n${ppsf:.0f}/sf" if pd.notna(ppsf) else zip5
-        ax.text(
-            cx, cy, label,
-            ha="center", va="center",
-            fontsize=8.5 if is_working else 7,
-            fontweight="bold" if is_working else "normal",
-            color="white" if pd.notna(ppsf) and ppsf > (vmin + vmax) / 2 else "#111",
-            bbox=dict(
-                boxstyle="round,pad=0.18",
-                facecolor=("#000000" if is_working else "none"),
-                alpha=0.35 if is_working else 0.0,
-                edgecolor="none",
-            ) if is_working else None,
-        )
+        has_data = pd.notna(ppsf)
+        if not has_data and not is_working:
+            # de-emphasize non-focus, no-data neighbors
+            ax.text(cx, cy, zip5, ha="center", va="center",
+                    fontsize=6.5, color=cs.FAINT, zorder=6)
+            continue
+        on_dark = has_data and ppsf > mid
+        txt_color = "white" if on_dark else cs.INK
+        halo = cs.HALO_DARK if on_dark else cs.HALO
+        zlabel = ("★ " + zip5) if is_working else zip5
+        ax.text(cx, cy + 0.006, zlabel, ha="center", va="center",
+                fontsize=(11 if is_working else 8.5),
+                fontweight="bold", color=txt_color,
+                path_effects=halo, zorder=7)
+        if has_data:
+            ax.text(cx, cy - 0.010, f"${ppsf:.0f}/sf", ha="center", va="center",
+                    fontsize=(9.5 if is_working else 7.5),
+                    color=txt_color, path_effects=halo, zorder=7)
 
-    # Title & colorbar
-    ax.set_title(
-        "Median $/lot-sqft by ZIP — Shoreline area\n"
-        "(thick black border = user's 7 working ZIPs · 12-mo window: "
-        f"{pd.to_datetime(market_df['SaleDate']).min().date()} → "
-        f"{pd.to_datetime(market_df['SaleDate']).max().date()})",
-        fontsize=13,
-    )
-    ax.set_xlabel("Longitude")
-    ax.set_ylabel("Latitude")
-    ax.grid(True, alpha=0.25)
+    # North arrow (top-right corner of the map)
+    ax.annotate("N", xy=(0.965, 0.945), xytext=(0.965, 0.875),
+                xycoords="axes fraction", textcoords="axes fraction",
+                ha="center", va="center", fontsize=12, fontweight="bold",
+                color=cs.INK,
+                arrowprops=dict(arrowstyle="-|>", color=cs.INK, linewidth=2))
 
     sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
     sm.set_array([])
-    cbar = fig.colorbar(sm, ax=ax, shrink=0.6, pad=0.02)
-    cbar.set_label("Median $ / lot sqft (5th–95th pct color scale)")
 
-    # Side panel: ranked list of the 7 working ZIPs by $/sqft
-    work_summary = by_zip.loc[by_zip.index.intersection(WORKING_ZIPS)].copy()
-    work_summary = work_summary.sort_values("median_ppsf", ascending=False)
-    info = "User's 7 working ZIPs (ranked by $/lot-sqft):\n"
-    for zip5, row in work_summary.iterrows():
-        info += (
-            f"  {zip5}  ${row.median_ppsf:>5.0f}/sf  "
-            f"med ${row.median_price/1000:>5.0f}k  "
-            f"n={int(row.sales_count)}\n"
-        )
-    ax.text(
-        0.01, 0.01, info.strip(),
-        transform=ax.transAxes,
-        fontsize=8.5, family="monospace",
-        va="bottom", ha="left",
-        bbox=dict(boxstyle="round,pad=0.4", facecolor="white",
-                  edgecolor="#888", alpha=0.92),
+    # Title block + footer
+    cs.title_block(
+        fig,
+        "Land Value by ZIP — Shoreline & North Seattle",
+        f"Median sale price per lot square foot   ·   "
+        f"12-month window {date_min:%b %Y} – {date_max:%b %Y}",
     )
+    cs.footer(fig, "Source: King County Assessor sales extract + GIS parcels   ·   "
+                   "★ = your 7 focus ZIPs (dark outline)")
 
-    fig.tight_layout()
+    # Side panel — ranked focus ZIPs
+    work = by_zip.loc[by_zip.index.intersection(WORKING_ZIPS)].copy()
+    work = work.sort_values("median_price", ascending=False)
+    panel.set_xlim(0, 1)
+    panel.set_ylim(0, 1)
+    panel.text(0.0, 0.98, "Your focus ZIPs", fontsize=14, fontweight="bold",
+               color=cs.INK, va="top")
+    panel.text(0.0, 0.935, "ranked by median sale price", fontsize=9.5,
+               color=cs.MUTED, va="top")
+
+    y = 0.86
+    row_h = 0.105
+    for zip5, r in work.iterrows():
+        # accent chip + ZIP
+        panel.add_patch(mpatches.Rectangle((0.0, y - 0.052), 0.022, 0.058,
+                                           facecolor=cs.ACCENT, edgecolor="none",
+                                           transform=panel.transAxes, clip_on=False))
+        panel.text(0.05, y, zip5, fontsize=13, fontweight="bold",
+                   color=cs.INK, va="center")
+        panel.text(0.99, y, cs.usd(r.median_price), fontsize=12.5,
+                   color=cs.PRIMARY, fontweight="bold", va="center", ha="right")
+        panel.text(0.05, y - row_h * 0.5,
+                   f"${r.median_ppsf:.0f}/lot-sqft   ·   {int(r.sales_count)} sales",
+                   fontsize=9.5, color=cs.MUTED, va="center")
+        panel.plot([0.0, 1.0], [y - row_h * 0.82, y - row_h * 0.82],
+                   color=cs.GRID, linewidth=1.0)
+        y -= row_h
+
+    # Colorbar legend beneath the focus list (inside the side panel)
+    cax = panel.inset_axes([0.0, max(y - 0.02, 0.04), 0.92, 0.022])
+    cbar = fig.colorbar(sm, cax=cax, orientation="horizontal")
+    cbar.outline.set_visible(False)
+    cbar.ax.tick_params(labelsize=8.5, length=3, color=cs.MUTED)
+    cbar.set_label("Median $ / lot sqft   (5th–95th pct scale)",
+                   fontsize=9.5, color=cs.INK, labelpad=5)
+    cbar.ax.xaxis.set_label_position("top")
+
     out = OUTPUTS_DIR / "09_zip_choropleth_map.png"
-    fig.savefig(out, dpi=160)
+    fig.savefig(out)
     plt.close(fig)
     print(f"[out] Saved {out}")
 
     # Also print a quick summary
     print("\nUser's 7 working ZIPs:")
-    print(work_summary[["median_ppsf", "median_price", "sales_count"]]
-          .to_string())
+    print(work[["median_ppsf", "median_price", "sales_count"]].to_string())
 
 
 def main() -> int:

@@ -43,6 +43,8 @@ import pandas as pd
 import requests
 import seaborn as sns
 
+import chart_style as cs
+
 # ---------------------------------------------------------------------------
 # Paths & config
 # ---------------------------------------------------------------------------
@@ -242,20 +244,45 @@ def compute_dev_score(df: pd.DataFrame) -> pd.DataFrame:
 
 def render_dev_score(score_df: pd.DataFrame) -> None:
     top20 = score_df.head(20).iloc[::-1]  # reverse so highest bar is at top
-    fig, ax = plt.subplots(figsize=(11, 9))
-    colors = sns.color_palette("viridis", len(top20))
-    ax.barh(top20["zip5"].astype(str), top20["dev_score"], color=colors)
-    ax.set_xlabel("Composite developer score (z-sum)")
-    ax.set_ylabel("ZIP code")
-    ax.set_title(
-        "Developer Opportunity Score — top 20 ZIPs\n"
-        "(z(price) + z(lot) − z($/sqft) + z(%SFR))",
-        fontsize=14,
+    zips = top20["zip5"].astype(str).tolist()
+    scores = top20["dev_score"].tolist()
+
+    fig, ax = plt.subplots(figsize=(12, 9))
+    norm = plt.Normalize(min(scores), max(scores))
+    colors = [
+        cs.ACCENT if z in SHORELINE_ZIPS else cs.VALUE_CMAP(norm(s))
+        for z, s in zip(zips, scores)
+    ]
+    bars = ax.barh(zips, scores, color=colors, edgecolor="white", linewidth=0.6)
+
+    # value labels at bar ends
+    span = max(scores) - min(0, min(scores))
+    for bar, s in zip(bars, scores):
+        ax.text(bar.get_width() + span * 0.012, bar.get_y() + bar.get_height() / 2,
+                f"{s:.2f}", va="center", ha="left", fontsize=9.5, color=cs.MUTED)
+
+    ax.set_xlabel("Composite developer score  (z-sum across 4 factors)")
+    ax.set_ylabel("")
+    ax.set_xlim(0, max(scores) * 1.12)
+    cs.grid_x_only(ax)
+    ax.tick_params(axis="y", labelsize=11)
+    # bold the focus-ZIP tick labels
+    for lbl in ax.get_yticklabels():
+        if lbl.get_text() in SHORELINE_ZIPS:
+            lbl.set_fontweight("bold")
+            lbl.set_color(cs.INK)
+
+    cs.title_block(
+        fig,
+        "Developer Opportunity Score — Top 20 ZIPs",
+        "Higher = more upside: high end-value + big lots + cheap land + more "
+        "single-family teardown supply",
     )
-    ax.axvline(0, color="#888", linewidth=1)
-    fig.tight_layout()
+    cs.footer(fig, "Score = z(median price) + z(median lot) − z($/lot-sqft) + "
+                   "z(%SFR)   ·   orange = your focus ZIPs")
+    fig.subplots_adjust(top=0.86, left=0.08, right=0.96, bottom=0.12)
     out = OUTPUTS_DIR / "05_dev_score_top20.png"
-    fig.savefig(out, dpi=140)
+    fig.savefig(out)
     plt.close(fig)
     print(f"  Saved {out.name}")
 
@@ -278,42 +305,63 @@ def shoreline_summary(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def render_shoreline_comparison(summary: pd.DataFrame) -> None:
-    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
-    summary_plot = summary.copy()
-    summary_plot["zip5"] = summary_plot["zip5"].astype(str)
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6.5))
+    sp = summary.copy()
+    sp["zip5"] = sp["zip5"].astype(str)
+    zips = sp["zip5"].tolist()
 
-    # Median price by ZIP
+    # Median price by ZIP (sorted high -> low for readability)
     ax1 = axes[0]
-    ax1.bar(summary_plot["zip5"], summary_plot["median_price"],
-            color=sns.color_palette("crest", len(summary_plot)))
-    ax1.set_title("Median sale price")
+    s1 = sp.sort_values("median_price", ascending=False)
+    bars1 = ax1.bar(s1["zip5"], s1["median_price"], color=cs.PRIMARY,
+                    edgecolor="white", linewidth=0.6)
+    ax1.set_title("Median sale price", loc="left")
     ax1.set_ylabel("USD")
-    ax1.tick_params(axis="x", rotation=30, labelsize=10)
-    for x, v in zip(summary_plot["zip5"], summary_plot["median_price"]):
-        ax1.text(x, v, f"${v/1000:.0f}k", ha="center", va="bottom", fontsize=9)
+    cs.grid_y_only(ax1)
+    ax1.set_ylim(0, s1["median_price"].max() * 1.13)
+    for b, v in zip(bars1, s1["median_price"]):
+        ax1.text(b.get_x() + b.get_width() / 2, v, cs.usd(v),
+                 ha="center", va="bottom", fontsize=9.5, color=cs.INK,
+                 fontweight="bold")
 
-    # Median $/lot-sqft by ZIP
+    # Median $/lot-sqft by ZIP (sorted high -> low)
     ax2 = axes[1]
-    ax2.bar(summary_plot["zip5"], summary_plot["median_ppsf"],
-            color=sns.color_palette("flare", len(summary_plot)))
-    ax2.set_title("Median $ / lot sqft")
-    ax2.set_ylabel("$/sqft")
-    ax2.tick_params(axis="x", rotation=30, labelsize=10)
-    for x, v in zip(summary_plot["zip5"], summary_plot["median_ppsf"]):
+    s2 = sp.sort_values("median_ppsf", ascending=False)
+    bars2 = ax2.bar(s2["zip5"], s2["median_ppsf"], color=cs.POSITIVE,
+                    edgecolor="white", linewidth=0.6)
+    ax2.set_title("Median land cost  ($ / lot sqft)", loc="left")
+    ax2.set_ylabel("$ / sqft")
+    cs.grid_y_only(ax2)
+    ax2.set_ylim(0, s2["median_ppsf"].max() * 1.13)
+    for b, v in zip(bars2, s2["median_ppsf"]):
         if pd.notna(v):
-            ax2.text(x, v, f"${v:.0f}", ha="center", va="bottom", fontsize=9)
+            ax2.text(b.get_x() + b.get_width() / 2, v, f"${v:.0f}",
+                     ha="center", va="bottom", fontsize=9.5, color=cs.INK,
+                     fontweight="bold")
 
-    fig.suptitle("Shoreline / north Seattle — ZIP comparison", fontsize=15)
-    fig.tight_layout()
+    for ax in axes:
+        ax.tick_params(axis="x", labelsize=10.5)
+
+    cs.title_block(
+        fig,
+        "Shoreline & North Seattle — ZIP Comparison",
+        "Higher sale price with lower land cost signals teardown / "
+        "rebuild margin",
+    )
+    cs.footer(fig, "Source: King County Assessor sales extract + GIS parcels")
+    fig.subplots_adjust(top=0.82, bottom=0.09, left=0.07, right=0.97, wspace=0.18)
     out = OUTPUTS_DIR / "06_shoreline_comparison.png"
-    fig.savefig(out, dpi=140)
+    fig.savefig(out)
     plt.close(fig)
     print(f"  Saved {out.name}")
 
 
 def render_shoreline_trends(df: pd.DataFrame) -> None:
+    import matplotlib.dates as mdates
+    import matplotlib.ticker as mticker
+
     sub = df[df["zip5"].isin(SHORELINE_ZIPS)].copy()
-    fig, ax = plt.subplots(figsize=(12, 6.5))
+    fig, ax = plt.subplots(figsize=(13, 6.8))
     palette = sns.color_palette("husl", len(SHORELINE_ZIPS))
     for color, zip_ in zip(palette, SHORELINE_ZIPS):
         zsub = sub[sub["zip5"] == zip_]
@@ -323,16 +371,27 @@ def render_shoreline_trends(df: pd.DataFrame) -> None:
         if monthly.empty:
             continue
         ax.plot(monthly.index, monthly.values, marker="o", label=zip_,
-                color=color, linewidth=2, markersize=5)
-    ax.set_title("Monthly median sale price by ZIP — Shoreline / north Seattle")
-    ax.set_ylabel("Median sale price (USD)")
-    ax.set_xlabel("Month")
-    ax.legend(title="ZIP", loc="upper left", bbox_to_anchor=(1.02, 1), fontsize=10)
-    ax.grid(True, alpha=0.3)
-    fig.autofmt_xdate()
-    fig.tight_layout()
+                color=color, linewidth=2.2, markersize=5,
+                markeredgecolor="white", markeredgewidth=0.8)
+    cs.grid_y_only(ax)
+    ax.set_ylabel("Median sale price")
+    ax.set_xlabel("")
+    ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: cs.usd(v)))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
+    leg = ax.legend(title="ZIP", loc="upper left", bbox_to_anchor=(1.01, 1.0),
+                    fontsize=10, ncol=1)
+    leg.get_title().set_fontweight("bold")
+    cs.title_block(
+        fig,
+        "Monthly Median Sale Price by ZIP",
+        "Shoreline & North Seattle  ·  12-month trend",
+    )
+    cs.footer(fig, "Thin monthly medians can swing on low volume — read the "
+                   "trend, not single points.")
+    fig.autofmt_xdate(rotation=30, ha="right")
+    fig.subplots_adjust(top=0.84, bottom=0.12, left=0.085, right=0.88)
     out = OUTPUTS_DIR / "07_shoreline_monthly_trends.png"
-    fig.savefig(out, dpi=140)
+    fig.savefig(out)
     plt.close(fig)
     print(f"  Saved {out.name}")
 
@@ -368,36 +427,44 @@ def find_undervalued_sales(df: pd.DataFrame) -> pd.DataFrame:
 
 def render_shoreline_snapshot(summary: pd.DataFrame, targets: pd.DataFrame,
                               df: pd.DataFrame) -> None:
-    fig = plt.figure(figsize=(11.5, 8.5))
-    gs = fig.add_gridspec(3, 2, height_ratios=[0.7, 1.5, 1.5])
+    import matplotlib.dates as mdates
+    import matplotlib.ticker as mticker
 
-    # Header
-    h_ax = fig.add_subplot(gs[0, :])
-    h_ax.axis("off")
+    fig = plt.figure(figsize=(13, 9.5))
+    gs = fig.add_gridspec(2, 2, height_ratios=[1.35, 1.35],
+                          left=0.05, right=0.97, top=0.80, bottom=0.07,
+                          hspace=0.32, wspace=0.16)
+
     sub = df[df["zip5"].isin(SHORELINE_ZIPS)]
     total = len(sub)
-    h_ax.text(0.0, 0.85,
-        "Shoreline / north Seattle — Market & Target Snapshot",
-        fontsize=18, fontweight="bold")
-    h_ax.text(0.0, 0.45,
-        f"ZIPs: {', '.join(SHORELINE_ZIPS)}   |   "
-        f"{total:,} sales analyzed   |   "
-        f"{len(targets):,} undervalued targets",
-        fontsize=11, color="#555")
-    h_ax.text(0.0, 0.10,
-        f"Median price: ${sub['SalePrice'].median():,.0f}   |   "
-        f"Median $/lot-sqft: ${sub['price_per_lot_sqft'].median():,.0f}   |   "
-        f"Window: {sub['SaleDate'].min().date()} → {sub['SaleDate'].max().date()}",
-        fontsize=11, color="#222")
+
+    # Header: title block + KPI strip
+    cs.title_block(
+        fig,
+        "Shoreline & North Seattle — Market & Target Snapshot",
+        f"ZIPs {', '.join(SHORELINE_ZIPS)}   ·   window "
+        f"{sub['SaleDate'].min():%b %Y} – {sub['SaleDate'].max():%b %Y}",
+    )
+    kpis = [
+        ("Sales analyzed", f"{total:,}"),
+        ("Median price", cs.usd(sub["SalePrice"].median())),
+        ("Median $/lot-sqft", f"${sub['price_per_lot_sqft'].median():,.0f}"),
+        ("Undervalued targets", f"{len(targets):,}"),
+    ]
+    for i, (label, val) in enumerate(kpis):
+        x = 0.05 + i * 0.235
+        fig.text(x, 0.875, val, fontsize=20, fontweight="bold", color=cs.PRIMARY)
+        fig.text(x, 0.845, label.upper(), fontsize=9, color=cs.MUTED,
+                 fontweight="bold")
 
     # Summary table
-    tbl_ax = fig.add_subplot(gs[1, 0])
+    tbl_ax = fig.add_subplot(gs[0, 0])
     tbl_ax.axis("off")
-    tbl_ax.set_title("Per-ZIP summary", fontsize=12, loc="left")
+    tbl_ax.set_title("Per-ZIP summary", fontsize=12.5, loc="left", color=cs.INK)
     cell_text = [
         [
             str(row.zip5),
-            f"${row.median_price:,.0f}",
+            cs.usd(row.median_price),
             f"${row.median_ppsf:,.0f}" if pd.notna(row.median_ppsf) else "—",
             f"{int(row.median_lot_sqft):,}" if pd.notna(row.median_lot_sqft) else "—",
             f"{int(row.sales_count)}",
@@ -407,22 +474,21 @@ def render_shoreline_snapshot(summary: pd.DataFrame, targets: pd.DataFrame,
     ]
     tbl = tbl_ax.table(
         cellText=cell_text,
-        colLabels=["ZIP", "Med. price", "$/lot-sqft", "Lot sqft", "Sales", "%SFR"],
+        colLabels=["ZIP", "Med price", "$/lot-sf", "Lot sqft", "Sales", "%SFR"],
         loc="upper center", cellLoc="center",
     )
-    tbl.auto_set_font_size(False)
-    tbl.set_fontsize(8)
-    tbl.scale(1, 1.15)
+    cs.style_table(tbl, len(cell_text), 6, header_bg=cs.PRIMARY)
 
     # Top 10 undervalued targets
-    tbl2_ax = fig.add_subplot(gs[1, 1])
+    tbl2_ax = fig.add_subplot(gs[0, 1])
     tbl2_ax.axis("off")
-    tbl2_ax.set_title("Top 10 below-ZIP-median sales", fontsize=12, loc="left")
+    tbl2_ax.set_title("Top 10 below-ZIP-median sales", fontsize=12.5, loc="left",
+                      color=cs.INK)
     top_targets = targets.sort_values("pct_below_median", ascending=False).head(10)
     cell_text2 = [
         [
             str(row.zip5),
-            f"${row.sale_price:,.0f}",
+            cs.usd(row.sale_price),
             f"{int(row.lot_sqft):,}",
             f"{row.pct_below_median*100:.0f}%",
         ]
@@ -430,15 +496,13 @@ def render_shoreline_snapshot(summary: pd.DataFrame, targets: pd.DataFrame,
     ]
     tbl2 = tbl2_ax.table(
         cellText=cell_text2,
-        colLabels=["ZIP", "Sale $", "Lot sqft", "% below"],
+        colLabels=["ZIP", "Sale price", "Lot sqft", "% below"],
         loc="upper center", cellLoc="center",
     )
-    tbl2.auto_set_font_size(False)
-    tbl2.set_fontsize(8)
-    tbl2.scale(1, 1.15)
+    cs.style_table(tbl2, len(cell_text2), 4, header_bg=cs.ACCENT)
 
-    # Monthly trend
-    trend_ax = fig.add_subplot(gs[2, :])
+    # Monthly trend (full width bottom)
+    trend_ax = fig.add_subplot(gs[1, :])
     palette = sns.color_palette("husl", len(SHORELINE_ZIPS))
     for color, zip_ in zip(palette, SHORELINE_ZIPS):
         zsub = sub[sub["zip5"] == zip_]
@@ -448,16 +512,21 @@ def render_shoreline_snapshot(summary: pd.DataFrame, targets: pd.DataFrame,
         if monthly.empty:
             continue
         trend_ax.plot(monthly.index, monthly.values, marker="o", label=zip_,
-                      color=color, linewidth=1.7, markersize=4)
-    trend_ax.set_title("Monthly median sale price by ZIP", fontsize=12, loc="left")
-    trend_ax.set_ylabel("Median price (USD)")
-    trend_ax.legend(title="ZIP", loc="upper left", bbox_to_anchor=(1.01, 1), fontsize=8)
-    trend_ax.grid(True, alpha=0.3)
-    fig.autofmt_xdate()
+                      color=color, linewidth=2, markersize=4,
+                      markeredgecolor="white", markeredgewidth=0.7)
+    trend_ax.set_title("Monthly median sale price by ZIP", fontsize=12.5,
+                       loc="left", color=cs.INK)
+    trend_ax.set_ylabel("Median price")
+    cs.grid_y_only(trend_ax)
+    trend_ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: cs.usd(v)))
+    trend_ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
+    leg = trend_ax.legend(title="ZIP", loc="upper left", bbox_to_anchor=(1.005, 1),
+                          fontsize=9)
+    leg.get_title().set_fontweight("bold")
 
-    fig.tight_layout()
+    cs.footer(fig, "Source: King County Assessor sales extract + GIS parcels")
     out_png = OUTPUTS_DIR / "08_shoreline_snapshot.png"
-    fig.savefig(out_png, dpi=150)
+    fig.savefig(out_png)
     plt.close(fig)
     print(f"  Saved {out_png.name}")
 
@@ -470,6 +539,7 @@ def main() -> int:
     print("=" * 72)
     print("KC market analysis — Developer score + Shoreline deep dive")
     print("=" * 72)
+    cs.apply()
 
     try:
         df = load_joined()

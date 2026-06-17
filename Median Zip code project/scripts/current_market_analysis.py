@@ -29,9 +29,12 @@ import matplotlib
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 import pandas as pd
 import requests
 import seaborn as sns
+
+import chart_style as cs
 
 # ---------------------------------------------------------------------------
 # Paths & config
@@ -236,17 +239,28 @@ def make_visualizations(df: pd.DataFrame, summary: pd.DataFrame) -> None:
             .dropna(subset=["median_price_per_lot_sqft"])
             .sort_values("median_price_per_lot_sqft")
         )
-        fig, ax = plt.subplots(figsize=(11, 7))
-        ax.barh(
-            top15["zipcode"].astype(str),
-            top15["median_price_per_lot_sqft"],
-            color=sns.color_palette("viridis", len(top15)),
-        )
+        zips = top15["zipcode"].astype(str).tolist()
+        vals = top15["median_price_per_lot_sqft"].tolist()
+        fig, ax = plt.subplots(figsize=(12, 8))
+        norm = plt.Normalize(min(vals), max(vals))
+        bars = ax.barh(zips, vals, color=[cs.VALUE_CMAP(norm(v)) for v in vals],
+                       edgecolor="white", linewidth=0.6)
+        for b, v in zip(bars, vals):
+            ax.text(b.get_width() + max(vals) * 0.012,
+                    b.get_y() + b.get_height() / 2, f"${v:.0f}",
+                    va="center", ha="left", fontsize=9.5, color=cs.MUTED)
         ax.set_xlabel("Median $ / lot sqft")
-        ax.set_ylabel("ZIP code")
-        ax.set_title("Median price per lot sqft — top 15 ZIPs (by median sale price)")
-        fig.tight_layout()
-        fig.savefig(OUTPUTS_DIR / "01_median_price_per_lot_sqft_top15.png", dpi=140)
+        ax.set_ylabel("")
+        ax.set_xlim(0, max(vals) * 1.12)
+        cs.grid_x_only(ax)
+        cs.title_block(
+            fig,
+            "Land Cost by ZIP — Top 15 (highest-priced ZIPs)",
+            "Median sale price per lot square foot",
+        )
+        cs.footer(fig, "Source: King County Assessor sales extract + GIS parcels")
+        fig.subplots_adjust(top=0.86, left=0.08, right=0.96, bottom=0.12)
+        fig.savefig(OUTPUTS_DIR / "01_median_price_per_lot_sqft_top15.png")
         plt.close(fig)
         print("      Saved 01_median_price_per_lot_sqft_top15.png")
     except Exception as exc:
@@ -254,14 +268,28 @@ def make_visualizations(df: pd.DataFrame, summary: pd.DataFrame) -> None:
 
     # 4b. Log-x histogram of sale price
     try:
-        fig, ax = plt.subplots(figsize=(11, 6))
-        ax.hist(df["SalePrice"], bins=60, color="#3a7bd5", edgecolor="white")
+        import numpy as np
+        prices = df["SalePrice"][df["SalePrice"] > 0]
+        bins = np.logspace(np.log10(prices.min()), np.log10(prices.max()), 45)
+        fig, ax = plt.subplots(figsize=(12, 6.5))
+        ax.hist(prices, bins=bins, color=cs.PRIMARY, edgecolor="white")
         ax.set_xscale("log")
-        ax.set_xlabel("Sale price (log scale, USD)")
+        med = df["SalePrice"].median()
+        ax.axvline(med, color=cs.ACCENT, linewidth=2, linestyle="--")
+        ax.text(med, ax.get_ylim()[1] * 0.95, f"  median {cs.usd(med)}",
+                color=cs.ACCENT, fontweight="bold", va="top", fontsize=10.5)
+        ax.set_xlabel("Sale price (log scale)")
         ax.set_ylabel("Number of sales")
-        ax.set_title("Sale price distribution — King County (last 12 months, live data)")
-        fig.tight_layout()
-        fig.savefig(OUTPUTS_DIR / "02_price_distribution_log.png", dpi=140)
+        ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: cs.usd(v)))
+        cs.grid_y_only(ax)
+        cs.title_block(
+            fig,
+            "Sale Price Distribution — King County",
+            "Residential arms-length sales, last 12 months",
+        )
+        cs.footer(fig, "Source: King County Assessor sales extract")
+        fig.subplots_adjust(top=0.85, left=0.08, right=0.96, bottom=0.11)
+        fig.savefig(OUTPUTS_DIR / "02_price_distribution_log.png")
         plt.close(fig)
         print("      Saved 02_price_distribution_log.png")
     except Exception as exc:
@@ -271,19 +299,28 @@ def make_visualizations(df: pd.DataFrame, summary: pd.DataFrame) -> None:
     try:
         top10_zips = summary.head(10)["zipcode"].tolist()
         scatter_df = df[df["zip5"].isin(top10_zips) & df["LOTSQFT"].between(1, 100_000)].copy()
-        fig, ax = plt.subplots(figsize=(11, 7))
+        fig, ax = plt.subplots(figsize=(12, 7.5))
         sns.scatterplot(
             data=scatter_df,
             x="LOTSQFT", y="SalePrice",
             hue="zip5", palette="tab10",
-            alpha=0.7, s=35, ax=ax,
+            alpha=0.65, s=38, ax=ax, edgecolor="white", linewidth=0.3,
         )
         ax.set_xlabel("Lot size (sqft)")
-        ax.set_ylabel("Sale price (USD)")
-        ax.set_title("Lot size vs sale price — top 10 ZIPs by median price")
-        ax.legend(title="ZIP", bbox_to_anchor=(1.02, 1), loc="upper left", fontsize=10)
-        fig.tight_layout()
-        fig.savefig(OUTPUTS_DIR / "03_lotsqft_vs_price_top10_zips.png", dpi=140)
+        ax.set_ylabel("Sale price")
+        ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: cs.usd(v)))
+        ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"{v/1000:.0f}K"))
+        cs.grid_y_only(ax)
+        leg = ax.legend(title="ZIP", bbox_to_anchor=(1.01, 1), loc="upper left")
+        leg.get_title().set_fontweight("bold")
+        cs.title_block(
+            fig,
+            "Lot Size vs Sale Price",
+            "Top 10 ZIPs by median price  ·  last 12 months",
+        )
+        cs.footer(fig, "Source: King County Assessor sales extract + GIS parcels")
+        fig.subplots_adjust(top=0.85, left=0.09, right=0.86, bottom=0.10)
+        fig.savefig(OUTPUTS_DIR / "03_lotsqft_vs_price_top10_zips.png")
         plt.close(fig)
         print("      Saved 03_lotsqft_vs_price_top10_zips.png")
     except Exception as exc:
@@ -291,18 +328,29 @@ def make_visualizations(df: pd.DataFrame, summary: pd.DataFrame) -> None:
 
     # 4d. Monthly trend line
     try:
+        import matplotlib.dates as mdates
         monthly = (
             df.set_index("SaleDate")["SalePrice"].resample("MS").median().dropna()
         )
-        fig, ax = plt.subplots(figsize=(11, 6))
-        ax.plot(monthly.index, monthly.values, marker="o", color="#d6336c", linewidth=2)
-        ax.set_xlabel("Month")
-        ax.set_ylabel("Median sale price (USD)")
-        ax.set_title("Median sale price by month — King County (live data)")
-        ax.grid(True, alpha=0.3)
-        fig.autofmt_xdate()
-        fig.tight_layout()
-        fig.savefig(OUTPUTS_DIR / "04_monthly_median_trend.png", dpi=140)
+        fig, ax = plt.subplots(figsize=(12, 6.5))
+        ax.plot(monthly.index, monthly.values, marker="o", color=cs.PRIMARY,
+                linewidth=2.4, markersize=6, markeredgecolor="white",
+                markeredgewidth=0.9)
+        ax.fill_between(monthly.index, monthly.values, alpha=0.08, color=cs.PRIMARY)
+        ax.set_xlabel("")
+        ax.set_ylabel("Median sale price")
+        ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: cs.usd(v)))
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
+        cs.grid_y_only(ax)
+        cs.title_block(
+            fig,
+            "Median Sale Price by Month — King County",
+            "Residential arms-length sales  ·  last 12 months",
+        )
+        cs.footer(fig, "Source: King County Assessor sales extract")
+        fig.autofmt_xdate(rotation=30, ha="right")
+        fig.subplots_adjust(top=0.85, left=0.09, right=0.96, bottom=0.13)
+        fig.savefig(OUTPUTS_DIR / "04_monthly_median_trend.png")
         plt.close(fig)
         print("      Saved 04_monthly_median_trend.png")
     except Exception as exc:
@@ -324,39 +372,48 @@ def export_outputs(df: pd.DataFrame, summary: pd.DataFrame) -> None:
         print(f"      [warn] zip summary CSV failed: {exc}")
 
     try:
+        import matplotlib.dates as mdates
+
         total = len(df)
         med_price = df["SalePrice"].median()
         med_ppsf = df["price_per_lot_sqft"].median()
-        date_min = df["SaleDate"].min().date()
-        date_max = df["SaleDate"].max().date()
+        date_min = df["SaleDate"].min()
+        date_max = df["SaleDate"].max()
 
-        fig = plt.figure(figsize=(11, 8.5))
-        gs = fig.add_gridspec(3, 2, height_ratios=[0.7, 1.6, 1.6])
+        fig = plt.figure(figsize=(13, 9.5))
+        gs = fig.add_gridspec(2, 2, height_ratios=[1.3, 1.3],
+                              left=0.05, right=0.97, top=0.80, bottom=0.08,
+                              hspace=0.32, wspace=0.16)
 
-        header_ax = fig.add_subplot(gs[0, :])
-        header_ax.axis("off")
-        header_ax.text(0.0, 0.85,
-            "King County Residential Market Snapshot — LIVE",
-            fontsize=20, fontweight="bold")
-        header_ax.text(0.0, 0.45,
-            f"Window: {date_min} to {date_max}   |   "
-            f"{total:,} sales analyzed   |   Source: KingCo GIS",
-            fontsize=12, color="#555")
-        header_ax.text(0.0, 0.10,
-            f"Median price: ${med_price:,.0f}   |   "
-            f"Median $/lot-sqft: ${med_ppsf:,.0f}   |   "
-            f"ZIPs covered: {summary['zipcode'].nunique()}",
-            fontsize=12, color="#222")
+        # Header: title block + KPI strip
+        cs.title_block(
+            fig,
+            "King County Residential Market Snapshot",
+            f"Arms-length residential sales  ·  window "
+            f"{date_min:%b %Y} – {date_max:%b %Y}",
+        )
+        kpis = [
+            ("Sales analyzed", f"{total:,}"),
+            ("Median price", cs.usd(med_price)),
+            ("Median $/lot-sqft", f"${med_ppsf:,.0f}"),
+            ("ZIPs covered", f"{summary['zipcode'].nunique()}"),
+        ]
+        for i, (label, val) in enumerate(kpis):
+            x = 0.05 + i * 0.235
+            fig.text(x, 0.875, val, fontsize=20, fontweight="bold", color=cs.PRIMARY)
+            fig.text(x, 0.845, label.upper(), fontsize=9, color=cs.MUTED,
+                     fontweight="bold")
 
         # Top 10 zips table
-        tbl_ax = fig.add_subplot(gs[1, 0])
+        tbl_ax = fig.add_subplot(gs[0, 0])
         tbl_ax.axis("off")
-        tbl_ax.set_title("Top 10 ZIPs by median price", fontsize=12, loc="left")
+        tbl_ax.set_title("Top 10 ZIPs by median price", fontsize=12.5, loc="left",
+                         color=cs.INK)
         top10 = summary.head(10).copy()
         cell_text = [
             [
                 str(row.zipcode),
-                f"${row.median_price:,.0f}",
+                cs.usd(row.median_price),
                 (f"${row.median_price_per_lot_sqft:,.0f}"
                  if pd.notna(row.median_price_per_lot_sqft) else "—"),
                 f"{int(row.sales_count)}",
@@ -365,42 +422,49 @@ def export_outputs(df: pd.DataFrame, summary: pd.DataFrame) -> None:
         ]
         tbl = tbl_ax.table(
             cellText=cell_text,
-            colLabels=["ZIP", "Med. price", "Med. $/lot-sqft", "Sales"],
+            colLabels=["ZIP", "Med price", "$/lot-sqft", "Sales"],
             loc="upper center", cellLoc="center",
         )
-        tbl.auto_set_font_size(False)
-        tbl.set_fontsize(9)
-        tbl.scale(1, 1.2)
+        cs.style_table(tbl, len(cell_text), 4, header_bg=cs.PRIMARY)
 
         # Top 15 zips chart
-        chart_ax = fig.add_subplot(gs[1, 1])
+        chart_ax = fig.add_subplot(gs[0, 1])
         top15 = (
             summary.head(15).copy()
             .dropna(subset=["median_price_per_lot_sqft"])
             .sort_values("median_price_per_lot_sqft")
         )
-        chart_ax.barh(
-            top15["zipcode"].astype(str),
-            top15["median_price_per_lot_sqft"],
-            color=sns.color_palette("viridis", len(top15)),
-        )
-        chart_ax.set_title("Top 15 ZIPs — median $/lot-sqft", fontsize=12, loc="left")
+        vals = top15["median_price_per_lot_sqft"].tolist()
+        norm = plt.Normalize(min(vals), max(vals))
+        chart_ax.barh(top15["zipcode"].astype(str), vals,
+                      color=[cs.VALUE_CMAP(norm(v)) for v in vals],
+                      edgecolor="white", linewidth=0.5)
+        chart_ax.set_title("Top 15 ZIPs — median $/lot-sqft", fontsize=12.5,
+                           loc="left", color=cs.INK)
         chart_ax.set_xlabel("$ / lot sqft")
-        chart_ax.tick_params(axis="y", labelsize=8)
+        cs.grid_x_only(chart_ax)
+        chart_ax.tick_params(axis="y", labelsize=9)
 
         # Monthly trend
-        trend_ax = fig.add_subplot(gs[2, :])
+        trend_ax = fig.add_subplot(gs[1, :])
         monthly = (
             df.set_index("SaleDate")["SalePrice"].resample("MS").median().dropna()
         )
-        trend_ax.plot(monthly.index, monthly.values, marker="o", color="#d6336c", linewidth=2)
-        trend_ax.set_title("Monthly median sale price — King County", fontsize=12, loc="left")
-        trend_ax.set_ylabel("Median price (USD)")
-        trend_ax.grid(True, alpha=0.3)
-        fig.autofmt_xdate()
+        trend_ax.plot(monthly.index, monthly.values, marker="o", color=cs.PRIMARY,
+                      linewidth=2.4, markersize=5, markeredgecolor="white",
+                      markeredgewidth=0.8)
+        trend_ax.fill_between(monthly.index, monthly.values, alpha=0.08,
+                              color=cs.PRIMARY)
+        trend_ax.set_title("Monthly median sale price — King County",
+                           fontsize=12.5, loc="left", color=cs.INK)
+        trend_ax.set_ylabel("Median price")
+        cs.grid_y_only(trend_ax)
+        trend_ax.yaxis.set_major_formatter(
+            mticker.FuncFormatter(lambda v, _: cs.usd(v)))
+        trend_ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
 
-        fig.tight_layout()
-        fig.savefig(OUTPUTS_DIR / "market_snapshot.png", dpi=150)
+        cs.footer(fig, "Source: King County Assessor sales extract + GIS parcels")
+        fig.savefig(OUTPUTS_DIR / "market_snapshot.png")
         fig.savefig(OUTPUTS_DIR / "market_snapshot.pdf")
         plt.close(fig)
         print("      Saved market_snapshot.png and market_snapshot.pdf")
@@ -441,6 +505,7 @@ def main() -> int:
     print("=" * 70)
     print("King County current-market analysis")
     print("=" * 70)
+    cs.apply()
 
     df = load_joined_cache()
     if df is None:
